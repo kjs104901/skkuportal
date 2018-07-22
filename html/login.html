@@ -11,39 +11,32 @@
   <meta content="" name="description" />
   <meta content="" name="author" />
 
-  <link href="assets/plugins/pace/pace-theme-flash.css" rel="stylesheet" type="text/css" />
-  <link href="assets/plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
-  <link href="assets/plugins/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
-  <link href="assets/plugins/jquery-scrollbar/jquery.scrollbar.css" rel="stylesheet" type="text/css" media="screen" />
-  <link href="assets/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" media="screen" />
-  <link href="assets/plugins/switchery/css/switchery.min.css" rel="stylesheet" type="text/css" media="screen" />
-  <link href="pages/css/pages-icons.css" rel="stylesheet" type="text/css">
+  <link href="./assets/plugins/pace/pace-theme-flash.css" rel="stylesheet" type="text/css" />
+  <link href="./assets/plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
+  <link href="./assets/plugins/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
+  <link href="./assets/plugins/jquery-scrollbar/jquery.scrollbar.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="./assets/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="./assets/plugins/switchery/css/switchery.min.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="./pages/css/pages-icons.css" rel="stylesheet" type="text/css">
 
-  <link class="main-stylesheet" href="pages/css/themes/corporate_customized.css" rel="stylesheet" type="text/css" />
+  <link class="main-stylesheet" href="./pages/css/themes/corporate_customized.css" rel="stylesheet" type="text/css" />
 
-  <style>
-    body {
-      background-color: #184247;
-      padding-top: 120px;
-      -webkit-app-region: drag;
-    }
-
-    #long-form-group {
-      -webkit-app-region: no-drag;
-    }
-
-    #login-header {
-      margin-bottom: 80px;
-    }
-
-    #login-button {
-      width: 100%;
-    }
-  </style>
+  <!-- Custom CSS -->
+  <link class="main-stylesheet" href="login.css" rel="stylesheet" type="text/css" />
 
 </head>
 
 <body>
+  <div id="header">
+    <div class="row justify-content-end" style="width:100%; height:40px; margin: 0px">
+      <div id="minimize-button" class="col-auto" style="text-align: center; height:40px;">
+        <img src="./assets/img/minimizebutton.png" style="padding-top: 10px;">
+      </div>
+      <div id="close-button" class="col-auto" style="text-align: center; height:40px;">
+        <img src="./assets/img/closebutton.png" style="padding-top: 10px;">
+      </div>
+    </div>
+  </div>
 
   <div class="login-container">
     <form method="post" role="form" id="login" class="login-form" style="max-width:400px;margin:0 auto;">
@@ -51,12 +44,12 @@
         <img src="./assets/img/skkulogo.png" />
       </div>
 
-      <div id="long-form-group" class="form-group-attached">
+      <div id="login-form-group" class="form-group-attached">
         <div class="row">
           <div class="form-group form-group-default input-group">
             <div class="form-input-group">
               <label class="inline">아이디</label>
-              <input type="text" class="form-control" name="startDate" required="">
+              <input type="text" class="form-control" id="userId">
             </div>
             <div class="input-group-append h-c-50">
               <span class="input-group-text transparent">
@@ -70,18 +63,18 @@
           <label>비밀번호
             <i class="fa fa-lock m-l-5"></i>
           </label>
-          <input type="password" class="form-control" name="investor" required="">
+          <input type="password" class="form-control" id="userPass">
         </div>
         <div class="form-group form-group-default">
           <div class="row clearfix">
             <div class="col-6">
               <span class="input-group-text transparent">
                 &nbsp&nbsp&nbsp자동 로그인&nbsp&nbsp
-                <input type="checkbox" id="auto-check-box" checked>
+                <input type="checkbox" id="auto-check-box" >
               </span>
             </div>
             <div class="col-5 offset-1">
-              <button class="btn btn-success" id="login-button" type="submit">로그인</button>
+              <button class="btn btn-success" id="login-button" type="button">로그인</button>
             </div>
           </div>
         </div>
@@ -93,40 +86,27 @@
   <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
 
   <!-- Plugins -->
-  <script src="assets/plugins/jquery/jquery-3.2.1.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/pace/pace.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/modernizr.custom.js" type="text/javascript"></script>
-  <script src="assets/plugins/jquery-ui/jquery-ui.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/popper/umd/popper.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/jquery/jquery-easy.js" type="text/javascript"></script>
-  <script src="assets/plugins/jquery-unveil/jquery.unveil.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/jquery-ios-list/jquery.ioslist.min.js" type="text/javascript"></script>
-  <script src="assets/plugins/jquery-actual/jquery.actual.min.js"></script>
-  <script src="assets/plugins/jquery-scrollbar/jquery.scrollbar.min.js"></script>
-  <script type="text/javascript" src="assets/plugins/select2/js/select2.full.min.js"></script>
-  <script type="text/javascript" src="assets/plugins/classie/classie.js"></script>
-  <script src="assets/plugins/switchery/js/switchery.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/jquery/jquery-3.2.1.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/pace/pace.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/modernizr.custom.js" type="text/javascript"></script>
+  <script src="./assets/plugins/jquery-ui/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/popper/umd/popper.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/jquery/jquery-easy.js" type="text/javascript"></script>
+  <script src="./assets/plugins/jquery-unveil/jquery.unveil.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/jquery-ios-list/jquery.ioslist.min.js" type="text/javascript"></script>
+  <script src="./assets/plugins/jquery-actual/jquery.actual.min.js"></script>
+  <script src="./assets/plugins/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+  <script type="text/javascript" src="./assets/plugins/select2/js/select2.full.min.js"></script>
+  <script type="text/javascript" src="./assets/plugins/classie/classie.js"></script>
+  <script src="./assets/plugins/switchery/js/switchery.min.js" type="text/javascript"></script>
 
   <!-- Pages JS -->
-  <script src="pages/js/pages.js"></script>
+  <script src="./pages/js/pages.js"></script>
 
   <!-- Custom JS -->
-  <script src="assets/js/scripts.js" type="text/javascript"></script>
+  <script src="./login.js" type="text/javascript"></script>
 
-  <script>
-    let autoCheckBox = document.querySelector("#auto-check-box");
-    let autoSwitchery = new Switchery(autoCheckBox, {
-      color: '#10CFBD',
-      size: 'small'
-    });
-
-    let idSaveCheckBox = document.querySelector("#id-save-check-box");
-    let idSaveSwitchery = new Switchery(idSaveCheckBox, {
-      color: '#10CFBD',
-      size: 'small'
-    });
-  </script>
 
   <script>if (window.module) module = window.module;</script>
   <!-- ################## END JS ################## -->

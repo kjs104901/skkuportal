@@ -1,6 +1,8 @@
 const { app, BrowserWindow } = require('electron');
 
 const colorSkkuBackground = "#184247";
+const colorSkkuBackgroundDoom = "#3D7178";
+const colorSkkuLogo = "#FFD661";
 
 app.on('ready', () => {
     win = new BrowserWindow({
@@ -8,6 +10,7 @@ app.on('ready', () => {
         height: 600,
         frame: false,
         show: false,
+        resizable: false,
         backgroundColor: colorSkkuBackground,
     });
 

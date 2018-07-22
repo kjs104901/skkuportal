@@ -1,0 +1,55 @@
+body {
+    background-color: #184247;
+    -webkit-app-region: drag;
+    padding: 0px;
+    margin: 0px;
+}
+
+.login-container {
+    margin-top: 80px;
+}
+
+#login-form-group {
+    -webkit-app-region: no-drag;
+}
+
+#login-header {
+    margin-bottom: 80px;
+}
+
+#login-button {
+    width: 100%;
+    background-color: #184247;
+    border-color: #184247;
+}
+
+
+#close-button {
+    -webkit-app-region: no-drag;
+    background: #184247;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#close-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #E81123;
+    cursor: pointer;
+}
+
+#minimize-button {
+    -webkit-app-region: no-drag;
+    background: #184247;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#minimize-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #3D7178;
+    cursor: pointer;
+}
