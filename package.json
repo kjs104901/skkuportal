@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,5 +17,8 @@
     "url": "https://github.com/kjs104901/skkuportal/issues"
   },
   "homepage": "https://github.com/kjs104901/skkuportal#readme",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "electron": "^2.0.5"
+  }
 }
