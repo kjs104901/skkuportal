@@ -5,7 +5,9 @@ module.exports = {
         path: __dirname+"/html/react/",
         filename: 'build.js'
     },
-    module: {rules: [{exclude: /node_modules/,loader: 'babel-loader',
-        query: {presets: ['env', 'react']}}]
+    module: {rules: [{
+        exclude: /node_modules/,
+        loader: 'babel-loader'
     }
+    ]}
 };
