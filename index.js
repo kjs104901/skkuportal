@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
 const icampus = require("./node_my_modules/icampus");
+const gls = require("./node_my_modules/gls");
+const portal = require("./node_my_modules/portal");
 
 const colorSkkuBackground = "#1B484F";
 const colorSkkuBackgroundDoom = "#3D7178";
@@ -19,15 +21,13 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 app.on('ready', () => {
     loginWindow = new BrowserWindow({
-        width: 1200,
-        height: 600,
+        //width: 500, height: 600,
+        width: 1200, height: 600,
         frame: false,
         show: false,
         resizable: false,
         backgroundColor: colorSkkuBackground,
     });
-    //width: 500,
-    //height: 600,
 
     loginWindow.loadFile('./html/login.html');
 
@@ -37,22 +37,28 @@ app.on('ready', () => {
     })
 });
 
-//// ---- IPC ---- ////
-ipcMain.on("loginReq", (event, message) => {
-    const timeoutSecond = 10;
-    let timeoutSent = false;
-
-    userId = message.userId;
-    userPass = message.userPass;
-
+reserveTimeoutSend = (event, messageType, timeoutSecond, callback) => {
     const timeout = setTimeout(() => {
         timeoutSent = true;
-        event.sender.send("loginRes", {
+        event.sender.send(messageType, {
             err: "timeOut",
             errMessage: "요청 시간이 초과되었습니다"
         })
-
+        callback();
     }, timeoutSecond * 1000);
+
+    return timeout;
+};
+
+//// ---- IPC ---- ////
+ipcMain.on("loginReq", (event, message) => {
+    userId = message.userId;
+    userPass = message.userPass;
+
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event, "loginRes", 10, ()=>{
+        timeoutSent = true;
+    })
 
     icampus.loginDirect(userId, userPass, (result) => {
         clearTimeout(timeout);
@@ -76,22 +82,60 @@ ipcMain.on("loginReq", (event, message) => {
 
 ipcMain.on("gotoMain", (event, message) => {
     mainWindow = new BrowserWindow({
-        width: 1600,
-        height: 900,
+        //width: 790, height: 650,
+        width: 1600, height: 900,
         frame: false,
         show: false,
         resizable: false,
         backgroundColor: "#F0F0F0",
     });
-    //width: 790,
-    //height: 650,
 
     loginWindow.close();
 
     mainWindow.loadFile('./html/main.html');
     
     mainWindow.once('ready-to-show', () => {
-        mainWindow.show();
+        setTimeout(()=>{
+            mainWindow.show();
+        }, 500);
+        
         mainWindow.webContents.openDevTools();
     })
+});
+
+ipcMain.on("openGLSReq", (event, message)=>{
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event, "openGLSRes", 10, ()=>{
+        timeoutSent = true;
+    });
+
+    portal.portalLogin(userId, userPass, (result)=>{
+        if (result) {
+            console.log("login success");
+            gls.setGlobalVal(portal.getGlobalVal(), (result)=>{
+                if (result == true) {
+                    gls.setImage();
+
+                    gls.executeGLS((result) => {
+                        if (result == true) {
+                            console.log("Well finished")
+                        }
+                    });
+
+                    event.sender.send("openGLSRes", {
+                        data: {
+                            success: true
+                        }
+                    })
+                }
+            });
+        }
+        else {
+            console.log("login failed");
+            event.sender.send("openGLSRes", {
+                err: "loingFailed",
+                errMessage: "로그인에 실패했습니다"
+            })
+        }
+    });
 });

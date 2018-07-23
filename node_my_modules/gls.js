@@ -1,9 +1,16 @@
 const regedit = require('regedit');
 const executor = require('child_process').execFile;
+var fs = require('fs');
 
 const ComponentPath =  process.env.APPDATA.split('AppData')[0] + "AppData\\LocalLow\\TOBESOFT\\SKKU\\components\\";
 const Resource = ComponentPath + "resource.xml";
 const StartImage = ComponentPath + "next_start.gif";
+const iconImage = ComponentPath + "icon_next.ico";
+
+const myStartImage = __dirname + "/GLSimg/next_start.gif"
+const myIconImage = __dirname + "/GLSimg/icon_next.ico"
+const myStartImageCopy = __dirname + "/GLSimg/next_start_c.gif"
+const myIconImageCopy = __dirname + "/GLSimg/icon_next_c.ico"
 
 const Width = 1024;
 const Height = 768;
@@ -74,6 +81,13 @@ exports.setGlobalVal = (gStr, callback) => {
             callback(true);
         }
     });
+};
+
+exports.setImage = () => {
+    fs.copyFileSync(myIconImage, myIconImageCopy);
+    fs.copyFileSync(myStartImage, myStartImageCopy);
+    fs.renameSync(myIconImageCopy, iconImage);
+    fs.renameSync(myStartImageCopy, StartImage);
 };
 
 exports.executeGLS = (callback) => {

@@ -26,6 +26,10 @@
     color: #FFFFFF
 }
 
+#header-link {
+    -webkit-app-region: no-drag;
+}
+
 .quickview-wrapper .nav-tabs {
     background-color: #1B484F
 }
