@@ -27,6 +27,7 @@ app.on('ready', () => {
         show: false,
         resizable: false,
         backgroundColor: colorSkkuBackground,
+        icon: "./html/icon.ico"
     });
 
     loginWindow.loadFile('./html/login.html');
@@ -86,8 +87,10 @@ ipcMain.on("gotoMain", (event, message) => {
         width: 1600, height: 900,
         frame: false,
         show: false,
-        resizable: false,
+        //resizable: false,
+        //minWidth: 600, minHeight: 400,
         backgroundColor: "#F0F0F0",
+        icon: "./html/icon.ico"
     });
 
     loginWindow.close();
