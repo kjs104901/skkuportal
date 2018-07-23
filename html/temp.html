@@ -11,16 +11,18 @@
   <meta content="" name="description" />
   <meta content="" name="author" />
 
-  <link href="assets/plugins/pace/pace-theme-flash.css" rel="stylesheet" type="text/css" />
-  <link href="assets/plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
-  <link href="assets/plugins/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
-  <link href="assets/plugins/jquery-scrollbar/jquery.scrollbar.css" rel="stylesheet" type="text/css" media="screen" />
-  <link href="assets/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" media="screen" />
-  <link href="assets/plugins/switchery/css/switchery.css" rel="stylesheet" type="text/css" media="screen" />
-  <link href="pages/css/pages-icons.css" rel="stylesheet" type="text/css">
+  <link href="./assets/plugins/pace/pace-theme-flash.css" rel="stylesheet" type="text/css" />
+  <link href="./assets/plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
+  <link href="./assets/plugins/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
+  <link href="./assets/plugins/jquery-scrollbar/jquery.scrollbar.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="./assets/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="./assets/plugins/switchery/css/switchery.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="./pages/css/pages-icons.css" rel="stylesheet" type="text/css">
 
-  <link class="main-stylesheet" href="pages/css/themes/corporate_customized.css" rel="stylesheet" type="text/css" />
+  <link class="main-stylesheet" href="./pages/css/themes/corporate_customized.css" rel="stylesheet" type="text/css" />
 
+  <!-- Custom CSS -->
+  <link class="main-stylesheet" href="./temp.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body class="fixed-header menu-pin menu-behind">
@@ -363,7 +365,7 @@
       </a>
       <div class="">
         <div class="brand inline  m-l-10 ">
-          <img src="assets/img/logo.png" alt="logo" data-src="assets/img/logo.png" data-src-retina="assets/img/logo_2x.png" width="78"
+          <img src="./assets/img/logo.png" alt="logo" data-src="./assets/img/logo.png" data-src-retina="./assets/img/logo_2x.png" width="78"
             height="22">
         </div>
         <ul class="d-lg-inline-block d-none notification-list no-margin d-lg-inline-block b-grey b-l b-r no-style p-l-30 p-r-20">
@@ -373,20 +375,24 @@
           <li class="p-r-10 inline">
             <a href="#" class="header-icon pg pg-thumbs"></a>
           </li>
+          <li class="p-r-10 inline">
+            <a href="#" class="header-icon pg pg-alt_menu btn-link m-l-10 sm-no-margin d-inline-block" data-toggle="quickview" data-toggle-element="#quickview"></a>
+          </li>
         </ul>
       </div>
     </div>
-    
-    <div class="page-content-wrapper ">
+  </div>
 
-      <div class="content ">
-        <h1>content</h1>
-      </div>
+  <div class="page-content-wrapper ">
 
-      <div class=" container-fluid  container-fixed-lg footer">
-        <h1>footer</h1>
-      </div>
+    <div class="content ">
+      <h1>content</h1>
     </div>
+
+    <div class=" container-fluid  container-fixed-lg footer">
+      <h1>footer</h1>
+    </div>
+  </div>
   </div>
 
   <div id="quickview" class="quickview-wrapper" data-pages="quickview">
@@ -411,13 +417,13 @@
           <h1>Hello 1</h1>
         </div>
       </div>
-      
+
       <div class="tab-pane no-padding" id="quickview-alerts">
         <div class="view-port clearfix" id="alerts">
           <h1>Hello 2</h1>
         </div>
       </div>
-      
+
       <div class="tab-pane active no-padding" id="quickview-chat">
         <div class="view-port clearfix" id="chat">
           <h1>Hello 3</h1>

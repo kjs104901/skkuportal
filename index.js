@@ -76,7 +76,7 @@ ipcMain.on("gotoMain", (event, message) => {
 
     loginWindow.close();
 
-    mainWindow.loadFile('./html/temp.html');
+    mainWindow.loadFile('./html/main.html');
     
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
