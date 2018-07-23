@@ -22,7 +22,11 @@ exports.getSeats = (campusType, callback) => {
             headers: crawler.getNormalHeader(),
             method: "GET"
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback([]);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const resultJson = JSON.parse(body);
                 const resultNumber = resultJson.data.totalCount;
                 const resultArray = resultJson.data.list;

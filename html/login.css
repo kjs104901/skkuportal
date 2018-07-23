@@ -1,5 +1,5 @@
 body {
-    background-color: #184247;
+    background-color: #1B484F;
     -webkit-app-region: drag;
     padding: 0px;
     margin: 0px;
@@ -20,14 +20,14 @@ body {
 #login-button {
     width: 100%;
     height: 35px;
-    background-color: #184247;
-    border-color: #184247;
+    background-color: #1B484F;
+    border-color: #1B484F;
 }
 
 
 #close-button {
     -webkit-app-region: no-drag;
-    background: #184247;
+    background: #1B484F;
     -webkit-transition: background-color 0.2s ease-out;
     -moz-transition: background-color 0.2s ease-out;
     -o-transition: background-color 0.2s ease-out;
@@ -42,7 +42,7 @@ body {
 
 #minimize-button {
     -webkit-app-region: no-drag;
-    background: #184247;
+    background: #1B484F;
     -webkit-transition: background-color 0.2s ease-out;
     -moz-transition: background-color 0.2s ease-out;
     -o-transition: background-color 0.2s ease-out;

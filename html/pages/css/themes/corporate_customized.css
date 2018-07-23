@@ -1592,7 +1592,7 @@ body.sidebar-visible .page-sidebar .sidebar-header .sidebar-header-controls {
 }
 .page-sidebar .sidebar-menu {
   /* Side-bar Menu */
-  height: calc(100% - 50px);
+  height: calc(100% - 30px);
   position: relative;
   width: 100%;
 }
@@ -4492,7 +4492,7 @@ body.horizontal-app-menu .pgn-wrapper {
   border-radius: 300px;
   animation: fadeInCircle 0.3s ease forwards, resizeCircle 0.3s 0.4s cubic-bezier(0.25, 0.25, 0.4, 1.6) forwards;
   -webkit-animation: fadeInCircle 0.3s ease forwards, resizeCircle 0.3s 0.4s cubic-bezier(0.25, 0.25, 0.4, 1.6) forwards;
-  height: 40px;
+  height: 60px;
   overflow: hidden;
   padding: 6px 55px 6px 6px;
   -webkit-transform: translateZ(0);

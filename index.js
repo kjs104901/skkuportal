@@ -2,12 +2,18 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 
 const icampus = require("./node_my_modules/icampus");
 
-const colorSkkuBackground = "#184247";
+const colorSkkuBackground = "#1B484F";
 const colorSkkuBackgroundDoom = "#3D7178";
+const colorSkkuBackgroundDeep = "#1C414A";
 const colorSkkuLogo = "#FFD661";
 
+// Windows //
 let loginWindow;
 let mainWindow;
+
+// User Info //
+let userId;
+let userPass;
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
@@ -20,6 +26,8 @@ app.on('ready', () => {
         resizable: false,
         backgroundColor: colorSkkuBackground,
     });
+    //width: 500,
+    //height: 600,
 
     loginWindow.loadFile('./html/login.html');
 
@@ -34,8 +42,8 @@ ipcMain.on("loginReq", (event, message) => {
     const timeoutSecond = 10;
     let timeoutSent = false;
 
-    const userId = message.userId;
-    const userPass = message.userPass;
+    userId = message.userId;
+    userPass = message.userPass;
 
     const timeout = setTimeout(() => {
         timeoutSent = true;
@@ -68,13 +76,15 @@ ipcMain.on("loginReq", (event, message) => {
 
 ipcMain.on("gotoMain", (event, message) => {
     mainWindow = new BrowserWindow({
-        width: 1500,
-        height: 800,
+        width: 1600,
+        height: 900,
         frame: false,
         show: false,
         resizable: false,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#F0F0F0",
     });
+    //width: 790,
+    //height: 650,
 
     loginWindow.close();
 

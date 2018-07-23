@@ -1,3 +1,83 @@
 #quickview {
-    margin-top: 60px;
+    margin-top: 40px;
+}
+
+.page-container .header {
+    -webkit-app-region: drag;
+}
+
+.page-sidebar {
+    background-color: #1B484F
+}
+
+.icon-thumbnail {
+    color: #FFD661;
+    background-color: #1C414A!important;
+}
+.icon-thumbnail .bg-success {
+    color: #FFD661
+}
+
+.page-sidebar a {
+    color: #FFD661
+}
+
+.title-selected {
+    color: #FFFFFF
+}
+
+.quickview-wrapper .nav-tabs {
+    background-color: #1B484F
+}
+
+.quickview-wrapper .nav-tabs > li > a {
+    color: #FFD661
+}
+.quickview-wrapper .nav-tabs > li > a.active:hover, .quickview-wrapper .nav-tabs > li > a.active:focus {
+    color: #FFFFFF
+}
+
+#close-button {
+    -webkit-app-region: no-drag;
+    background: #FFFFFF;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#close-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #E81123;
+    cursor: pointer;
+}
+
+#minimize-button {
+    -webkit-app-region: no-drag;
+    background: #FFFFFF;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#minimize-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #767676;
+    cursor: pointer;
+}
+
+#setting-button {
+    -webkit-app-region: no-drag;
+    background: #FFFFFF;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#setting-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #767676;
+    cursor: pointer;
 }

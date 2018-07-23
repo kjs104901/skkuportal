@@ -33,7 +33,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     );
 
     function loginMainCallback (error, response, body){
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
             const roundkey = crawler.getBetweenMoveTarget("var roundkey_c = \"", "\"");
             if (0 < roundkey.length) {
@@ -72,7 +76,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function loginUserCallback(error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
             if (-1 < body.indexOf("document.loginForm.D1.value = \"")) {
                 D1 = crawler.getBetweenMoveTarget("document.loginForm.D1.value = \"", "\"");
@@ -117,7 +125,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function loginDummyCallback (error, response, body) {
-        if (response.statusCode === 200) {                    
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {                    
             loginPortalWeb();
         }
         else {
@@ -146,7 +158,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function loginPortalWebCallback (error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
             loginPortalMain()
         }
         else {
@@ -177,7 +193,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function loginPortalMainCallback(error, response, body) {
-        if (response.statusCode === 200) {         
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {         
             const encodingType = charset(response.headers, body)
             const encodedBody = iconv.decode(body, encodingType) 
             if (-1 < encodedBody.indexOf("다시 로그인")) {
@@ -215,10 +235,19 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function getGLSCallback (error, response, body) {
-        crawler.setTargetStr(body);
-        roundkey2 = crawler.getBetweenMoveTarget("var roundkey_c = \"", "\"");
-        if (0 < roundkey2.length) {
-            getGLSLogin(roundkey2);
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode){    
+            crawler.setTargetStr(body);
+            roundkey2 = crawler.getBetweenMoveTarget("var roundkey_c = \"", "\"");
+            if (0 < roundkey2.length) {
+                getGLSLogin(roundkey2);
+            }
+            else {
+                callback(false);
+            }
         }
         else {
             callback(false);
@@ -245,7 +274,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function getGLSLoginCallback (error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
 
             crawler.moveTargetAfter('name="D0"');
@@ -291,7 +324,11 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 
     function getGLSFinalCallback (error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
             globalVal = crawler.getBetweenMoveTarget('MiInstaller.GlobalVal = "', '"');
             if (0 < globalVal.length) {

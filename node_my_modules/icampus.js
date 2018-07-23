@@ -49,7 +49,11 @@ exports.loginDirect = (userId, userPwd, callback) => {
     );
 
     function loginCallback(error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
 
             crawler.setTargetStr(body);
 
@@ -90,7 +94,11 @@ exports.loginDirect = (userId, userPwd, callback) => {
     }
 
     function loginCheckAuthCallback(error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+            return;
+        }
+        else if (response.statusCode === 200) {
             let D1;
             let roundkey;
 
@@ -128,7 +136,11 @@ exports.loginDirect = (userId, userPwd, callback) => {
                 followAllRedirects: true,
                 encoding: null
             }, (error, response, body) => {
-                if (response.statusCode === 200) {
+                if (error) {
+                    callback(false);
+                    return;
+                }
+                else if (response.statusCode === 200) {
                     const encodingType = charset(response.headers, body);
                     const encodedBody = iconv.decode(body, encodingType);
 
@@ -157,7 +169,11 @@ exports.loginCheck = (callback) => {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback(false);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 
@@ -196,7 +212,11 @@ function _getClassList(year, semester, callback) {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback(false);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 
@@ -317,7 +337,11 @@ exports.getPostList = (identity, code, callback) => {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback(postList);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 
@@ -463,7 +487,11 @@ function getNoticePost(url, callback) {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback(returnStr);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 
@@ -500,7 +528,11 @@ function getMaterialPost(url, callback) {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback(materialPost);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 
@@ -550,7 +582,11 @@ function getAssignmentPost(url, callback) {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+                callback(assignmentPost);
+                return;
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 

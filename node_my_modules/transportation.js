@@ -69,70 +69,71 @@ exports.getSubway = (campusType, direction, callback) => {
             method: "POST",
             form: subwayForm
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
-                crawler.setTargetStr(body);
+            if (!error) {
+                if (response.statusCode === 200) {
+                    crawler.setTargetStr(body);
 
-                const lineStartStr = `<div class="${lineCode}line_metro">`;
-                const lineEndStr = `<div class="${lineCode + 1}line">`;
-                let lineStr = crawler.getBetweenMoveTarget(lineStartStr, lineEndStr);
+                    const lineStartStr = `<div class="${lineCode}line_metro">`;
+                    const lineEndStr = `<div class="${lineCode + 1}line">`;
+                    let lineStr = crawler.getBetweenMoveTarget(lineStartStr, lineEndStr);
 
-                crawler.setTargetStr(lineStr);
-                while (-1 < crawler.getTargetStr().indexOf("<div class=\"T")) {
-                    crawler.moveTargetAfter("<div class=\"T");
-                    const destination = crawler.getBetweenMoveTarget("_", " tip").split("_");
-                    const number = crawler.getBetweenMoveTarget("title=\"", "열");
-                    const state = crawler.getBetweenMoveTarget("차  ", "\"").split(" ");
+                    crawler.setTargetStr(lineStr);
+                    while (-1 < crawler.getTargetStr().indexOf("<div class=\"T")) {
+                        crawler.moveTargetAfter("<div class=\"T");
+                        const destination = crawler.getBetweenMoveTarget("_", " tip").split("_");
+                        const number = crawler.getBetweenMoveTarget("title=\"", "열");
+                        const state = crawler.getBetweenMoveTarget("차  ", "\"").split(" ");
 
-                    const expressStr = crawler.getBetweenMoveTarget("data-statnTcd=\"", "\"");
-                    let isExpress = false;
-                    if (expressStr.indexOf("_E")) {
-                        isExpress = true;
-                    }
-
-                    directionCheck = false;
-                    if ((destination[0] === "N" || destination[0] === "Y") && lineCode === 4) {
-                        if (destination[1] === (direction + 1).toString()) {
-                            directionCheck = true;
+                        const expressStr = crawler.getBetweenMoveTarget("data-statnTcd=\"", "\"");
+                        let isExpress = false;
+                        if (expressStr.indexOf("_E")) {
+                            isExpress = true;
                         }
-                    }
-                    if ((destination[0] === "0" || destination[0] === "1") && lineCode === 1) {
-                        if (destination[1] === (direction).toString()) {
-                            directionCheck = true;
-                        }
-                    }
 
-                    const gotTrain = {
-                        number: number * 1,
-                        station: state[0],
-                        doing: state[1],
-                        destination: state[2],
-                        isExpress: isExpress
-                    };
-
-                    if (directionCheck) {
-                        referenceArray.forEach((item, index) => {
-                            if (-1 < item.indexOf(gotTrain.station)) {
-                                let trainIndex = -1
-                                if (gotTrain.doing === "진입" || gotTrain.doing === "이동") {
-                                    trainIndex = index - 1;
-                                }
-                                else if (gotTrain.doing === "도착") {
-                                    trainIndex = index;
-                                }
-                                else if (gotTrain.doing === "출발") {
-                                    trainIndex = index + 1;
-                                }
-
-                                if (-1 < trainIndex) {
-                                    trainArray[trainIndex].push(gotTrain);
-                                    resultNumber += 1;
-                                }
+                        directionCheck = false;
+                        if ((destination[0] === "N" || destination[0] === "Y") && lineCode === 4) {
+                            if (destination[1] === (direction + 1).toString()) {
+                                directionCheck = true;
                             }
-                        });
+                        }
+                        if ((destination[0] === "0" || destination[0] === "1") && lineCode === 1) {
+                            if (destination[1] === (direction).toString()) {
+                                directionCheck = true;
+                            }
+                        }
+
+                        const gotTrain = {
+                            number: number * 1,
+                            station: state[0],
+                            doing: state[1],
+                            destination: state[2],
+                            isExpress: isExpress
+                        };
+
+                        if (directionCheck) {
+                            referenceArray.forEach((item, index) => {
+                                if (-1 < item.indexOf(gotTrain.station)) {
+                                    let trainIndex = -1
+                                    if (gotTrain.doing === "진입" || gotTrain.doing === "이동") {
+                                        trainIndex = index - 1;
+                                    }
+                                    else if (gotTrain.doing === "도착") {
+                                        trainIndex = index;
+                                    }
+                                    else if (gotTrain.doing === "출발") {
+                                        trainIndex = index + 1;
+                                    }
+
+                                    if (-1 < trainIndex) {
+                                        trainArray[trainIndex].push(gotTrain);
+                                        resultNumber += 1;
+                                    }
+                                }
+                            });
+                        }
                     }
                 }
             }
-
             callback({
                 resultNumber: resultNumber,
                 referenceArray: referenceArray,
@@ -249,19 +250,21 @@ exports.getBus = (busType, callback) => {
             headers: crawler.getNormalHeader(),
             method: "GET"
         }, (error, response, body) => {
-            if (response.statusCode == 200) {
-                xmlParser(body, (error, result) => {
-                    if ('msgBody' in result.response) {
-                        const infoObj = result.response.msgBody[0].busArrivalItem[0];
+            if (!error) {
+                if (response.statusCode == 200) {
+                    xmlParser(body, (error, result) => {
+                        if ('msgBody' in result.response) {
+                            const infoObj = result.response.msgBody[0].busArrivalItem[0];
 
-                        busInfo.resultArray[0].location = infoObj.locationNo1 * 1;
-                        busInfo.resultArray[0].predictTime = infoObj.predictTime1 * 1;
-                        busInfo.resultArray[0].remainSeats = infoObj.remainSeatCnt1 * 1;
-                        busInfo.resultArray[1].location = infoObj.locationNo2 * 1;
-                        busInfo.resultArray[1].predictTime = infoObj.predictTime2 * 1;
-                        busInfo.resultArray[1].remainSeats = infoObj.remainSeatCnt2 * 1;
-                    }
-                });
+                            busInfo.resultArray[0].location = infoObj.locationNo1 * 1;
+                            busInfo.resultArray[0].predictTime = infoObj.predictTime1 * 1;
+                            busInfo.resultArray[0].remainSeats = infoObj.remainSeatCnt1 * 1;
+                            busInfo.resultArray[1].location = infoObj.locationNo2 * 1;
+                            busInfo.resultArray[1].predictTime = infoObj.predictTime2 * 1;
+                            busInfo.resultArray[1].remainSeats = infoObj.remainSeatCnt2 * 1;
+                        }
+                    });
+                }
             }
             callback(busInfo);
         }
