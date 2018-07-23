@@ -2,6 +2,7 @@ import React from 'react';
 
 import CMain from './mainComponent/CMain'
 import CGLS from './mainComponent/CGLS'
+import CIcampus from './mainComponent/CIcampus'
 
 export default class MainContent extends React.Component {
     componentWillMount(){
@@ -28,7 +29,7 @@ const dialog = (menuIndex, menuGoto) => {
         case 0:
             return <CMain menuGoto={menuGoto} />;
         case 1:
-            return "구현중입니다";
+            return <CIcampus menuGoto={menuGoto} />;
         case 2:
             return <CGLS menuGoto={menuGoto} />;;
         default:

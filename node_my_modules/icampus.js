@@ -213,7 +213,7 @@ function _getClassList(year, semester, callback) {
             encoding: null
         }, (error, response, body) => {
             if (error) {
-                callback(false);
+                callback(resultClassList);
                 return;
             }
             else if (response.statusCode === 200) {

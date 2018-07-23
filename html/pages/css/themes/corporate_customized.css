@@ -896,7 +896,7 @@ body.menu-pin .overlay .overlay-brand {
     padding-left: 10px !important;
   }
 }
-@media (max-width: 1400px) {
+@media (max-width: 9400px) {
   .header .brand.inline::after {
     top: -7px !important;
   }
@@ -1820,7 +1820,7 @@ body.sidebar-visible .page-sidebar .sidebar-header .sidebar-header-controls {
 /* Sidebar Responsive Classes
 ------------------------------------
 */
-@media only screen and (max-width: 1400px) {
+@media only screen and (max-width: 9400px) {
   .page-sidebar .page-sidebar-inner .sidebar-slide .sidebar-menu {
     bottom: 50px;
   }
@@ -3003,7 +3003,7 @@ hr.dotted {
 /* Responsive Handlers : Typo
 ------------------------------------
 */
-@media (max-width: 1400px) {
+@media (max-width: 9400px) {
   body,
   p {
     font-size: 13px;
@@ -13828,7 +13828,7 @@ Main components
 }
 /*** Desktops ***/
 /*** Medium Size Screen ***/
-@media only screen and (max-width: 1400px) {
+@media only screen and (max-width: 9400px) {
   .footer-widget {
     padding: 11px 21px !important;
   }
