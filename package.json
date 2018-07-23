@@ -20,5 +20,10 @@
   "description": "",
   "devDependencies": {
     "electron": "^2.0.5"
+  },
+  "dependencies": {
+    "charset": "^1.0.1",
+    "iconv-lite": "^0.4.23",
+    "xml2js": "^0.4.19"
   }
 }

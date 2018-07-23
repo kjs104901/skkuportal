@@ -142,7 +142,7 @@ exports.decrypt = (text) => {
 };
 
 /* -------------- Setting Save -------------- */
-const settingFile = "setting.json";
+const settingFile = `${__dirname}/.setting.json`;
 
 exports.saveSetting = (key, value) => {
     let setting = {};

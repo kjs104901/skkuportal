@@ -1,5 +1,7 @@
-const { remote } = require('electron');
+const { remote, ipcRenderer } = require('electron');
 const { BrowserWindow } = remote;
+
+const { saveSetting, loadSetting, encrypt } = require("../node_my_modules/util.js");
 
 /// header buttons ///
 let minButton = document.querySelector("#minimize-button");
@@ -17,16 +19,45 @@ closeButton.addEventListener("click", ()=>{
 
 /// switchery ///
 let autoCheckBox = document.querySelector("#auto-check-box");
-new Switchery(autoCheckBox, {
+let autoSwitchery = new Switchery(autoCheckBox, {
   color: '#3D7178',
-  size: 'small'
+  size: 'small',
+  disabled: false
 });
 
 let idSaveCheckBox = document.querySelector("#id-save-check-box");
-new Switchery(idSaveCheckBox, {
+let idSaveSwitchery = new Switchery(idSaveCheckBox, {
   color: '#3D7178',
-  size: 'small'
+  size: 'small',
+  disabled: false
 });
+
+autoCheckBox.onchange = function() {
+    if (autoCheckBox.checked) {
+        if (idSaveCheckBox.checked === false) {
+            $("#id-save-check-box").click();
+        }
+    }
+};
+
+/// load switchery setting ///
+const settingAutoLogin = loadSetting("auto_login");
+if ((settingAutoLogin === true) && (autoCheckBox.checked == false)) {
+    $("#auto-check-box").click();
+} 
+else if ((settingAutoLogin === false) && (autoCheckBox.checked == true)) {
+    $("#auto-check-box").click();
+}
+
+const settingSaveId = loadSetting("save_id");
+console.log("settingSaveId", settingSaveId);
+if ((settingSaveId === true) && (idSaveCheckBox.checked == false)) {
+    $("#id-save-check-box").click();
+} 
+else if ((settingSaveId === false) && (idSaveCheckBox.checked == true)) {
+    $("#id-save-check-box").click();
+}
+
 
 /// pop ove ///
 let idOptions = {
@@ -52,7 +83,16 @@ $(document).mouseup((e) => {
 
 /// login button ///
 let loginButton = document.querySelector("#login-button");
-loginButton.addEventListener("click", ()=>{
+loginButton.addEventListener("click", loingTry)
+
+$("#login-form-group").keypress(function(event) {
+    if (event.which == 13) {
+        event.preventDefault();
+        loingTry();
+    }
+});
+
+function loingTry() {
     let userId = $("#userId").val();
     let userIdSave = $("#id-save-check-box").is(":checked");
     let userPass = $("#userPass").val();
@@ -71,6 +111,61 @@ loginButton.addEventListener("click", ()=>{
         }, 2000);
     }
     else {
+        saveSetting("save_id", userIdSave);
+        saveSetting("auto_login", userAuto);
+
+        if (userIdSave || userAuto) {
+            saveSetting("user_id", userId)
+        }
+        if (userAuto) {
+            sv = encrypt(userPass);
+            saveSetting("user_pass", sv);
+        }
+
         console.log("login: ", userId, userIdSave, userPass, userAuto);
+
+        loginRequest(userId, userPass);
     }
-})
+}
+
+/// ######################### electron ######################### ////
+
+let isLoginRequest = false;
+
+function loginRequest(userId, userPass) {
+    if (isLoginRequest === false) {
+        loginButton.innerHTML = '<div class="progress-circle-indeterminate" style="width:25%; height:100%;"></div>';
+        document.querySelector("#userId").readOnly = true; 
+        document.querySelector("#userPass").readOnly = true;
+        autoSwitchery.disable();
+        idSaveSwitchery.disable();
+        isLoginRequest = true;
+        
+        ipcRenderer.send("loginReq", {
+            userId: userId,
+            userPass: userPass
+        });
+    }
+}
+
+ipcRenderer.on("loginRes", (event, message) => {
+    loginButton.innerHTML = '로그인';
+    document.querySelector("#userId").readOnly = false; 
+    document.querySelector("#userPass").readOnly = false;
+    $("#userPass").val("")
+    autoSwitchery.enable();
+    idSaveSwitchery.enable();
+    isLoginRequest = false;
+
+    if (message.err) {
+        $('body').pgNotification({
+            style: "circle",
+            timeout: 2000,
+            message: message.errMessage,
+            type: "danger"
+        }).show();
+        return;
+    }
+
+    console.log("data", message.data);
+});

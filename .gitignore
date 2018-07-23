@@ -1,3 +1,5 @@
 node_modules
+
+node_my_modules/.setting.json
 node_my_modules/.config.json
 node_my_modules/mailbox/*

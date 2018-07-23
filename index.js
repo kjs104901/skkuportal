@@ -1,4 +1,6 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+
+const icampus = require("./node_my_modules/icampus");
 
 const colorSkkuBackground = "#184247";
 const colorSkkuBackgroundDoom = "#3D7178";
@@ -21,3 +23,41 @@ app.on('ready', () => {
         win.webContents.openDevTools();
     })
 });
+
+
+//// ---- IPC ---- ////
+ipcMain.on("loginReq", (event, message) => {
+    const timeoutSecond = 10;
+    let timeoutSent = false;
+
+    const userId = message.userId;
+    const userPass = message.userPass;
+
+    const timeout = setTimeout(() => {
+        timeoutSent = true;
+        event.sender.send("loginRes", {
+            err: "timeOut",
+            errMessage: "요청 시간이 초과되었습니다"
+        })
+
+    }, timeoutSecond * 1000);
+
+    icampus.loginDirect(userId, userPass, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false){
+            if (result) {
+                event.sender.send("loginRes", {
+                    data: {
+                        success: true
+                    }
+                })
+            }
+            else {
+                event.sender.send("loginRes", {
+                    err: "loingFailed",
+                    errMessage: "로그인에 실패했습니다"
+                })
+            }
+        }
+    });
+})

@@ -19,6 +19,7 @@ body {
 
 #login-button {
     width: 100%;
+    height: 35px;
     background-color: #184247;
     border-color: #184247;
 }

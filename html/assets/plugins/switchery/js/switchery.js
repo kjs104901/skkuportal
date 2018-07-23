@@ -1551,3 +1551,32 @@ if (typeof exports == "object") {
   (this || window)["Switchery"] = require("switchery");
 }
 })()
+
+
+/**
+ * Enable disabled switch element.
+ *
+ * @api public
+ */
+
+Switchery.prototype.enable = function() {
+  if (!this.options.disabled) return;
+  if (this.options.disabled) this.options.disabled = false;
+  if (this.element.disabled) this.element.disabled = false;
+  if (this.element.readOnly) this.element.readOnly = false;
+  this.switcher.style.opacity = 1;
+};
+
+/**
+ * Disable switch element.
+ *
+ * @api public
+ */
+
+Switchery.prototype.disable = function() {
+  if (this.options.disabled) return;
+  if (!this.options.disabled) this.options.disabled = true;
+  if (!this.element.disabled) this.element.disabled = true;
+  if (!this.element.readOnly) this.element.readOnly = true;
+  this.switcher.style.opacity = this.options.disabledOpacity;
+};
