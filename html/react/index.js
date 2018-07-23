@@ -3,4 +3,5 @@ import ReactDom from 'react-dom';
 
 import App from './App'
 
-ReactDom.render(<App />, document.querySelector('#root'));
+let k = 1;
+ReactDom.render(<App test={k} />, document.querySelector('#root'));

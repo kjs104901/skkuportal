@@ -17,11 +17,11 @@ class App extends React.Component {
 
     render() {
         return (
-            <div className='app'>
+            <React.Fragment>
                 <SideBar menuGoto={this.menuGoto} menuIndex={this.state.menuIndex} />
                 <MainPage menuGoto={this.menuGoto} menuIndex={this.state.menuIndex} />
                 <QuickView />
-            </div>
+            </React.Fragment>
         )
     }
 }

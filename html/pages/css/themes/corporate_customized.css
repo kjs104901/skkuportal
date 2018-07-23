@@ -137,7 +137,7 @@ body.menu-pin .overlay .overlay-brand {
 .page-container .page-content-wrapper .content {
   /* Content holder */
   z-index: 10;
-  padding-top: 60px;
+  padding-top: 40px;
   padding-bottom: 69px;
   min-height: 100%;
   -webkit-transition: all 0.3s ease;
@@ -408,13 +408,13 @@ body.menu-pin .overlay .overlay-brand {
   flex-shrink: 0;
 }
 .horizontal-app-menu .header .header-inner {
-  height: 60px;
+  height: 40px;
   background-color: transparent;
   position: relative;
   color: #85858e;
 }
 .horizontal-app-menu .header .header-lg-height {
-  height: 60px;
+  height: 40px;
 }
 .horizontal-app-menu .header .header-md-height {
   height: 50px;
@@ -588,7 +588,7 @@ body.menu-pin .overlay .overlay-brand {
   left: -4px;
   min-width: calc(100% + 4px);
   padding: 0 25px;
-  padding-top: 60px;
+  padding-top: 40px;
   padding-bottom: 18px;
   background: #fff;
   z-index: 1;
@@ -1137,7 +1137,7 @@ body.menu-pin .overlay .overlay-brand {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  height: 60px;
+  height: 40px;
   width: 100%;
   padding: 0 20px 0 0;
   z-index: 800;
@@ -1533,8 +1533,8 @@ body.sidebar-visible .page-sidebar .sidebar-header .sidebar-header-controls {
 .page-sidebar .sidebar-header {
   /* Side-bar header */
   display: block;
-  height: 60px;
-  line-height: 60px;
+  height: 40px;
+  line-height: 40px;
   background-color: #2d2d32;
   border-bottom: 1px solid #29292d;
   color: #fff;
@@ -4355,7 +4355,7 @@ Misc buttons
 */
 /* Pages Notification customizations */
 body:not(.horizontal-app-menu) .pgn-wrapper[data-position="top"] {
-  top: 60px;
+  top: 40px;
   left: 70px;
 }
 body:not(.horizontal-app-menu) .pgn-wrapper[data-position="bottom"] {
@@ -4492,7 +4492,7 @@ body.horizontal-app-menu .pgn-wrapper {
   border-radius: 300px;
   animation: fadeInCircle 0.3s ease forwards, resizeCircle 0.3s 0.4s cubic-bezier(0.25, 0.25, 0.4, 1.6) forwards;
   -webkit-animation: fadeInCircle 0.3s ease forwards, resizeCircle 0.3s 0.4s cubic-bezier(0.25, 0.25, 0.4, 1.6) forwards;
-  height: 60px;
+  height: 40px;
   overflow: hidden;
   padding: 6px 55px 6px 6px;
   -webkit-transform: translateZ(0);
@@ -8990,7 +8990,7 @@ div.cs-skin-slide .cs-options ul li.cs-selected span {
   position: absolute;
   left: 0;
   right: 0;
-  top: 60px;
+  top: 40px;
   bottom: 0;
   background: transparent;
 }
@@ -13906,7 +13906,7 @@ Main components
     display: inline-block;
   }
   .pace .pace-activity {
-    top: 60px;
+    top: 40px;
   }
   .page-container {
     padding-left: 0;
@@ -13950,7 +13950,7 @@ Main components
     padding: 20px;
     position: absolute;
     right: 0;
-    top: 60px;
+    top: 40px;
     z-index: 9999;
     display: none;
     border-radius: 10px;
@@ -14056,7 +14056,7 @@ Main components
 /* Landscape view of all tablet devices */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
   .page-container .page-content-wrapper .content {
-    padding-top: 60px;
+    padding-top: 40px;
   }
   body.box-layout > .container {
     width: 100%;
@@ -14075,7 +14075,7 @@ Main components
     padding: 20px;
     position: absolute;
     right: 0;
-    top: 60px;
+    top: 40px;
     z-index: 9999;
     display: none;
     border-radius: 10px;
@@ -14315,7 +14315,7 @@ Main components
     padding: 20px;
     position: absolute;
     right: 0;
-    top: 60px;
+    top: 40px;
     z-index: 9999;
     display: none;
     border-radius: 10px;
