@@ -1,7 +1,7 @@
 const { remote, ipcRenderer } = require('electron');
 const { BrowserWindow } = remote;
 
-const { saveSetting, loadSetting, encrypt } = require("../node_my_modules/util.js");
+const { saveSetting, loadSetting, encrypt, decrypt } = require("../node_my_modules/util.js");
 
 /// header buttons ///
 let minButton = document.querySelector("#minimize-button");
@@ -40,6 +40,14 @@ autoCheckBox.onchange = function() {
     }
 };
 
+idSaveCheckBox.onchange = function() {
+    if (autoCheckBox.checked) {
+        if (idSaveCheckBox.checked === false) {
+            $("#id-save-check-box").click();
+        }
+    }
+};
+
 /// load switchery setting ///
 const settingAutoLogin = loadSetting("auto_login");
 if ((settingAutoLogin === true) && (autoCheckBox.checked == false)) {
@@ -50,14 +58,12 @@ else if ((settingAutoLogin === false) && (autoCheckBox.checked == true)) {
 }
 
 const settingSaveId = loadSetting("save_id");
-console.log("settingSaveId", settingSaveId);
 if ((settingSaveId === true) && (idSaveCheckBox.checked == false)) {
     $("#id-save-check-box").click();
 } 
 else if ((settingSaveId === false) && (idSaveCheckBox.checked == true)) {
     $("#id-save-check-box").click();
 }
-
 
 /// pop ove ///
 let idOptions = {
@@ -83,16 +89,16 @@ $(document).mouseup((e) => {
 
 /// login button ///
 let loginButton = document.querySelector("#login-button");
-loginButton.addEventListener("click", loingTry)
+loginButton.addEventListener("click", loginTry)
 
 $("#login-form-group").keypress(function(event) {
     if (event.which == 13) {
         event.preventDefault();
-        loingTry();
+        loginTry();
     }
 });
 
-function loingTry() {
+function loginTry() {
     let userId = $("#userId").val();
     let userIdSave = $("#id-save-check-box").is(":checked");
     let userPass = $("#userPass").val();
@@ -128,9 +134,24 @@ function loingTry() {
     }
 }
 
-/// ######################### electron ######################### ////
-
 let isLoginRequest = false;
+
+/// id save // auto login ///
+if (settingSaveId || settingAutoLogin) {
+    const loadUserId = loadSetting("user_id");
+    $("#userId").val(loadUserId);
+}
+if (settingAutoLogin) {
+    const enLoadUserPass = loadSetting("user_pass");
+    if (0 < enLoadUserPass.length) {
+        const loadUserPass = decrypt(enLoadUserPass);
+        $("#userPass").val(loadUserPass);
+    
+        loginTry();
+    }
+}
+
+/// ######################### electron ######################### ////
 
 function loginRequest(userId, userPass) {
     if (isLoginRequest === false) {
@@ -164,8 +185,12 @@ ipcRenderer.on("loginRes", (event, message) => {
             message: message.errMessage,
             type: "danger"
         }).show();
+
+        saveSetting("user_pass", "");
         return;
     }
 
-    console.log("data", message.data);
+    if (message.data.success) {
+        ipcRenderer.send("gotoMain", true);
+    }
 });

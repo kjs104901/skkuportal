@@ -6,8 +6,11 @@ const colorSkkuBackground = "#184247";
 const colorSkkuBackgroundDoom = "#3D7178";
 const colorSkkuLogo = "#FFD661";
 
+let loginWindow;
+let mainWindow;
+
 app.on('ready', () => {
-    win = new BrowserWindow({
+    loginWindow = new BrowserWindow({
         width: 1200,
         height: 600,
         frame: false,
@@ -16,14 +19,13 @@ app.on('ready', () => {
         backgroundColor: colorSkkuBackground,
     });
 
-    win.loadFile('./html/login.html');
+    loginWindow.loadFile('./html/login.html');
 
-    win.once('ready-to-show', () => {
-        win.show();
-        win.webContents.openDevTools();
+    loginWindow.once('ready-to-show', () => {
+        loginWindow.show();
+        loginWindow.webContents.openDevTools();
     })
 });
-
 
 //// ---- IPC ---- ////
 ipcMain.on("loginReq", (event, message) => {
@@ -60,4 +62,24 @@ ipcMain.on("loginReq", (event, message) => {
             }
         }
     });
-})
+});
+
+ipcMain.on("gotoMain", (event, message) => {
+    mainWindow = new BrowserWindow({
+        width: 1500,
+        height: 800,
+        frame: false,
+        show: false,
+        resizable: false,
+        backgroundColor: "#FFFFFF",
+    });
+
+    loginWindow.close();
+
+    mainWindow.loadFile('./html/temp.html');
+    
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+        mainWindow.webContents.openDevTools();
+    })
+});
