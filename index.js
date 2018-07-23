@@ -9,6 +9,8 @@ const colorSkkuLogo = "#FFD661";
 let loginWindow;
 let mainWindow;
 
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
 app.on('ready', () => {
     loginWindow = new BrowserWindow({
         width: 1200,
