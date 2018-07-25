@@ -30,6 +30,14 @@ export default class MainHeader extends React.Component {
                             <a href="#" className="header-icon fas fa-university" onClick={openSkkuHomepage}></a>
                         </li>
                     </ul>
+                    <ul className="hidden-md-down notification-list no-margin hidden-sm-down b-grey b-l b-r no-style p-l-20 p-r-20" id = "header-link">
+                        <li className="p-r-10 inline">
+                            <a href="#" className="header-icon fas fa-home" onClick={openHompage}></a>
+                        </li>
+                        <li className="p-r-10 inline">
+                            <a href="#" className="header-icon fas fa-university" onClick={openSkkuHomepage}></a>
+                        </li>
+                    </ul>
                 </div>
 
                 <div className="d-flex align-items-center">

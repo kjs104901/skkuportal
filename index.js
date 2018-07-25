@@ -94,7 +94,45 @@ const reLoginFailed = () => {
     loginWindowOpen();
 }
 
-//// ------------ IPC ------------ ////
+//// ------------ checkLoginElseTry ------------ ////
+
+const checkLoginElseTryIcampus = (callback) => {
+    icampus.loginCheck((result) => {
+        if (result == true) {
+            callback(true);
+        }
+        else {
+            icampus.loginDirect(userId, userPass, (result) => {
+                if (result) {
+                    callback(true);
+                }
+                else {
+                    callback(false);
+                }
+            });
+        }
+    })
+}
+
+const checkLoginElseTryPortal = (callback) => {
+    portal.loginCheck((result) => {
+        if (result == true) {
+            callback(true);
+        }
+        else {
+            portal.login(userId, userPass, (result) => {
+                if (result) {
+                    callback(true);
+                }
+                else {
+                    callback(false);
+                }
+            });
+        }
+    })
+}
+
+//// ------------ IPC frontend ------------ ////
 ipcMain.on("loginReq", (event, message) => {
     userId = message.userId;
     userPass = message.userPass;
@@ -130,7 +168,6 @@ ipcMain.on("openGLSReq", (event, message) => {
     });
 });
 
-
 ipcMain.on("icampusClassListReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "openGLSRes", 10, () => {
@@ -145,9 +182,10 @@ ipcMain.on("icampusClassListReq", (event, message) => {
     });
 })
 
-//// ------------ IPC functions ------------ ////
+//// ------------ IPC backend functions ------------ ////
 
 const loginReqest = (userId, userPass, callback) => {
+    portal.login(userId, userPass, (result) => {});
     icampus.loginDirect(userId, userPass, (result) => {
         if (result) {
             callback({
@@ -166,7 +204,7 @@ const loginReqest = (userId, userPass, callback) => {
 }
 
 const openGLSRequest = (callback) => {
-    portal.portalLogin(userId, userPass, (result) => {
+    checkLoginElseTryPortal((result) => {
         if (result) {
             gls.setGlobalVal(portal.getGlobalVal(), (result) => {
                 if (result == true) {
@@ -188,27 +226,16 @@ const openGLSRequest = (callback) => {
 }
 
 const icampusClassListRequest = (callback) => {
-    icampus.loginCheck((result) => {
-        if (result == true) {
-            getClassList();
+    checkLoginElseTryIcampus((result) => {
+        if (result) {
+            icampus.getClassList(2018, 10, (result)=>{
+                callback({
+                    data: result
+                });
+            })
         }
         else {
-            icampus.loginDirect(userId, userPass, (result) => {
-                if (result) {
-                    getClassList();
-                }
-                else {
-                    reLoginFailed();
-                }
-            });
+            reLoginFailed();
         }
-    })
-
-    const getClassList = () => {
-        icampus.getClassList(2018, 1, (result)=>{
-            callback({
-                data: result
-            });
-        })
-    }
+    });
 }

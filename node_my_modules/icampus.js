@@ -10,6 +10,8 @@ exports.NOTICE = 2;
 exports.MATERIAL = 4;
 exports.ASSIGNMENT = 6;
 
+let semesterList = [];
+
 const loginURL = "https://admin.skku.edu/co/COCOUsrLoginAction.do";
 let loginForm = {
     method: "loginHide",
@@ -143,8 +145,25 @@ exports.loginDirect = (userId, userPwd, callback) => {
                 else if (response.statusCode === 200) {
                     const encodingType = charset(response.headers, body);
                     const encodedBody = iconv.decode(body, encodingType);
-
+                    
+                    const fs = require('fs');
+                    fs.writeFile("encodedBody.html", encodedBody);
+                    fs.writeFile("body.html", body);
+                    
                     if (-1 < encodedBody.indexOf("로그아웃")) {
+
+                        semesterList = [];
+                        crawler.setTargetStr(encodedBody);
+                        const listStr = crawler.getBetween("<select name=\"selYear\"", "</select>");
+                        crawler.setTargetStr(listStr);
+                        while (-1 < crawler.getTargetStr().indexOf("<option value=\"")) {
+                            const semesterStr = crawler.getBetweenMoveTarget("<option value=\"", "\"");
+                            const semesterInfo = semesterStr.split("|");
+                            semesterList.push({
+                                year: semesterInfo[0] * 1,
+                                semester: semesterInfo[1] * 1
+                            });
+                        }
                         callback(true);
                     }
                     else {
@@ -163,7 +182,7 @@ exports.loginCheck = (callback) => {
 
     request(
         {
-            url: loginCheckMainURL,
+            url: loginCheckURL,
             headers: crawler.getNormalHeader(),
             method: "GET",
             jar: crawler.getCookieJar(),
@@ -190,6 +209,10 @@ exports.loginCheck = (callback) => {
     );
 };
 
+exports.getSemesterList = () => {
+    return semesterList;
+}
+
 exports.getClassListCurrent = (callback) => {
     _getClassList(-1, -1, callback);
 };
@@ -199,7 +222,7 @@ function _getClassList(year, semester, callback) {
     let getClassListURL = "http://www.icampus.ac.kr/front/mypage/CourseAction.do?method=list";
     if (0 < year && 0 < semester) {
         getClassListURL += "&hthyrY=" + year;
-        getClassListURL += "&hyrSeme=" + semester * 10;
+        getClassListURL += "&hyrSeme=" + semester;
     }
 
     let resultClassList = [];
@@ -276,7 +299,9 @@ function _getClassList(year, semester, callback) {
                         },
                         identity: classIDInfo
                     }
-                    resultClassList.push(classElement);
+                    if (classElement.name){
+                        resultClassList.push(classElement);
+                    }
                 });
                 callback(resultClassList);
             } else {

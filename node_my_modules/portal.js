@@ -10,7 +10,7 @@ let studentDepartment = "";
 let globalVal = "";
 
 
-exports.portalLogin = (userId, userPwd, callback) => {
+exports.login = (userId, userPwd, callback) => {
     const loginMainURL = "https://admin.skku.edu/co/COCOUsrLoginAction.do";
     const loginMainForm = {
         method: "loginMain",
@@ -344,6 +344,35 @@ exports.portalLogin = (userId, userPwd, callback) => {
     }
 };
 
+exports.loginCheck = (callback) => {
+    const loginCheckURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_Default1.jsp";
+
+    request(
+        {
+            url: loginCheckURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar(),
+            encoding: null
+        }, (error, response, body) => {
+            if (response.statusCode === 200) {
+                const encodingType = charset(response.headers, body);
+                const encodedBody = iconv.decode(body, encodingType);
+                
+                console.log(encodedBody);
+
+                if (-1 < encodedBody.indexOf("다시 로그인")) {
+                    callback(false);
+                }
+                else {
+                    callback(true);
+                }
+            } else {
+                callback(false);
+            }
+        }
+    );
+}
 
 exports.getName = () => {
     return studentName;
