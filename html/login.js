@@ -128,8 +128,6 @@ function loginTry() {
             saveSetting("user_pass", sv);
         }
 
-        console.log("login: ", userId, userIdSave, userPass, userAuto);
-
         loginRequest(userId, userPass);
     }
 }

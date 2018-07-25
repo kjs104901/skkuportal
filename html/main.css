@@ -28,6 +28,13 @@
 
 #header-link {
     -webkit-app-region: no-drag;
+    -webkit-user-select: none;
+}
+
+#header-link-button {
+    -webkit-app-region: no-drag;
+    -webkit-user-select: none;
+    cursor: pointer;
 }
 
 .quickview-wrapper .nav-tabs {

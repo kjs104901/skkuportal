@@ -154,6 +154,15 @@ ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
 });
 
+ipcMain.on("studentInfoReq", (event, message) => {
+    event.sender.send("studentInfoRes", {
+        data: {
+            name: portal.getName(),
+            department: portal.getDepartment()
+        }
+    });
+});
+
 ipcMain.on("openGLSReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "openGLSRes", 10, () => {
@@ -205,19 +214,30 @@ const loginReqest = (userId, userPass, callback) => {
 
 const openGLSRequest = (callback) => {
     checkLoginElseTryPortal((result) => {
+        console.log("checkLoginElseTryPortal", result);
         if (result) {
-            gls.setGlobalVal(portal.getGlobalVal(), (result) => {
-                if (result == true) {
-                    gls.setImage();
-                    gls.executeGLS((result) => {});
-
-                    callback({
-                        data: {
-                            success: true
+            portal.getGlobalVal((globalVal) => {
+                if (0 < globalVal.length) {
+                    gls.setGlobalVal(globalVal, (result) => {
+                        if (result == true) {
+                            gls.setImage();
+                            gls.executeGLS((result) => {});
+        
+                            callback({
+                                data: {
+                                    success: true
+                                }
+                            })
                         }
-                    })
+                    });
                 }
-            });
+                else {
+                    callback({
+                        err: "getGlobalValFailed",
+                        errMessage: "인증정보를 얻지 못했습니다"
+                    });
+                }
+            })
         }
         else {
             reLoginFailed();

@@ -146,10 +146,6 @@ exports.loginDirect = (userId, userPwd, callback) => {
                     const encodingType = charset(response.headers, body);
                     const encodedBody = iconv.decode(body, encodingType);
                     
-                    const fs = require('fs');
-                    fs.writeFile("encodedBody.html", encodedBody);
-                    fs.writeFile("body.html", body);
-                    
                     if (-1 < encodedBody.indexOf("로그아웃")) {
 
                         semesterList = [];

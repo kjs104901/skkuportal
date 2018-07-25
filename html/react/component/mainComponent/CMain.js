@@ -3,7 +3,16 @@ import React from 'react';
 export default class CMain extends React.Component {
     render() {
         return (
-            <h1>메인 페이지 입니다</h1>
+            <div className="container-fluid padding-20">
+                <div className="row">
+                    <div className="col-6">
+                        아이캠퍼스 영역
+                    </div>
+                    <div className="col-6">
+                        날씨 영역
+                    </div>
+                </div>
+            </div>
         )
     }
 }

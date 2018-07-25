@@ -7,8 +7,13 @@ const { crawler } = require('./util.js');
 
 let studentName = "";
 let studentDepartment = "";
-let globalVal = "";
+exports.getName = () => {
+    return studentName;
+}
 
+exports.getDepartment = () => {
+    return studentDepartment;
+}
 
 exports.login = (userId, userPwd, callback) => {
     const loginMainURL = "https://admin.skku.edu/co/COCOUsrLoginAction.do";
@@ -213,129 +218,7 @@ exports.login = (userId, userPwd, callback) => {
                 studentName = nameDepartArr[0];
                 studentDepartment = nameDepartArr[1];
 
-                getGLS()
-            }
-        }
-        else {
-            callback(false);
-        }
-    }
-
-    function getGLS() {
-        const GLSURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_setCert_post.jsp?type=1&method=SEED&url=https%3A%2F%2Fadmin.skku.edu%2Fco%2FCOCOUsrLoginAction.do%3Fmethod%3DloginGenMP";
-        request(
-            {
-                url: GLSURL,
-                headers: crawler.getNormalHeader(),
-                method: "GET",
-                jar: crawler.getCookieJar()
-            },
-            getGLSCallback
-        );
-    }
-
-    function getGLSCallback (error, response, body) {
-        if (error) {
-            callback(false);
-            return;
-        }
-        else if (response.statusCode){    
-            crawler.setTargetStr(body);
-            roundkey2 = crawler.getBetweenMoveTarget("var roundkey_c = \"", "\"");
-            if (0 < roundkey2.length) {
-                getGLSLogin(roundkey2);
-            }
-            else {
-                callback(false);
-            }
-        }
-        else {
-            callback(false);
-        }
-    }
-
-    function getGLSLogin(roundkey2) {
-        const getGLSLoginURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_setCert_post_new.jsp";
-        const getGLSLoginForm = {
-            roundkey: roundkey2,
-            url: "https://admin.skku.edu/co/COCOUsrLoginAction.do?method=loginGenMP",
-            pmethod: "SEED"
-        };
-        request(
-            {
-                url: getGLSLoginURL,
-                headers: crawler.getNormalHeader(),
-                form: getGLSLoginForm,
-                method: "POST",
-                jar: crawler.getCookieJar()
-            },
-            getGLSLoginCallback
-        );
-    }
-
-    function getGLSLoginCallback (error, response, body) {
-        if (error) {
-            callback(false);
-            return;
-        }
-        else if (response.statusCode === 200) {
-            crawler.setTargetStr(body);
-
-            crawler.moveTargetAfter('name="D0"');
-            let D0 = crawler.getBetweenMoveTarget('value="', '"');
-            crawler.moveTargetAfter('name="D1"');
-            let D1 = crawler.getBetweenMoveTarget('value="', '"');
-            crawler.moveTargetAfter('name="D2"');
-            let D2 = crawler.getBetweenMoveTarget('value="', '"');
-            crawler.moveTargetAfter('name="D3"');
-            let D3 = crawler.getBetweenMoveTarget('value="', '"');
-            crawler.moveTargetAfter('name="userid"');
-            let userid = crawler.getBetweenMoveTarget('value="', '"');
-            crawler.moveTargetAfter('name="roundkey"');
-            let roundkey3 = crawler.getBetweenMoveTarget('value="', '"');
-            crawler.moveTargetAfter('name="color_style"');
-            let color_style = crawler.getBetweenMoveTarget('value="', '"');
-
-            const getGLSFinalURL = "https://admin.skku.edu/co/COCOUsrLoginAction.do?method=loginGenMP";
-            const getGLSFinalForm = {
-                D0: D0,
-                D1: D1,
-                D2: D2,
-                D3: D3,
-                userid: userid,
-                roundkey: roundkey3,
-                color_style: color_style
-            };
-
-            request(
-                {
-                    url: getGLSFinalURL,
-                    headers: crawler.getNormalHeader(),
-                    form: getGLSFinalForm,
-                    method: "POST",
-                    jar: crawler.getCookieJar()
-                },
-                getGLSFinalCallback
-            );
-        }
-        else {
-            callback(false);
-        }
-    }
-
-    function getGLSFinalCallback (error, response, body) {
-        if (error) {
-            callback(false);
-            return;
-        }
-        else if (response.statusCode === 200) {
-            crawler.setTargetStr(body);
-            globalVal = crawler.getBetweenMoveTarget('MiInstaller.GlobalVal = "', '"');
-            if (0 < globalVal.length) {
                 callback(true);
-            }
-            else {
-                callback(false);
             }
         }
         else {
@@ -359,8 +242,6 @@ exports.loginCheck = (callback) => {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
                 
-                console.log(encodedBody);
-
                 if (-1 < encodedBody.indexOf("다시 로그인")) {
                     callback(false);
                 }
@@ -374,14 +255,124 @@ exports.loginCheck = (callback) => {
     );
 }
 
-exports.getName = () => {
-    return studentName;
-}
+exports.getGlobalVal = (callback) => {
+    const GLSURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_setCert_post.jsp?type=1&method=SEED&url=https%3A%2F%2Fadmin.skku.edu%2Fco%2FCOCOUsrLoginAction.do%3Fmethod%3DloginGenMP";
+    request(
+        {
+            url: GLSURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar()
+        },
+        getGlobalValCallback
+    );
 
-exports.getDepartment = () => {
-    return studentDepartment;
-}
+    function getGlobalValCallback (error, response, body) {
+        if (error) {
+            callback("");
+            return;
+        }
+        else if (response.statusCode){    
+            crawler.setTargetStr(body);
+            roundkey2 = crawler.getBetweenMoveTarget("var roundkey_c = \"", "\"");
+            if (0 < roundkey2.length) {
+                getGlobalValLogin(roundkey2);
+            }
+            else {
+                callback("");
+            }
+        }
+        else {
+            callback("");
+        }
+    }
 
-exports.getGlobalVal = () => {
-    return globalVal;
+    function getGlobalValLogin(roundkey2) {
+        const getGlobalValLoginURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_setCert_post_new.jsp";
+        const getGlobalValLoginForm = {
+            roundkey: roundkey2,
+            url: "https://admin.skku.edu/co/COCOUsrLoginAction.do?method=loginGenMP",
+            pmethod: "SEED"
+        };
+        request(
+            {
+                url: getGlobalValLoginURL,
+                headers: crawler.getNormalHeader(),
+                form: getGlobalValLoginForm,
+                method: "POST",
+                jar: crawler.getCookieJar()
+            },
+            getGlobalValLoginCallback
+        );
+    }
+
+    function getGlobalValLoginCallback (error, response, body) {
+        if (error) {
+            callback("");
+            return;
+        }
+        else if (response.statusCode === 200) {
+            crawler.setTargetStr(body);
+
+            crawler.moveTargetAfter('name="D0"');
+            let D0 = crawler.getBetweenMoveTarget('value="', '"');
+            crawler.moveTargetAfter('name="D1"');
+            let D1 = crawler.getBetweenMoveTarget('value="', '"');
+            crawler.moveTargetAfter('name="D2"');
+            let D2 = crawler.getBetweenMoveTarget('value="', '"');
+            crawler.moveTargetAfter('name="D3"');
+            let D3 = crawler.getBetweenMoveTarget('value="', '"');
+            crawler.moveTargetAfter('name="userid"');
+            let userid = crawler.getBetweenMoveTarget('value="', '"');
+            crawler.moveTargetAfter('name="roundkey"');
+            let roundkey3 = crawler.getBetweenMoveTarget('value="', '"');
+            crawler.moveTargetAfter('name="color_style"');
+            let color_style = crawler.getBetweenMoveTarget('value="', '"');
+
+            const getGlobalValFinalURL = "https://admin.skku.edu/co/COCOUsrLoginAction.do?method=loginGenMP";
+            const getGlobalValFinalForm = {
+                D0: D0,
+                D1: D1,
+                D2: D2,
+                D3: D3,
+                userid: userid,
+                roundkey: roundkey3,
+                color_style: color_style
+            };
+
+            request(
+                {
+                    url: getGlobalValFinalURL,
+                    headers: crawler.getNormalHeader(),
+                    form: getGlobalValFinalForm,
+                    method: "POST",
+                    jar: crawler.getCookieJar()
+                },
+                getGlobalValFinalCallback
+            );
+        }
+        else {
+            callback("");
+        }
+    }
+
+    function getGlobalValFinalCallback (error, response, body) {
+        if (error) {
+            callback("");
+            return;
+        }
+        else if (response.statusCode === 200) {
+            crawler.setTargetStr(body);
+            globalVal = crawler.getBetweenMoveTarget('MiInstaller.GlobalVal = "', '"');
+            if (0 < globalVal.length) {
+                callback(globalVal);
+            }
+            else {
+                callback("");
+            }
+        }
+        else {
+            callback("");
+        }
+    }
 }
