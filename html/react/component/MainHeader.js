@@ -4,12 +4,10 @@ const { shell } = require('electron');
 
 let openHompage = () => {
     shell.openExternal("http://lemon-puppy.com");
-    console.log("1?")
 }
 
 let openSkkuHomepage = () => {
     shell.openExternal("http://www.skku.edu");
-    console.log("2?")
 }
 
 export default class MainHeader extends React.Component {

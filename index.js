@@ -77,10 +77,10 @@ app.on('ready', () => {
     loginWindowOpen();
 });
 
-const reserveTimeoutSend = (event, messageType, timeoutSecond, callback) => {
+const reserveTimeoutSend = (sender, messageType, timeoutSecond, callback) => {
     const timeout = setTimeout(() => {
         timeoutSent = true;
-        event.sender.send(messageType, {
+        sender.send(messageType, {
             err: "timeOut",
             errMessage: "요청 시간이 초과되었습니다"
         })
@@ -100,26 +100,14 @@ ipcMain.on("loginReq", (event, message) => {
     userPass = message.userPass;
 
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event, "loginRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "loginRes", 10, () => {
         timeoutSent = true;
     })
 
-    icampus.loginDirect(userId, userPass, (result) => {
+    loginReqest(userId, userPass, (result)=>{
         clearTimeout(timeout);
         if (timeoutSent === false) {
-            if (result) {
-                event.sender.send("loginRes", {
-                    data: {
-                        success: true
-                    }
-                })
-            }
-            else {
-                event.sender.send("loginRes", {
-                    err: "loginFailed",
-                    errMessage: "로그인에 실패했습니다"
-                })
-            }
+            event.sender.send("loginRes", result);
         }
     });
 });
@@ -130,39 +118,14 @@ ipcMain.on("gotoMain", (event, message) => {
 
 ipcMain.on("openGLSReq", (event, message) => {
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event, "openGLSRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "openGLSRes", 10, () => {
         timeoutSent = true;
     });
 
-    portal.portalLogin(userId, userPass, (result) => {
-        if (result) {
-            console.log("login success");
-            gls.setGlobalVal(portal.getGlobalVal(), (result) => {
-                if (result == true) {
-                    clearTimeout(timeout);
-                    if (timeoutSent === false) {
-                        gls.setImage();
-                        gls.executeGLS((result) => {
-                            if (result == true) {
-                                console.log("Well finished")
-                            }
-                        });
-
-                        event.sender.send("openGLSRes", {
-                            data: {
-                                success: true
-                            }
-                        })
-                    }
-                }
-            });
-        }
-        else {
-            console.log("login failed");
-            event.sender.send("openGLSRes", {
-                err: "loginFailed",
-                errMessage: "로그인에 실패했습니다"
-            })
+    openGLSRequest((result)=>{
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("openGLSRes", result);
         }
     });
 });
@@ -170,41 +133,82 @@ ipcMain.on("openGLSReq", (event, message) => {
 
 ipcMain.on("icampusClassListReq", (event, message) => {
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event, "openGLSRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "openGLSRes", 10, () => {
         timeoutSent = true;
     });
 
-    console.log("icampusClassListReq get");
+    icampusClassListRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("icampusClassListRes", result);
+        }
+    });
+})
 
+//// ------------ IPC functions ------------ ////
+
+const loginReqest = (userId, userPass, callback) => {
+    icampus.loginDirect(userId, userPass, (result) => {
+        if (result) {
+            callback({
+                data: {
+                    success: true
+                }
+            });
+        }
+        else {
+            callback({
+                err: "loginFailed",
+                errMessage: "로그인에 실패했습니다"
+            });
+        }
+    });
+}
+
+const openGLSRequest = (callback) => {
+    portal.portalLogin(userId, userPass, (result) => {
+        if (result) {
+            gls.setGlobalVal(portal.getGlobalVal(), (result) => {
+                if (result == true) {
+                    gls.setImage();
+                    gls.executeGLS((result) => {});
+
+                    callback({
+                        data: {
+                            success: true
+                        }
+                    })
+                }
+            });
+        }
+        else {
+            reLoginFailed();
+        }
+    });
+}
+
+const icampusClassListRequest = (callback) => {
     icampus.loginCheck((result) => {
         if (result == true) {
             getClassList();
         }
         else {
             icampus.loginDirect(userId, userPass, (result) => {
-                clearTimeout(timeout);
-                if (timeoutSent === false) {
-                    if (result) {
-                        getClassList();
-                    }
-                    else {
-                        reLoginFailed();
-                    }
+                if (result) {
+                    getClassList();
+                }
+                else {
+                    reLoginFailed();
                 }
             });
         }
     })
-    console.log("Login..");
 
-    let getClassList = () => {
+    const getClassList = () => {
         icampus.getClassList(2018, 1, (result)=>{
-            clearTimeout(timeout);
-            if (timeoutSent === false) {
-                event.sender.send("icampusClassListRes", {
-                    data: result
-                })
-                console.log("icampusClassListRes send");
-            }
+            callback({
+                data: result
+            });
         })
     }
-})
+}
