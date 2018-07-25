@@ -70,13 +70,14 @@ exports.getEmailList = (userId, userPass, callback) => {
                     from: "",
                     to: "",
                     date: "",
+                    body: "",
                     attachments: []
                 };
             }
 
             if (msgcount > 0) {
                 totalNumber = msgcount;
-                currentNumber = 1;
+                currentNumber = totalNumber;
                 retrvStart();
             }
             else {
@@ -88,20 +89,20 @@ exports.getEmailList = (userId, userPass, callback) => {
     });
 
     let retrvStart = () => {
-        if (currentNumber <= totalNumber) {
+        if (0 < currentNumber) {
             if (fs.existsSync(mailBoxDir + emailList[currentNumber].id  + ".json")){
                 fs.readFile(mailBoxDir + emailList[currentNumber].id  + ".json", (err, data) => {
                     if (!err) {
                         emailList[currentNumber] = JSON.parse(data);
                     }
 
-                    currentNumber += 1;
+                    currentNumber -= 1;
                     retrvStart();
                 });
             }
             else {
                 popClient.retr(currentNumber);
-                currentNumber += 1;
+                currentNumber -= 1;
             }
         }
         else {
@@ -157,7 +158,7 @@ exports.getEmailList = (userId, userPass, callback) => {
                 }
 
                 emailList[msgnumber].status = true;
-                if ('title' in mail) {
+                if ('subject' in mail) {
                     emailList[msgnumber].title = mail.subject;
                 }
                 if ('from' in mail) {
@@ -169,6 +170,7 @@ exports.getEmailList = (userId, userPass, callback) => {
                 if ('date' in mail) {
                     emailList[msgnumber].date = mail.date;
                 }
+                emailList[msgnumber].body = bodyStr;
                 emailList[msgnumber].attachments = mail.attachments;
 
                 let mailId = emailList[msgnumber].id;
