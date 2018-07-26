@@ -1,6 +1,7 @@
 import React from 'react';
-import $ from 'jquery'
-import '../js/jquery.scrollbar.js'
+import Skycons from 'react-skycons'
+import $ from 'jquery';
+import '../js/jquery.scrollbar.js';
 
 const { ipcRenderer } = require('electron');
 
@@ -41,7 +42,6 @@ export default class CMain extends React.Component {
         /// weather
         ipcRenderer.send("weatherReq", true);
         ipcRenderer.on("weatherRes", (event, message) => {
-            console.log(message.data);
             if (!message.err) {
                 this.setState({
                     weatherLoading: false,
@@ -72,7 +72,7 @@ export default class CMain extends React.Component {
 
         /// jQuery plugin - scroll 
         this.$el.scrollbar('destroy');
-      }
+    }
 
     classListReload = () => {
         this.setState({
@@ -91,7 +91,7 @@ export default class CMain extends React.Component {
             weatherError: false,
             weatherErrorMessage: "",
         });
-        ipcRenderer.send("icampusClassListReq", true);
+        ipcRenderer.send("weatherReq", true);
     }
 
     icampusRender = () => {
@@ -169,6 +169,29 @@ export default class CMain extends React.Component {
         }
     }
 
+    weatherItemRender = (weather) => {
+        const currentSkyStr = getSkyString(weather.hour, weather.sky, weather.prec, weather.windSpeed);
+
+        let style = { textAlign: "center" };
+        if (weather.day === 1) {
+            style.backgroundColor = "#F0F0F0";
+        }
+
+        return (
+            <div className="col" style={style}>
+                <h6>{weather.hour}시</h6>
+                <Skycons
+                    color='black'
+                    icon={currentSkyStr}
+                    style={{ width: "100%", height: "auto" }}
+                />
+                <h5 className="text-danger no-margin">{weather.currentTemp}°</h5>
+                <i className="fas fa-umbrella"></i>
+                <h6 className="no-margin">{weather.precPercent}%</h6>
+            </div>
+        )
+    }
+
     weatherRender = () => {
         if (this.state.weatherLoading) {
             return (
@@ -180,7 +203,7 @@ export default class CMain extends React.Component {
             );
         }
         else {
-            if (this.state.classListError) {
+            if (this.state.weatherError) {
                 <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
                     <div className="col-8" style={{ textAlign: "center" }}>
                         {this.state.classListErrorMessage}
@@ -188,12 +211,60 @@ export default class CMain extends React.Component {
                 </div>
             }
             else {
+                const currentDate = new Date(this.state.weather.date);
+                const weekdayNameList = new Array('일', '월', '화', '수', '목', '금', '토');
+
+                const weekdayName = weekdayNameList[currentDate.getDay()] + "요일";
+                const dateStr = currentDate.getMonth() + "월 " + currentDate.getDate() + "일"
+
+                const weatherList = this.state.weather.weather;
+
+                const currentTemp = weatherList[0].currentTemp;
+                const currentWind = weatherList[0].windSpeed;
+                const currentHumidity = weatherList[0].humidity;
+
+                console.log("weatherList", weatherList)
+
+                const currentSkyStr = getSkyString(currentDate.getHours() + 1.5, weatherList[0].sky, weatherList[0].prec, weatherList[0].windSpeed);
+
+
                 return (
-                    <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
-                        <div className="col-12" style={{ textAlign: "center" }}>
-                            {this.state.weather}
+                    <React.Fragment>
+                        <div className="row no-gutters align-items-center  justify-content-between" style={{ width: "100%", height: "80px" }}>
+                            <div className="col-6 m-l-20">
+                                <h4 className="no-margin" style={{ display: "inline" }}>{weekdayName} </h4>
+                                <p className="small hint-text" style={{ display: "inline" }}> {dateStr}</p>
+                                <div className="row no-gutters m-t-10">
+                                    <div className="col-4">
+                                        <p className="small hint-text no-margin">온도</p>
+                                        <h6 className="text-danger bold no-margin">{currentTemp}°</h6>
+                                    </div>
+                                    <div className="col-4">
+                                        <p className="small hint-text no-margin">바람</p>
+                                        <h6 className="text-success bold no-margin">{currentWind}㎧</h6>
+                                    </div>
+                                    <div className="col-4">
+                                        <p className="small hint-text no-margin">습도</p>
+                                        <h6 className="text-complete bold no-margin">{currentHumidity}%</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-5" style={{ textAlign: "center" }}>
+                                <Skycons
+                                    color='black'
+                                    icon={currentSkyStr}
+                                    style={{ width: "100%", height: "auto" }}
+                                />
+                            </div>
                         </div>
-                    </div>
+                        <div className="row no-gutters m-t-10 b-grey b-t">
+                            {this.weatherItemRender(weatherList[1])}
+                            {this.weatherItemRender(weatherList[2])}
+                            {this.weatherItemRender(weatherList[3])}
+                            {this.weatherItemRender(weatherList[4])}
+                            {this.weatherItemRender(weatherList[5])}
+                        </div>
+                    </React.Fragment>
                 )
             }
         }
@@ -225,6 +296,18 @@ export default class CMain extends React.Component {
                     </div>
                     <div className="col-6">
                         <div className="card card-default card-condensed" style={{ height: "300px" }}>
+                            <div className="card-header">
+                                <div className="card-title">
+                                    <i className="pg-map"></i> 수원시 장안구
+                                </div>
+                                <div className="card-controls">
+                                    <ul><li>
+                                        <a href="#" onClick={this.weatherReload}>
+                                            <i className="card-icon card-icon-refresh"></i>
+                                        </a>
+                                    </li></ul>
+                                </div>
+                            </div>
                             <div className="card-body">
                                 {this.weatherRender()}
                             </div>
@@ -234,4 +317,40 @@ export default class CMain extends React.Component {
             </div>
         )
     }
+}
+
+
+const getSkyString = (time, sky, prec, wind) => {
+    let dayNight = false;
+    if (7 <= time && time <= 18) {
+        dayNight = true;
+    }
+
+    let skyString = "CLEAR_DAY";
+    if (dayNight) {
+        skyString = "CLEAR_DAY";
+        if (sky === 2) {
+            skyString = "PARTLY_CLOUDY_DAY";
+        }
+    }
+    else {
+        skyString = "CLEAR_NIGHT";
+        if (sky === 2) {
+            skyString = "PARTLY_CLOUDY_NIGHT";
+        }
+    }
+    if (sky === 3 || sky === 4) {
+        skyString = "CLOUDY";
+    }
+    if (14 <= wind) {
+        skyString = "WIND";
+    }
+
+    if (prec === 1 || prec === 2) {
+        skyString = "RAIN";
+    }
+    else if (prec === 3 || prec === 4) {
+        skyString = "SNOW";
+    }
+    return skyString;
 }
