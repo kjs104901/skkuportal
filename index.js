@@ -3,6 +3,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const icampus = require("./node_my_modules/icampus");
 const gls = require("./node_my_modules/gls");
 const portal = require("./node_my_modules/portal");
+const weather = require("./node_my_modules/weather");
 
 const colorSkkuBackground = "#1B484F";
 const colorSkkuBackgroundDoom = "#3D7178";
@@ -179,7 +180,7 @@ ipcMain.on("openGLSReq", (event, message) => {
 
 ipcMain.on("icampusClassListReq", (event, message) => {
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event.sender, "openGLSRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "icampusClassListRes", 10, () => {
         timeoutSent = true;
     });
 
@@ -190,6 +191,20 @@ ipcMain.on("icampusClassListReq", (event, message) => {
         }
     });
 })
+
+ipcMain.on("weatherReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "weatherRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    weatherRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("weatherRes", result);
+        }
+    });
+});
 
 //// ------------ IPC backend functions ------------ ////
 
@@ -214,7 +229,6 @@ const loginReqest = (userId, userPass, callback) => {
 
 const openGLSRequest = (callback) => {
     checkLoginElseTryPortal((result) => {
-        console.log("checkLoginElseTryPortal", result);
         if (result) {
             portal.getGlobalVal((globalVal) => {
                 if (0 < globalVal.length) {
@@ -259,3 +273,12 @@ const icampusClassListRequest = (callback) => {
         }
     });
 }
+
+const weatherRequest = (callback) => {
+    weather.getWeather(0, (result) => {
+        callback({
+            data: result
+        });
+    });
+}
+
