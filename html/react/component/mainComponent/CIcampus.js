@@ -15,7 +15,16 @@ export default class CIcampus extends React.Component {
 
         ipcRenderer.send("icampusClassListReq", true);
         console.log("icampusClassListReq send");
+        ipcRenderer.on("icampusClassListRes", (event, message) => {
+            console.log(message);
+            console.log("icampusClassListRes get from CIcampus", event);
+        })
     }
+
+    componentWillUnmount() {
+        ipcRenderer.removeAllListeners("icampusClassListRes");
+    }
+
 
     render() {
         return (
@@ -23,8 +32,3 @@ export default class CIcampus extends React.Component {
         )
     }
 }
-
-ipcRenderer.on("icampusClassListRes", (event, message) => {
-    console.log(message);
-    console.log("icampusClassListRes get");
-})
