@@ -11,6 +11,9 @@ const normalHeader = {
 let icampusRefererHeader = normalHeader;
 icampusRefererHeader.Referer = "http://www.icampus.ac.kr/front/login/loginAction.do?method=list";
 
+const mobileHeader = {
+    "User-Agent" : "Mozilla/5.0 (Linux; Android 6.0.1; Z832 Build/MMB29M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36"
+}
 
 let targetStr = "";
 
@@ -85,6 +88,10 @@ exports.crawler = {
     
     getIcampusRefererHeader: () => {
         return icampusRefererHeader;
+    },
+
+    getMobileHeader: () => {
+        return mobileHeader;
     },
 
     getCookieJar: () => {

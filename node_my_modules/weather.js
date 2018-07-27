@@ -46,7 +46,7 @@ exports.getWeather = (campusType, callback) => {
                             {
                                 hour: weatherObject.hour[0], // hours
                                 day: weatherObject.day[0], // 0:today 1:tomorrow 2:dayafterTom // sometimes wrong
-                                currentTemp: weatherObject.temp [0], // current temperature
+                                currentTemp: weatherObject.temp[0], // current temperature
                                 maxTemp: weatherObject.tmx[0], // day's maximum temperature
                                 minTemp: weatherObject.tmn[0], // day's minimum temperature
                                 sky: weatherObject.sky[0], // 1맑음 2구름조금 3구름많음 4흐림

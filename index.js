@@ -34,6 +34,11 @@ const mainWindowSetting = {
 };
 
 const loginWindowOpen = () => {
+    if (loginWindow) {
+        if (!loginWindow.isDestroyed()){
+            loginWindow.close();
+        }
+    }
     loginWindow = new BrowserWindow(loginWindowSetting);
     loginWindow.loadFile('./html/login.html');
 
@@ -50,6 +55,11 @@ const loginWindowOpen = () => {
 }
 
 const mainWindowOpen = () => {
+    if (mainWindow) {
+        if (!mainWindow.isDestroyed()){
+            mainWindow.close();
+        }
+    }
     mainWindow = new BrowserWindow(mainWindowSetting);
     mainWindow.loadFile('./html/main.html');
 

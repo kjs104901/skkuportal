@@ -185,9 +185,9 @@ export default class CMain extends React.Component {
                     icon={currentSkyStr}
                     style={{ width: "100%", height: "auto" }}
                 />
-                <h5 className="text-danger no-margin">{weather.currentTemp}°</h5>
+                <h5 className="text-danger no-margin">{Math.floor(weather.currentTemp)}°</h5>
                 <i className="fas fa-umbrella"></i>
-                <h6 className="no-margin">{weather.precPercent}%</h6>
+                <h6 className="no-margin">{Math.floor(weather.precPercent)}%</h6>
             </div>
         )
     }
@@ -219,14 +219,11 @@ export default class CMain extends React.Component {
 
                 const weatherList = this.state.weather.weather;
 
-                const currentTemp = weatherList[0].currentTemp;
-                const currentWind = weatherList[0].windSpeed;
-                const currentHumidity = weatherList[0].humidity;
-
-                console.log("weatherList", weatherList)
+                const currentTemp = Math.floor(weatherList[0].currentTemp*1);
+                const currentWind = Math.floor(weatherList[0].windSpeed*1);
+                const currentHumidity = Math.floor(weatherList[0].humidity*1);
 
                 const currentSkyStr = getSkyString(currentDate.getHours() + 1.5, weatherList[0].sky, weatherList[0].prec, weatherList[0].windSpeed);
-
 
                 return (
                     <React.Fragment>
