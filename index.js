@@ -24,7 +24,7 @@ const loginWindowSetting = {
 let mainWindow;
 const mainWindowSetting = {
     //width: 790, height: 650,
-    width: 1600, height: 900,
+    width: 1600, height: 640,
     frame: false,
     show: false,
     //resizable: false,
@@ -188,19 +188,33 @@ ipcMain.on("openGLSReq", (event, message) => {
     });
 });
 
-ipcMain.on("icampusClassListReq", (event, message) => {
+ipcMain.on("classListReq", (event, message) => {
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event.sender, "icampusClassListRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "classListRes", 10, () => {
         timeoutSent = true;
     });
 
-    icampusClassListRequest((result) => {
+    classListRequest((result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
-            event.sender.send("icampusClassListRes", result);
+            event.sender.send("classListRes", result);
         }
     });
-})
+});
+
+ipcMain.on("classPostListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "classPostListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    classPostListRequest(message, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("classPostListRes", result);
+        }
+    });
+});
 
 ipcMain.on("weatherReq", (event, message) => {
     let timeoutSent = false;
@@ -212,6 +226,20 @@ ipcMain.on("weatherReq", (event, message) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("weatherRes", result);
+        }
+    });
+});
+
+ipcMain.on("messageListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "messageListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    messageListRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("messageListRes", result);
         }
     });
 });
@@ -269,7 +297,7 @@ const openGLSRequest = (callback) => {
     });
 }
 
-const icampusClassListRequest = (callback) => {
+const classListRequest = (callback) => {
     checkLoginElseTryIcampus((result) => {
         if (result) {
             icampus.getClassList(2018, 10, (result)=>{
@@ -284,6 +312,65 @@ const icampusClassListRequest = (callback) => {
     });
 }
 
+const classPostListRequest = (identity, callback) => {
+    let postList = [];
+
+    checkLoginElseTryIcampus((result) => {
+        if (result) {
+            icampus.getPostList(identity, icampus.NOTICE, (result)=>{
+                result.forEach(post => {
+                    postList.push({
+                        type: "notice",
+                        post: post
+                    })
+                });
+
+                icampus.getPostList(identity, icampus.MATERIAL, (result) => {
+                    result.forEach(post => {
+                        postList.push({
+                            type: "material",
+                            post: post
+                        })
+                    });
+
+                    icampus.getPostList(identity, icampus.ASSIGNMENT, (result) => {
+                        result.forEach(post => {
+                            postList.push({
+                                type: "assignment",
+                                post: post
+                            })
+                        });
+                        
+                        postList.sort((a, b) => {
+                            let aDate = new Date();
+                            let bDate = new Date();
+                            if (a.post.date) {
+                                aDate = new Date(a.post.date);
+                            }
+                            else if (a.post.startTime) {
+                                aDate = new Date(a.post.startTime);
+                            }
+                            if (b.post.date) {
+                                bDate = new Date(b.post.date);
+                            }
+                            else if (b.post.startTime) {
+                                bDate = new Date(b.post.startTime);
+                            }
+                            return aDate > bDate ? -1 : aDate < bDate ? 1 : 0;
+                        });
+                        callback({
+                            data: postList
+                        });
+                    })
+                })
+            });
+        }
+        else {
+            reLoginFailed();
+        }
+    });
+};
+
 const weatherRequest = (callback) => {
     weather.getWeather(0, (result) => {
         callback({
@@ -292,3 +379,17 @@ const weatherRequest = (callback) => {
     });
 }
 
+const messageListRequest = (callback) => {
+    checkLoginElseTryIcampus((result) => {
+        if (result) {
+            icampus.getMessageList((result) => {
+                callback({
+                    data: result
+                })
+            })
+        }
+        else {
+            reLoginFailed();
+        }
+    });
+}

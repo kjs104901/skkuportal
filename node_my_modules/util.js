@@ -100,8 +100,11 @@ exports.crawler = {
 
     decodeHTML: (inputStr) => {
         let outputStr = inputStr;
+        outputStr = outputStr.replace(/\r/g,"");
         outputStr = outputStr.replace(/\n/g,"");
         outputStr = outputStr.replace(/\t/g,"");
+        outputStr = outputStr.replace(/<b>/g,"");
+        outputStr = outputStr.replace(/<\/b>/g,"");
         outputStr = outputStr.replace(/&nbsp;/g," ");
         outputStr = outputStr.replace(/&lt;/g,"<");
         outputStr = outputStr.replace(/&gt;/g,">");

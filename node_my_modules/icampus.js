@@ -403,7 +403,7 @@ exports.getPostList = (identity, code, callback) => {
                                 title: third
                             }
                         }
-                        if (-1 < crawler.getTargetStr().indexOf("onViewFileDownloadOld")) {
+                        else if (-1 < crawler.getTargetStr().indexOf("onViewFileDownloadOld")) {
                             let downloadList = [];
                             while (-1 < crawler.getTargetStr().indexOf("onViewFileDownloadOld")) {
                                 crawler.moveTargetAfter("onViewFileDownloadOld");
@@ -439,42 +439,44 @@ exports.getPostList = (identity, code, callback) => {
                         }
                     });
 
-                    let postFormed = {}
-                    if (code === 2) {
-                        postFormed.index = postBase[0];
-                        postFormed.title = postBase[1].title;
-                        postFormed.URL = "http://www.icampus.ac.kr/front/study/AnnounceAction.do?method=view";
-                        postFormed.URL += "&lmsBdotSeq=" + postBase[1].lmsBdotSeq + "&lmsBlbdId=" + postBase[1].lmsBlbdId;
-                        postFormed.publisher = postBase[2];
-                        postFormed.date = postBase[3];
-                        postFormed.viewCount = postBase[4];
-                        postFormed.attachments = postBase[5];
-                    }
-                    else if (code === 4) {
-                        postFormed.index = postBase[0];
-                        postFormed.title = postBase[1].title;
-                        postFormed.URL = "http://www.icampus.ac.kr/front/study/DataAction.do?method=view";
-                        postFormed.URL += "&lmsBdotSeq=" + postBase[1].lmsBdotSeq + "&lmsBlbdId=" + postBase[1].lmsBlbdId;
-                        postFormed.publisher = postBase[2];
-                        postFormed.date = postBase[3];
-                        postFormed.viewCount = postBase[5];
-                        postFormed.attachments = postBase[6];
-                    }
-                    else if (code === 6) {
-                        postFormed.index = postBase[0];
-                        postFormed.title = postBase[2].title;
-                        postFormed.type = postBase[1];
-                        postFormed.URL = "http://www.icampus.ac.kr/front/study/TaskAction.do";
-                        postFormed.URL += postBase[2].url;
-                        postFormed.startTime = postBase[3].startTime;
-                        postFormed.endTime = postBase[3].endTime;
-                        postFormed.status = postBase[4];
-                        postFormed.submitDate = postBase[5];
-                        postFormed.submitStatus = postBase[6];
-                        postFormed.score = postBase[7];
-                    }
+                    if (postBase[1]){
+                        let postFormed = {}
+                        if (code === 2) {
+                            postFormed.index = postBase[0];
+                            postFormed.title = postBase[1].title;
+                            postFormed.URL = "http://www.icampus.ac.kr/front/study/AnnounceAction.do?method=view";
+                            postFormed.URL += "&lmsBdotSeq=" + postBase[1].lmsBdotSeq + "&lmsBlbdId=" + postBase[1].lmsBlbdId;
+                            postFormed.publisher = postBase[2];
+                            postFormed.date = postBase[3];
+                            postFormed.viewCount = postBase[4];
+                            postFormed.attachments = postBase[5];
+                        }
+                        else if (code === 4) {
+                            postFormed.index = postBase[0];
+                            postFormed.title = postBase[1].title;
+                            postFormed.URL = "http://www.icampus.ac.kr/front/study/DataAction.do?method=view";
+                            postFormed.URL += "&lmsBdotSeq=" + postBase[1].lmsBdotSeq + "&lmsBlbdId=" + postBase[1].lmsBlbdId;
+                            postFormed.publisher = postBase[2];
+                            postFormed.date = postBase[3];
+                            postFormed.viewCount = postBase[5];
+                            postFormed.attachments = postBase[6];
+                        }
+                        else if (code === 6) {
+                            postFormed.index = postBase[0];
+                            postFormed.title = postBase[2].title;
+                            postFormed.type = postBase[1];
+                            postFormed.URL = "http://www.icampus.ac.kr/front/study/TaskAction.do";
+                            postFormed.URL += postBase[2].url;
+                            postFormed.startTime = postBase[3].startTime;
+                            postFormed.endTime = postBase[3].endTime;
+                            postFormed.status = postBase[4];
+                            postFormed.submitDate = postBase[5];
+                            postFormed.submitStatus = postBase[6];
+                            postFormed.score = postBase[7];
+                        }
 
-                    postList.push(postFormed);
+                        postList.push(postFormed);
+                    }
                 });
             }
             callback(postList);
@@ -640,6 +642,83 @@ function getAssignmentPost(url, callback) {
                 }
             }
             callback(assignmentPost);
+        }
+    );
+}
+
+exports.getMessageList = (callback) => {
+    let getMessageURL = "http://www.icampus.ac.kr/front/mypage/MycMemoAction.do?method=listreceive";
+    
+    let resultMessageList = [];
+
+    request(
+        {
+            url: getMessageURL,
+            headers: crawler.getIcampusRefererHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar(),
+            encoding: null
+        }, (error, response, body) => {
+            if (response.statusCode === 200) {
+                const encodingType = charset(response.headers, body);
+                const encodedBody = iconv.decode(body, encodingType);
+
+                crawler.setTargetStr(encodedBody);
+                const messagesStr = crawler.getBetween("<tbody>", "</tbody>");
+
+                crawler.setTargetStr(messagesStr);
+                while (-1 < crawler.getTargetStr().indexOf("<tr>")) {
+                    crawler.moveTargetAfter("<tr>");
+                    crawler.moveTargetAfter("name=\"pBbsCode");
+                    const messageId = crawler.getBetweenMoveTarget("value=\"", "\"") * 1;
+
+                    const sender = crawler.decodeHTML(crawler.getBetweenMoveTarget("<td>", "</td>"));
+                    const sentDate = crawler.decodeHTML(crawler.getBetweenMoveTarget("<td>", "</td>"));
+                    crawler.moveTargetAfter("<a href");
+                    const title =  crawler.decodeHTML(crawler.getBetweenMoveTarget(">", "</a>"));
+                    const checkStr = crawler.getBetweenMoveTarget("<img src=\"/images/front/ko/", ".gif\">");
+                    let check = false;
+                    if (checkStr === "iconCheckMail"){
+                        check = true;
+                    }
+                    
+                    resultMessageList.push({
+                        messageId: messageId,
+                        sender: sender,
+                        sentDate: sentDate,
+                        title: title,
+                        check: check
+                    });
+                }
+            }
+            callback(resultMessageList)
+        }
+    );
+}
+
+exports.getMessage = (messageId, callback) => {
+    let messageStr = "";
+    let getMessageURL = "http://www.icampus.ac.kr/front/mypage/MycMemoAction.do?method=detailreceive";
+    getMessageURL += "&pBbsCode=" + messageId;
+
+    request(
+        {
+            url: getMessageURL,
+            headers: crawler.getIcampusRefererHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar(),
+            encoding: null
+        }, (error, response, body) => {
+            if (response.statusCode === 200) {
+                const encodingType = charset(response.headers, body);
+                const encodedBody = iconv.decode(body, encodingType);
+
+                crawler.setTargetStr(encodedBody);
+                crawler.moveTargetAfter("<td");
+                messageStr = crawler.decodeHTML(crawler.getBetween(">", "</td"));
+            }
+
+            callback(messageStr);
         }
     );
 }

@@ -22,7 +22,10 @@ exports.login = (userId, userPwd, callback) => {
     );
 
     function loginCallback(error, response, body) {
-        if (response.statusCode === 200) {
+        if(error){
+            callback(false)
+        }
+        else if (response.statusCode === 200) {
             if (-1 < body.indexOf("로그인에러")) {
                 callback(false)
             }
@@ -51,7 +54,10 @@ exports.loginCheck = (callback) => {
     );
 
     function loginCheckCallback(error, response, body) {
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode === 200) {
             if (-1 < body.indexOf("자동로그인")) {
                 callback(false);
             }
@@ -89,7 +95,10 @@ exports.getScores = (callback) => {
     );
 
     function getScoresCallback(error, response, body) {
-        if (response.statusCode === 200) {
+        if (error){
+            callback(scores);
+        }
+        else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
             while(-1 < crawler.getTargetStr().indexOf('<tr id="scoreGrid')) {
                 crawler.moveTargetAfter('<tr id="scoreGrid');
@@ -174,12 +183,10 @@ exports.getScoreDetail = (year, semester, callback) => {
     );
 
     function getScoreDetailCallback(error, response, body) {
-        //console.log(response.statusCode)
-        const fs = require('fs');
-        fs.writeFile("smgl.html", body, () => { });
-        //callback(body)
-        
-        if (response.statusCode === 200) {
+        if (error) {
+            callback(scores);
+        }
+        else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
             while(-1 < crawler.getTargetStr().indexOf('<tr id="classGrid')) {
                 crawler.moveTargetAfter('<tr id="classGrid');

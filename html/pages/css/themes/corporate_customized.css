@@ -915,14 +915,14 @@ body.menu-pin .overlay .overlay-brand {
   padding: 0px;
   overflow: auto;
   min-height: 100%;
-  margin-left: 250px;
+  margin-left: 180px;
 }
 .toggle-secondary-sidebar {
   display: none;
 }
 .secondary-sidebar {
-  background: #37373f;
-  width: 250px;
+  background: #1C414A;
+  width: 180px;
   float: left;
   padding-left: 47px;
   height: 100%;
@@ -945,7 +945,7 @@ body.menu-pin .overlay .overlay-brand {
   text-transform: uppercase;
 }
 .secondary-sidebar .menu-title {
-  color: rgba(133, 133, 142, 0.7);
+  color: rgba(180, 180, 180, 1);
   font-size: 10.8px;
   font-family: 'Montserrat';
   font-weight: normal;
@@ -963,8 +963,8 @@ body.menu-pin .overlay .overlay-brand {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 .secondary-sidebar ul li a > .icon-thumbnail {
   display: -webkit-box;
@@ -1045,10 +1045,10 @@ body.menu-pin .overlay .overlay-brand {
   list-style: none;
 }
 .secondary-sidebar .main-menu > li.active > a {
-  color: #37b0e9;
+  color: #FFD661;
 }
 .secondary-sidebar .main-menu > li.active > a:hover {
-  color: #37b0e9;
+  color: #FFD661;
 }
 .secondary-sidebar .main-menu > li.active > a > .title {
   position: relative;
@@ -1066,7 +1066,7 @@ body.menu-pin .overlay .overlay-brand {
 .secondary-sidebar .main-menu > li a {
   font-size: 14px;
   color: #85858e;
-  line-height: 37px;
+  line-height: 42px;
 }
 .secondary-sidebar .main-menu > li a:hover {
   color: #fff;
@@ -2595,6 +2595,9 @@ hr.dotted {
 }
 .large-text {
   font-size: 15px !important;
+}
+.xlarge-text {
+  font-size: 17px !important;
 }
 /* Font Weights
 ------------------------------------
@@ -14053,7 +14056,7 @@ Main components
   }
 }
 /* Landscape view of all tablet devices */
-@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+@media (min-width: 9768px) and (max-width: 91024px) and (orientation: landscape) {
   .page-container .page-content-wrapper .content {
     padding-top: 40px;
   }

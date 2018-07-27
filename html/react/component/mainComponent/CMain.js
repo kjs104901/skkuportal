@@ -1,5 +1,6 @@
 import React from 'react';
 import Skycons from 'react-skycons'
+
 import $ from 'jquery';
 import '../js/jquery.scrollbar.js';
 
@@ -20,8 +21,8 @@ export default class CMain extends React.Component {
 
     componentDidMount() {
         /// icampus
-        ipcRenderer.send("icampusClassListReq", true);
-        ipcRenderer.on("icampusClassListRes", (event, message) => {
+        ipcRenderer.send("classListReq", true);
+        ipcRenderer.on("classListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
                     classListLoading: false,
@@ -67,7 +68,7 @@ export default class CMain extends React.Component {
     }
 
     componentWillUnmount() {
-        ipcRenderer.removeAllListeners("icampusClassListRes");
+        ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("weatherRes");
 
         /// jQuery plugin - scroll 
@@ -81,7 +82,7 @@ export default class CMain extends React.Component {
             classListError: false,
             classListErrorMessage: "",
         });
-        ipcRenderer.send("icampusClassListReq", true);
+        ipcRenderer.send("classListReq", true);
     }
 
     weatherReload = () => {
@@ -105,43 +106,44 @@ export default class CMain extends React.Component {
             );
         }
         else {
-            let rows = [];
-            this.state.classList.forEach((classElement, index) => {
-                rows.push(
-                    <div className="row no-gutters m-t-10" key={index}>
-                        <div className="col-4" style={{ textAlign: "center" }}>
-                            {classElement.name.substr(0, 6)}
-                        </div>
-                        <div className="col" style={{ textAlign: "right" }}>
-                            {0 < classElement.recentNumbers.notification ? <i className='fa fa-circle fs-10 text-danger'></i> : ""}
-                        </div>
-                        <div className="col" style={{ textAlign: "center" }}>
-                            {classElement.recentNumbers.notification + "/" + classElement.totalNumbers.notification}
-                        </div>
-                        <div className="col" style={{ textAlign: "right" }}>
-                            {0 < classElement.recentNumbers.assignment ? <i className='fa fa-circle fs-10 text-danger'></i> : ""}
-                        </div>
-                        <div className="col" style={{ textAlign: "center" }}>
-                            {classElement.recentNumbers.assignment + "/" + classElement.totalNumbers.assignment}
-                        </div>
-                        <div className="col" style={{ textAlign: "right" }}>
-                            {0 < classElement.recentNumbers.resource ? <i className='fa fa-circle fs-10 text-danger'></i> : ""}
-                        </div>
-                        <div className="col" style={{ textAlign: "center" }}>
-                            {classElement.recentNumbers.resource + "/" + classElement.totalNumbers.resource}
-                        </div>
-                    </div>
-                );
-            });
-
             if (this.state.classListError) {
-                <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
-                    <div className="col-8" style={{ textAlign: "center" }}>
-                        {this.state.classListErrorMessage}
+                return (
+                    <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
+                        <div className="col-8" style={{ textAlign: "center" }}>
+                            {this.state.classListErrorMessage}
+                        </div>
                     </div>
-                </div>
+                )
             }
             else {
+                let rows = [];
+                this.state.classList.forEach((classElement, index) => {
+                    rows.push(
+                        <div className="row no-gutters m-t-10" key={index}>
+                            <div className="col-4" style={{ textAlign: "center" }}>
+                                {classElement.name.substr(0, 6)}
+                            </div>
+                            <div className="col" style={{ textAlign: "right" }}>
+                                {0 < classElement.recentNumbers.notification ? <i className='fa fa-circle fs-10 text-danger'></i> : ""}
+                            </div>
+                            <div className="col" style={{ textAlign: "center" }}>
+                                {classElement.recentNumbers.notification + "/" + classElement.totalNumbers.notification}
+                            </div>
+                            <div className="col" style={{ textAlign: "right" }}>
+                                {0 < classElement.recentNumbers.assignment ? <i className='fa fa-circle fs-10 text-danger'></i> : ""}
+                            </div>
+                            <div className="col" style={{ textAlign: "center" }}>
+                                {classElement.recentNumbers.assignment + "/" + classElement.totalNumbers.assignment}
+                            </div>
+                            <div className="col" style={{ textAlign: "right" }}>
+                                {0 < classElement.recentNumbers.resource ? <i className='fa fa-circle fs-10 text-danger'></i> : ""}
+                            </div>
+                            <div className="col" style={{ textAlign: "center" }}>
+                                {classElement.recentNumbers.resource + "/" + classElement.totalNumbers.resource}
+                            </div>
+                        </div>
+                    );
+                });
                 return (
                     <React.Fragment>
                         <div className="row no-gutters">
@@ -204,11 +206,13 @@ export default class CMain extends React.Component {
         }
         else {
             if (this.state.weatherError) {
-                <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
-                    <div className="col-8" style={{ textAlign: "center" }}>
-                        {this.state.classListErrorMessage}
+                return (
+                    <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
+                        <div className="col-8" style={{ textAlign: "center" }}>
+                            {this.state.classListErrorMessage}
+                        </div>
                     </div>
-                </div>
+                )
             }
             else {
                 const currentDate = new Date(this.state.weather.date);
@@ -234,15 +238,15 @@ export default class CMain extends React.Component {
                                 <div className="row no-gutters m-t-10">
                                     <div className="col-4">
                                         <p className="small hint-text no-margin">온도</p>
-                                        <h6 className="text-danger bold no-margin">{currentTemp}°</h6>
+                                        <h5 className="text-danger bold no-margin">{currentTemp}°</h5>
                                     </div>
                                     <div className="col-4">
                                         <p className="small hint-text no-margin">바람</p>
-                                        <h6 className="text-success bold no-margin">{currentWind}㎧</h6>
+                                        <h5 className="text-success bold no-margin">{currentWind}㎧</h5>
                                     </div>
                                     <div className="col-4">
                                         <p className="small hint-text no-margin">습도</p>
-                                        <h6 className="text-complete bold no-margin">{currentHumidity}%</h6>
+                                        <h5 className="text-complete bold no-margin">{currentHumidity}%</h5>
                                     </div>
                                 </div>
                             </div>
