@@ -915,14 +915,14 @@ body.menu-pin .overlay .overlay-brand {
   padding: 0px;
   overflow: auto;
   min-height: 100%;
-  margin-left: 180px;
+  margin-left: 160px;
 }
 .toggle-secondary-sidebar {
   display: none;
 }
 .secondary-sidebar {
   background: #1C414A;
-  width: 180px;
+  width: 160px;
   float: left;
   padding-left: 47px;
   height: 100%;
@@ -1066,7 +1066,7 @@ body.menu-pin .overlay .overlay-brand {
 .secondary-sidebar .main-menu > li a {
   font-size: 14px;
   color: #85858e;
-  line-height: 42px;
+  line-height: 36px;
 }
 .secondary-sidebar .main-menu > li a:hover {
   color: #fff;

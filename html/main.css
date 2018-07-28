@@ -92,3 +92,14 @@
     background-color: #767676;
     cursor: pointer;
 }
+
+::-webkit-scrollbar {     
+    background-color: #3D7178;
+    width: .8em;
+    height: .8em;
+}
+
+::-webkit-scrollbar-thumb:window-inactive,
+::-webkit-scrollbar-thumb {
+    background:  #1C414A
+}

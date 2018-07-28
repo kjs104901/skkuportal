@@ -10,21 +10,34 @@ export default class CIcampus extends React.Component {
         menuMessage: -1,
         menuClass: 0,
 
+        menuDetailed: -1,
+
+        messageUnchecked: 0,
+
+        messageListLoading: true,
+        messageList: [],
+        messageListError: false,
+        messageListErrorMessage: "",
+
+        messageLoading: true,
+        message: {},
+        messageError: false,
+        messageErrorMessage: "",
+
         classListLoading: true,
         classList: [],
         classListError: false,
         classListErrorMessage: "",
 
-        messageUnchecked: 0,
-        messageLoading: true,
-        messageList: [],
-        messageError: false,
-        messageErrorMessage: "",
+        postListLoading: true,
+        postList: [],
+        postListError: false,
+        postListErrorMessage: "",
 
-        classPostListLoading: false,
-        classPostList: [],
-        classPostListError: false,
-        classPostListErrorMessage: "",
+        postLoading: false,
+        post: {},
+        postError: false,
+        postErrorMessage: ""
     }
 
     componentDidMount() {
@@ -38,7 +51,7 @@ export default class CIcampus extends React.Component {
                 });
 
                 if (0 < message.data.length) {
-                    this.classPostListRequest(message.data[0].identity);
+                    this.postListRequest(message.data[0].identity);
                 }
             }
             else {
@@ -61,7 +74,7 @@ export default class CIcampus extends React.Component {
                     }
                 });
                 this.setState({
-                    messageLoading: false,
+                    messageListLoading: false,
                     messageList: message.data,
                     classListError: false,
 
@@ -70,31 +83,68 @@ export default class CIcampus extends React.Component {
             }
             else {
                 this.setState({
-                    messageLoading: false,
+                    messageListLoading: false,
                     messageList: [],
                     classListError: true,
-                    messageErrorMessage: message.errMessage
+                    messageListErrorMessage: message.errMessage
                 });
             }
         });
 
-        ipcRenderer.on("classPostListRes", (event, message) => {
+        ipcRenderer.on("postListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
-                    classPostListLoading: false,
-                    classPostList: message.data,
-                    classPostListError: false,
+                    postListLoading: false,
+                    postList: message.data,
+                    postListError: false,
                 });
             }
             else {
                 this.setState({
-                    classPostListLoading: false,
-                    classPostList: [],
-                    classPostListError: true,
-                    classPostListErrorMessage: message.errMessage
+                    postListLoading: false,
+                    postList: [],
+                    postListError: true,
+                    postListErrorMessage: message.errMessage
                 });
             }
         });
+
+        ipcRenderer.on("messageRes", (event, message) => {
+            console.log(message.data);
+            if (!message.err) {
+                this.setState({
+                    messageLoading: false,
+                    message: message.data,
+                    messageError: false,
+                });
+            }
+            else {
+                this.setState({
+                    messageLoading: false,
+                    message: {},
+                    messageError: true,
+                    messageErrorMessage: message.errMessage
+                });
+            }
+        })
+
+        ipcRenderer.on("postRes", (event, message) => {
+            if (!message.err) {
+                this.setState({
+                    postLoading: false,
+                    post: message.data,
+                    postError: false,
+                });
+            }
+            else {
+                this.setState({
+                    postLoading: false,
+                    post: {},
+                    postError: true,
+                    postErrorMessage: message.errMessage
+                });
+            }
+        })
 
         /// jQuery plugin - scroll 
         this.$el = $(this.el)
@@ -105,30 +155,76 @@ export default class CIcampus extends React.Component {
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("messageListRes");
-        ipcRenderer.removeAllListeners("classPostListRes");
+        ipcRenderer.removeAllListeners("postListRes");
+        ipcRenderer.removeAllListeners("messageRes");
+        ipcRenderer.removeAllListeners("postRes");
 
         /// jQuery plugin - scroll 
         this.$el.scrollbar('destroy');
     }
 
-
-    classPostListRequest = (identity) => {
-        ipcRenderer.send("classPostListReq", identity);
+    postListRequest = (identity) => {
+        ipcRenderer.send("postListReq", identity);
         this.setState({
-            classPostListLoading: true,
-            classPostList: [],
-            classPostListError: false,
-            classPostListErrorMessage: ""
+            postListLoading: true,
+            postList: [],
+            postListError: false,
+            postListErrorMessage: ""
+        })
+    }
+
+    menuDetailedRequest = (detailedIndex) => {
+        if (0 <= this.state.menuMessage) {
+            ipcRenderer.send("messageReq", {
+                messageId: this.state.messageList[detailedIndex].messageId
+            });
+
+            this.setState({
+                messageLoading: true,
+                message: {},
+                messageError: false,
+                messageErrorMessage: ""
+            })
+        }
+        else if (0 <= this.state.menuClass) {
+            ipcRenderer.send("postReq",
+                {
+                    type: this.state.postList[detailedIndex].type,
+                    url: this.state.postList[detailedIndex].post.URL
+                }
+            );
+            this.setState({
+                postLoading: true,
+                post: {},
+                postError: false,
+                postErrorMessage: ""
+            })
+        }
+    }
+
+    fileDownloadRequest = (url, name, saveName) => {
+        ipcRenderer.send("icampusFileDownload", {
+            url: url,
+            name: name,
+            saveName: saveName
         })
     }
 
     menuSelect = (messageIndex, classIndex) => {
         if (-1 < classIndex) {
-            this.classPostListRequest(this.state.classList[classIndex].identity);
+            this.postListRequest(this.state.classList[classIndex].identity);
         }
         this.setState({
             menuMessage: messageIndex,
-            menuClass: classIndex
+            menuClass: classIndex,
+            menuDetailed: -1
+        })
+    }
+
+    menuDetailedSelect = (detailedIndex) => {
+        this.menuDetailedRequest(detailedIndex);
+        this.setState({
+            menuDetailed: detailedIndex
         })
     }
 
@@ -142,7 +238,7 @@ export default class CIcampus extends React.Component {
             rows.push(
                 <li className={this.state.menuClass === index ? "active" : ""} key={index}>
                     <a href="#" onClick={() => { this.menuSelect(-1, index) }}>
-                        <span className="title"><i className="pg-inbox"></i> {classElement.name.substr(0, 6)}</span>
+                        <span className="title"><i className="pg-inbox"></i> {classElement.name.substr(0, 5)}</span>
                         <span className="badge pull-right">{recentNumber}</span>
                     </a>
                 </li>
@@ -155,103 +251,247 @@ export default class CIcampus extends React.Component {
         )
     }
 
-    contentRender = () => {
-        if (-1 < this.state.menuMessage && this.state.messageLoading === false) {
-            let rows = [];
-            (this.state.messageList).forEach(message => {
-                rows.push(message.title);
-            });
-            return (
-                <React.Fragment>
-                    <h5>
-                        {rows}
-                    </h5>
-                </React.Fragment>
+    contentMessageListRender = () => {
+        let rows = [];
+        (this.state.messageList).forEach((message, index) => {
+            const date = new Date(message.sentDate);
+            const dateStr = date.getMonth() + "/" + date.getDate();
+
+            rows.push(
+                <div className="row no-gutters align-items-center" style={{ height: "36px" }} key={index}>
+                    <p className="col-1 large-text no-margin" style={{ textAlign: "center" }}>
+                        {message.check ? <i className="far fa-envelope-open"></i> : <i className="fas fa-envelope"></i>}
+                    </p>
+                    <p className="col-1 large-text no-margin">{dateStr}</p>
+                    <p className="col-1 large-text no-margin">{message.sender}</p>
+                    <p className="col-9 large-text no-margin p-l-20">
+                        <a href="#" onClick={() => { this.menuDetailedSelect(index) }}>
+                            {message.title}
+                        </a>
+                    </p>
+                </div>
             );
+        });
+
+        if (rows.length === 0) {
+            rows.push(
+                <div className="col-12 " key="0" style={{ textAlign: "center", paddingTop: "230px" }}>
+                    <h2>표시할 내용이 없습니다</h2>
+                </div>
+            )
         }
-        else if (-1 < this.state.menuClass && this.state.classPostListLoading === false) {
-            let rows = [];
-            (this.state.classPostList).forEach((classPost, index) => {
-                //classPost.post.title
+        return (
+            <div className="m-l-10 m-r-10">
+                {rows}
+            </div>
+        );
+    }
+
+    contentPostListRender = () => {
+        let rows = [];
+        (this.state.postList).forEach((classPost, index) => {
+            let header;
+            let footer = [];
+            let publisher = "";
+
+            let date = new Date();
+            let dateStr = "";
+
+            if (classPost.type === "notice" || classPost.type === "material") {
+                date = new Date(classPost.post.date);
+                dateStr = date.getMonth() + "/" + date.getDate();
                 if (classPost.type === "notice") {
-                    const date = new Date(classPost.post.date);
-                    const dateStr = date.getMonth() + "/" + date.getDate();
-
-                    let attachments = [];
-                    if (classPost.post.attachments.forEach){
-                        (classPost.post.attachments).forEach((attachment, index) => {
-                            attachments.push(
-                                <i className="fas fa-file-download large-text" key={index} style={{margin:"5px"}}></i>
-                            );
-                        });
-                    }
-
-                    rows.push(
-                        <div className="row no-gutters align-items-center" style={{ height: "40px" }} key={index}>
-                            <p className="col-1 xlarge-text no-margin" style={{ textAlign: "center" }}>
-                                <i className="fas fa-exclamation"></i>
-                            </p>
-                            <p className="col-1 xlarge-text no-margin">{dateStr}</p>
-                            <p className="col-1 xlarge-text no-margin">{classPost.post.publisher}</p>
-                            <p className="col-7 xlarge-text no-margin p-l-20">{classPost.post.title}</p>
-                            <div className="col-2 no-margin" style={{ textAlign: "center" }}>{attachments}</div>
-                        </div>
-                    );
+                    header = (<i className="fas fa-exclamation"></i>);
                 }
                 else if (classPost.type === "material") {
-                    const date = new Date(classPost.post.date);
-                    const dateStr = date.getMonth() + "/" + date.getDate();
-                    
-                    let attachments = [];
-                    if (classPost.post.attachments.forEach){
-                        (classPost.post.attachments).forEach((attachment, index) => {
-                            attachments.push(
-                                <i className="fas fa-file-download large-text" key={index} style={{margin:"5px"}}></i>
-                            );
-                        });
-                    }
+                    header = (<i className="fas fa-save"></i>);
+                }
+                publisher = classPost.post.publisher;
 
-                    rows.push(
-                        <div className="row no-gutters align-items-center" style={{ height: "40px" }} key={index}>
-                            <p className="col-1 xlarge-text no-margin" style={{ textAlign: "center" }}>
-                                <i className="fas fa-save"></i>
-                            </p>
-                            <p className="col-1 xlarge-text no-margin">{dateStr}</p>
-                            <p className="col-1 xlarge-text no-margin">{classPost.post.publisher}</p>
-                            <p className="col-7 xlarge-text no-margin p-l-20">{classPost.post.title}</p>
-                            <div className="col-2 no-margin" style={{ textAlign: "center" }}>{attachments}</div>
-                        </div>
+                if (classPost.post.attachments.forEach) {
+                    (classPost.post.attachments).forEach((attachment, index) => {
+                        footer.push(
+                            <i className="fas fa-file-download large-text" key={index} style={{ margin: "5px" }}></i>
+                        );
+                    });
+                }
+            }
+            else if (classPost.type === "assignment") {
+                date = new Date(classPost.post.startTime);
+                dateStr = date.getMonth() + "/" + date.getDate();
+                header = (<i className="fas fa-home"></i>);
+                publisher = "[" + classPost.post.type + "]";
+
+                if (classPost.post.submitStatus === "Y") {
+                    footer.push(
+                        <i className="fas fa-check-circle text-success" key={0} style={{ margin: "5px" }}></i>
                     );
                 }
-                else if (classPost.type === "assignment") {
-                    const date = new Date(classPost.post.startTime);
-                    const dateStr = date.getMonth() + "/" + date.getDate();
-                    rows.push(
-                        <div className="row no-gutters align-items-center" style={{ height: "40px" }} key={index}>
-                            <p className="col-1 xlarge-text no-margin" style={{ textAlign: "center" }}>
-                                <i className="fas fa-home"></i>
-                            </p>
-                            <p className="col-1 xlarge-text no-margin">{dateStr}</p>
-                            <p className="col-1 xlarge-text no-margin">[{classPost.post.type}]</p>
-                            <p className="col-7 xlarge-text no-margin p-l-20">{classPost.post.title}</p>
-                        </div>
+                else {
+                    footer.push(
+                        <i className="far fa-circle text-danger" key={0} style={{ margin: "5px" }}></i>
                     );
                 }
-            });
-            return (
-                <React.Fragment>
-                    <div className="m-l-10 m-r-10">
-                        {rows}
-                    </div>
-                </React.Fragment>
+
+                if (!isNaN(classPost.post.score)) {
+                    footer.push(
+                        <p className="large-text" style={{ display: "inline" }} key={1}>
+                            {classPost.post.score}
+                        </p>
+                    );
+                }
+            }
+
+
+            rows.push(
+                <div className="row no-gutters align-items-center" style={{ height: "36px" }} key={index}>
+                    <p className="col-1 large-text no-margin" style={{ textAlign: "center" }}>
+                        {header}
+                    </p>
+                    <p className="col-1 large-text no-margin">{dateStr}</p>
+                    <p className="col-1 large-text no-margin">{publisher}</p>
+                    <p className="col-7 large-text no-margin p-l-20">
+                        <a href="#" onClick={() => { this.menuDetailedSelect(index) }}>
+                            {classPost.post.title}
+                        </a>
+                    </p>
+                    <div className="col-2 no-margin" style={{ textAlign: "center" }}>{footer}</div>
+                </div>
             );
+        });
+        if (rows.length === 0) {
+            rows.push(
+                <div className="col-12 " key="0" style={{ textAlign: "center", paddingTop: "230px" }}>
+                    <h4>표시할 내용이 없습니다</h4>
+                </div>
+            )
+        }
+        return (
+            <div className="m-l-10 m-r-10">
+                {rows}
+            </div>
+        );
+    }
+
+    constentMessageRender = () => {
+        return (
+            <React.Fragment>
+                <div className="row align-items-center no-gutters" style={{ width: "100%", height: "40px" }}>
+                    <div className="col-10">
+                    </div>
+                    <div className="col-2" style={{ textAlign: "center" }}>
+                        <a href="#" className="btn btn-block btn-compose"
+                            onClick={() => { this.setState({ menuDetailed: -1 }) }}
+                            style={{ backgroundColor: "#1B484F", color: "#FFD661" }}>
+                            <i className="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+                <div className="padding-10" style={{ width: "100%", height: "550px", overflow: "auto" }}
+                    dangerouslySetInnerHTML={{ __html: this.state.message.replace(/href/, 'h') }} >
+                </div>
+            </React.Fragment>
+        );
+    }
+
+    contentPostRender = () => {
+        let attachments = [];
+        if (this.state.post.attachments.forEach) {
+            (this.state.post.attachments).forEach((attachment, index) => {
+                attachments.push(
+                    <React.Fragment key={index}>
+                    <a href="#"
+                        onClick={()=>{this.fileDownloadRequest(
+                            attachment.pathInfo, 
+                            attachment.atchFileNm,
+                            attachment.atchFileSaveNm)}}
+                        style={{marginRight: "10px"}}>
+
+                        <i className="fas fa-file-download large-text" style={{ margin: "5px" }}></i>
+                        <p className="large-text" style={{display: "inline"}}>{attachment.atchFileNm}</p>
+                    </a>
+                     </React.Fragment>
+                );
+            });
+        }
+
+        return (
+            <React.Fragment>
+                <div className="row align-items-center no-gutters b-b" style={{ width: "100%", height: "40px" }}>
+                    <div className="col-10" style={{overflow: "auto"}}>
+                        {attachments}
+                    </div>
+                    <div className="col-2" style={{ textAlign: "center" }}>
+                        <a href="#" className="btn btn-block btn-compose"
+                            onClick={() => { this.setState({ menuDetailed: -1 }) }}
+                            style={{ backgroundColor: "#1B484F", color: "#FFD661" }}>
+                            <i className="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+                <div className="padding-10" style={{ width: "100%", height: "550px", overflow: "auto" }}
+                    dangerouslySetInnerHTML={{ __html: this.state.post.content.replace(/href/, 'h') }} >
+                </div>
+            </React.Fragment>
+        );
+    }
+
+    contentLoadingRender = () => {
+        return (
+            <div className="row justify-content-center align-items-center no-gutters" style={{ width: "100%", height: "590px" }}>
+                <div className="col-4" style={{ textAlign: "center" }}>
+                    <div className="progress-circle-indeterminate"></div>
+                </div>
+            </div>
+        );
+    }
+
+    contentRender = () => {
+        if (-1 < this.state.menuDetailed) {
+            if (-1 < this.state.menuMessage && this.state.messageLoading === false) {
+                return (
+                    <React.Fragment>
+                        {this.constentMessageRender()}
+                    </React.Fragment>
+                );
+            }
+            else if (-1 < this.state.menuClass && this.state.postLoading === false) {
+                return (
+                    <React.Fragment>
+                        {this.contentPostRender()}
+                    </React.Fragment>
+                );
+            }
+            else {
+                return (
+                    <React.Fragment>
+                        {this.contentLoadingRender()}
+                    </React.Fragment>
+                );
+            }
         }
         else {
-            return (
-                <React.Fragment>
-                    <h1>loading...</h1>
-                </React.Fragment>
-            );
+            if (-1 < this.state.menuMessage && this.state.messageListLoading === false) {
+                return (
+                    <React.Fragment>
+                        {this.contentMessageListRender()}
+                    </React.Fragment>
+                );
+            }
+            else if (-1 < this.state.menuClass && this.state.postListLoading === false) {
+                return (
+                    <React.Fragment>
+                        {this.contentPostListRender()}
+                    </React.Fragment>
+                );
+            }
+            else {
+                return (
+                    <React.Fragment>
+                        {this.contentLoadingRender()}
+                    </React.Fragment>
+                );
+            }
         }
     }
 

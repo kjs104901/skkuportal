@@ -434,6 +434,9 @@ exports.getPostList = (identity, code, callback) => {
                                 endTime: item.split(" ~<br>")[1]
                             }
                         }
+                        else if (-1 < item.indexOf("<!-- bean")){
+                            return item.substr(0, item.indexOf("<!-- bean"));
+                        }
                         else {
                             return item;
                         }
@@ -501,7 +504,11 @@ exports.getPost = (url, code, callback) => {
 }
 
 function getNoticePost(url, callback) {
-    let returnStr = "";
+    let noticePost = {
+        content: "",
+        attachments: [],
+    };
+
     request(
         {
             url: url,
@@ -511,7 +518,7 @@ function getNoticePost(url, callback) {
             encoding: null
         }, (error, response, body) => {
             if (error) {
-                callback(returnStr);
+                callback(noticePost);
                 return;
             }
             else if (response.statusCode === 200) {
@@ -519,15 +526,27 @@ function getNoticePost(url, callback) {
                 const encodedBody = iconv.decode(body, encodingType);
 
                 crawler.setTargetStr(encodedBody);
-                const content = crawler.getBetweenMoveTarget("<div id=\"contents\">", "</form>");
+                noticePost.content = crawler.getBetweenMoveTarget("<div class=\"board_view_con\">", "</div>");
 
-                crawler.setTargetStr(content);
-                while (-1 < crawler.getTargetStr().indexOf("<p>")) {
-                    let line = crawler.getBetweenMoveTarget("<p>", "</p>");
-                    returnStr += line + "\n";
+                crawler.setTargetStr(encodedBody);
+                crawler.moveTargetAfter("<th>첨부파일");
+                const attachContent = crawler.getBetweenMoveTarget("<td", "</td>");
+                crawler.setTargetStr(attachContent);
+
+                while (-1 < crawler.getTargetStr().indexOf("onViewFileDownloadOld")) {
+                    crawler.moveTargetAfter("onViewFileDownloadOld");
+                    const first = crawler.getBetweenMoveTarget("'", "'");
+                    const second = crawler.getBetweenMoveTarget("'", "'");
+                    const thrid = crawler.getBetweenMoveTarget("'", "'");
+
+                    noticePost.attachments.push({
+                        pathInfo: first,
+                        atchFileNm: second,
+                        atchFileSaveNm: thrid
+                    });
                 }
             }
-            callback(returnStr);
+            callback(noticePost);
         }
     );
 }
@@ -561,12 +580,7 @@ function getMaterialPost(url, callback) {
 
                 crawler.setTargetStr(encodedBody);
 
-                const content = crawler.getBetweenMoveTarget("<div class=\"board_view_con\">", "</div>");
-                crawler.setTargetStr(content);
-                while (-1 < crawler.getTargetStr().indexOf("<p>")) {
-                    let line = crawler.getBetweenMoveTarget("<p>", "</p>");
-                    materialPost.content += line + "\n";
-                }
+                materialPost.content = crawler.getBetweenMoveTarget("<div class=\"board_view_con\">", "</div>");
 
                 crawler.setTargetStr(encodedBody);
                 crawler.moveTargetAfter("<th>첨부파일");
@@ -616,16 +630,30 @@ function getAssignmentPost(url, callback) {
                 crawler.setTargetStr(encodedBody);
 
                 crawler.moveTargetAfter("<th>과제물내용");
-                let content = crawler.getBetweenMoveTarget("<td>", "</td>");
-                crawler.setTargetStr(content);
-                while (-1 < crawler.getTargetStr().indexOf("<p>")) {
-                    let line = crawler.getBetweenMoveTarget("<p>", "</p>");
-                    assignmentPost.content += line + "\n";
-                }
+                crawler.moveTargetAfter("<td")
+                assignmentPost.content = crawler.getBetweenMoveTarget(">", "</td>");
 
                 crawler.setTargetStr(encodedBody);
                 crawler.moveTargetAfter("<th>교수자 첨부파일");
-                const attachContent = crawler.getBetweenMoveTarget("<td>", "</td>");
+                let attachContent = crawler.getBetweenMoveTarget("<td", "</td>");
+                crawler.setTargetStr(attachContent);
+
+                while (-1 < crawler.getTargetStr().indexOf("onViewFileDownloadOld")) {
+                    crawler.moveTargetAfter("onViewFileDownloadOld");
+                    const first = crawler.getBetweenMoveTarget("'", "'");
+                    const second = crawler.getBetweenMoveTarget("'", "'");
+                    const thrid = crawler.getBetweenMoveTarget("'", "'");
+
+                    assignmentPost.attachments.push({
+                        pathInfo: first,
+                        atchFileNm: second,
+                        atchFileSaveNm: thrid
+                    });
+                }
+                
+                crawler.setTargetStr(encodedBody);
+                crawler.moveTargetAfter("<th>과제 첨부파일");
+                attachContent = crawler.getBetweenMoveTarget("<td", "</td>");
                 crawler.setTargetStr(attachContent);
 
                 while (-1 < crawler.getTargetStr().indexOf("onViewFileDownloadOld")) {

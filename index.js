@@ -1,4 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+
+const {download} = require('electron-dl');
 
 const icampus = require("./node_my_modules/icampus");
 const gls = require("./node_my_modules/gls");
@@ -24,7 +26,7 @@ const loginWindowSetting = {
 let mainWindow;
 const mainWindowSetting = {
     //width: 790, height: 650,
-    width: 1600, height: 640,
+    width: 1600, height: 630,
     frame: false,
     show: false,
     //resizable: false,
@@ -76,6 +78,18 @@ const mainWindowOpen = () => {
             loginWindow.close();
         }
     }
+}
+
+const icampusFileDownload = (url, filename, saveFilename) => {
+    let fullUrl = "http://www.icampus.ac.kr/FileManager.do?method=downloadOld&pathInfo=";
+    fullUrl += url;
+    fullUrl += "&fileinfo=01|"+filename+"|"+saveFilename+"|0";
+
+    download(BrowserWindow.getFocusedWindow(), fullUrl, {
+        saveAs: true,
+        filename: filename
+    })
+    .catch();
 }
 
 //// ------------ User Info ------------ ////
@@ -144,6 +158,7 @@ const checkLoginElseTryPortal = (callback) => {
 }
 
 //// ------------ IPC frontend ------------ ////
+// for action
 ipcMain.on("loginReq", (event, message) => {
     userId = message.userId;
     userPass = message.userPass;
@@ -165,6 +180,11 @@ ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
 });
 
+ipcMain.on("icampusFileDownload", (event, message) => {
+    icampusFileDownload(message.url, message.name, message.saveName);
+});
+
+// for infor
 ipcMain.on("studentInfoReq", (event, message) => {
     event.sender.send("studentInfoRes", {
         data: {
@@ -202,30 +222,16 @@ ipcMain.on("classListReq", (event, message) => {
     });
 });
 
-ipcMain.on("classPostListReq", (event, message) => {
+ipcMain.on("postListReq", (event, message) => {
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event.sender, "classPostListRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "postListRes", 10, () => {
         timeoutSent = true;
     });
 
-    classPostListRequest(message, (result) => {
+    postListRequest(message, (result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
-            event.sender.send("classPostListRes", result);
-        }
-    });
-});
-
-ipcMain.on("weatherReq", (event, message) => {
-    let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event.sender, "weatherRes", 10, () => {
-        timeoutSent = true;
-    });
-
-    weatherRequest((result) => {
-        clearTimeout(timeout);
-        if (timeoutSent === false) {
-            event.sender.send("weatherRes", result);
+            event.sender.send("postListRes", result);
         }
     });
 });
@@ -243,6 +249,49 @@ ipcMain.on("messageListReq", (event, message) => {
         }
     });
 });
+
+ipcMain.on("postReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "postRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    postRequest(message.url, message.type, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("postRes", result);
+        }
+    })
+});
+
+ipcMain.on("messageReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "messageRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    messageRequest(message.messageId, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("messageRes", result);
+        }
+    })
+});
+
+ipcMain.on("weatherReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "weatherRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    weatherRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("weatherRes", result);
+        }
+    });
+});
+
 
 //// ------------ IPC backend functions ------------ ////
 
@@ -312,7 +361,7 @@ const classListRequest = (callback) => {
     });
 }
 
-const classPostListRequest = (identity, callback) => {
+const postListRequest = (identity, callback) => {
     let postList = [];
 
     checkLoginElseTryIcampus((result) => {
@@ -371,14 +420,6 @@ const classPostListRequest = (identity, callback) => {
     });
 };
 
-const weatherRequest = (callback) => {
-    weather.getWeather(0, (result) => {
-        callback({
-            data: result
-        });
-    });
-}
-
 const messageListRequest = (callback) => {
     checkLoginElseTryIcampus((result) => {
         if (result) {
@@ -391,5 +432,56 @@ const messageListRequest = (callback) => {
         else {
             reLoginFailed();
         }
+    });
+}
+
+const postRequest = (url, type, callback) => {
+    checkLoginElseTryIcampus((result) => {
+        if (result) { 
+            let iType = -1;
+            if (type === "notice") {
+                iType = icampus.NOTICE;
+            }
+            else if (type === "material") {
+                iType = icampus.MATERIAL;
+            }
+            else if (type === "assignment") {
+                iType = icampus.ASSIGNMENT;
+            }
+
+            if (-1 < iType) {
+                icampus.getPost(url, iType, (result) => {
+                    callback({
+                        data: result
+                    })
+                })
+            }
+        }
+        else {
+            reLoginFailed();
+        }
+    });
+}
+
+const messageRequest = (messageId, callback) => {
+    checkLoginElseTryIcampus((result) => {
+        if (result) { 
+            icampus.getMessage(messageId, (result) => {
+                callback({
+                    data: result
+                })
+            })
+        }
+        else {
+            reLoginFailed();
+        }
+    });
+}
+
+const weatherRequest = (callback) => {
+    weather.getWeather(0, (result) => {
+        callback({
+            data: result
+        });
     });
 }
