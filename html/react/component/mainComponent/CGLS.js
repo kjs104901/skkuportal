@@ -175,7 +175,7 @@ export default class CGLS extends React.Component {
     contentScoreRender = () => {
         let rows = [];
         rows.push(
-            <div className="row no-gutters align-items-center" style={{ height: "36px" }} key={-1}>
+            <div className="row no-gutters align-items-center b-b" style={{ height: "36px" }} key={-1}>
                 <p className="col-2 large-text no-margin text-center">년도</p>
                 <p className="col-2 large-text no-margin text-center">학기</p>
                 <p className="col-2 large-text no-margin text-center">총 학점</p>
