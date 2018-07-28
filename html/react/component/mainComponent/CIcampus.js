@@ -5,6 +5,15 @@ import '../js/jquery.scrollbar.js';
 
 const { ipcRenderer } = require('electron');
 
+const warningMessage = (errMessage) => {
+    $('body').pgNotification({
+        style: "circle",
+        timeout: 2000,
+        message: errMessage,
+        type: "danger"
+    }).show();
+};
+
 export default class CIcampus extends React.Component {
     state = {
         menuMessage: -1,
@@ -55,6 +64,7 @@ export default class CIcampus extends React.Component {
                 }
             }
             else {
+                warningMessage(message.errMessage);
                 this.setState({
                     classListLoading: false,
                     classList: [],
@@ -82,6 +92,7 @@ export default class CIcampus extends React.Component {
                 });
             }
             else {
+                warningMessage(message.errMessage);
                 this.setState({
                     messageListLoading: false,
                     messageList: [],
@@ -100,6 +111,7 @@ export default class CIcampus extends React.Component {
                 });
             }
             else {
+                warningMessage(message.errMessage);
                 this.setState({
                     postListLoading: false,
                     postList: [],
@@ -119,6 +131,7 @@ export default class CIcampus extends React.Component {
                 });
             }
             else {
+                warningMessage(message.errMessage);
                 this.setState({
                     messageLoading: false,
                     message: {},
@@ -137,6 +150,7 @@ export default class CIcampus extends React.Component {
                 });
             }
             else {
+                warningMessage(message.errMessage);
                 this.setState({
                     postLoading: false,
                     post: {},
@@ -238,7 +252,7 @@ export default class CIcampus extends React.Component {
             rows.push(
                 <li className={this.state.menuClass === index ? "active" : ""} key={index}>
                     <a href="#" onClick={() => { this.menuSelect(-1, index) }}>
-                        <span className="title"><i className="pg-inbox"></i> {classElement.name.substr(0, 5)}</span>
+                        <span className="title"><i className="fas fa-list-ul"></i> {classElement.name.substr(0, 5)}</span>
                         <span className="badge pull-right">{recentNumber}</span>
                     </a>
                 </li>
@@ -311,7 +325,16 @@ export default class CIcampus extends React.Component {
                 if (classPost.post.attachments.forEach) {
                     (classPost.post.attachments).forEach((attachment, index) => {
                         footer.push(
-                            <i className="fas fa-file-download large-text" key={index} style={{ margin: "5px" }}></i>
+                            <React.Fragment key={index}>
+                                <a href="#"
+                                    onClick={()=>{this.fileDownloadRequest(
+                                    attachment.pathInfo, 
+                                    attachment.atchFileNm,
+                                    attachment.atchFileSaveNm)}}>
+                                    
+                                    <i className="fas fa-file-download large-text" style={{ margin: "5px" }}></i>
+                                </a>
+                            </React.Fragment>
                         );
                     });
                 }
@@ -341,7 +364,6 @@ export default class CIcampus extends React.Component {
                     );
                 }
             }
-
 
             rows.push(
                 <div className="row no-gutters align-items-center" style={{ height: "36px" }} key={index}>
@@ -518,7 +540,7 @@ export default class CIcampus extends React.Component {
                 </nav>
                 <div className="inner-content full-height">
                     <div ref={el => this.el = el}>
-                        <div style={{ width: "100%", maxHeight: "590px" }}>
+                        <div style={{ width: "100%", height: "590px" }}>
                             {this.contentRender()}
                         </div>
                     </div>

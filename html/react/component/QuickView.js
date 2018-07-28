@@ -3,7 +3,7 @@ import React from 'react';
 export default class QuickView extends React.Component {
     render() {
         return (
-            <div id="quickview" className="quickview-wrapper" data-pages="quickview">
+            <div id="quickview" className="quickview-wrapper" data-pages="quickview" style={{height:"70%"}}>
                 <ul className="nav nav-tabs" role="tablist">
                     <li className="">
                         <a href="#quickview-notes" data-target="#quickview-notes" data-toggle="tab" role="tab">Notes</a>
@@ -12,12 +12,9 @@ export default class QuickView extends React.Component {
                         <a href="#quickview-alerts" data-target="#quickview-alerts" data-toggle="tab" role="tab">Alerts</a>
                     </li>
                     <li className="">
-                        <a className="active" href="#quickview-chat" data-toggle="tab" role="tab">Chat</a>
+                        <a href="#quickview-chat" data-target="#quickview-chat" data-toggle="tab" role="tab">Chat</a>
                     </li>
                 </ul>
-                <a className="btn-link quickview-toggle" data-toggle-element="#quickview" data-toggle="quickview">
-                    <i className="pg-close"></i>
-                </a>
 
                 <div className="tab-content">
                     <div className="tab-pane no-padding" id="quickview-notes">
@@ -32,7 +29,7 @@ export default class QuickView extends React.Component {
                         </div>
                     </div>
 
-                    <div className="tab-pane active no-padding" id="quickview-chat">
+                    <div className="tab-pane no-padding active" id="quickview-chat">
                         <div className="view-port clearfix" id="chat">
                             <h1>Hello 3</h1>
                         </div>

@@ -119,7 +119,7 @@ exports.getScores = (callback) => {
                     percent = 0;
                 }
                 else {
-                    percent = Math.floor((percentArr[0]*1) / (percentArr[1]*1));
+                    percent = Math.floor((percentArr[0]*1) / (percentArr[1]*1) *100);
                 }
 
                 crawler.moveTargetAfter('<td class="haksa_kyunggo_yn"');

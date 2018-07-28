@@ -4,8 +4,10 @@ const {download} = require('electron-dl');
 
 const icampus = require("./node_my_modules/icampus");
 const gls = require("./node_my_modules/gls");
+const smartgls = require("./node_my_modules/smartgls");
 const portal = require("./node_my_modules/portal");
 const weather = require("./node_my_modules/weather");
+const path = require('path')
 
 const colorSkkuBackground = "#1B484F";
 const colorSkkuBackgroundDoom = "#3D7178";
@@ -47,13 +49,13 @@ const loginWindowOpen = () => {
     loginWindow.once('ready-to-show', () => {
         loginWindow.show();
         loginWindow.webContents.openDevTools();
-    })
-
-    if (mainWindow) {
-        if (!mainWindow.isDestroyed()){
-            mainWindow.close();
+        
+        if (mainWindow) {
+            if (!mainWindow.isDestroyed()){
+                mainWindow.close();
+            }
         }
-    }
+    })
 }
 
 const mainWindowOpen = () => {
@@ -71,13 +73,13 @@ const mainWindowOpen = () => {
         }, 500);
 
         mainWindow.webContents.openDevTools();
-    })
-
-    if (loginWindow) {
-        if (!loginWindow.isDestroyed()){
-            loginWindow.close();
+        
+        if (loginWindow) {
+            if (!loginWindow.isDestroyed()){
+                loginWindow.close();
+            }
         }
-    }
+    })
 }
 
 const icampusFileDownload = (url, filename, saveFilename) => {
@@ -85,11 +87,24 @@ const icampusFileDownload = (url, filename, saveFilename) => {
     fullUrl += url;
     fullUrl += "&fileinfo=01|"+filename+"|"+saveFilename+"|0";
 
-    download(BrowserWindow.getFocusedWindow(), fullUrl, {
-        saveAs: true,
-        filename: filename
+    dialog.showSaveDialog({
+        title: "Download file",
+        defaultPath: filename
+    },(filepath)=>{
+        if (filepath){
+            let saveFilepath = filepath;
+            if (! path.extname(filepath)) {
+                saveFilepath += path.extname(filename);
+            }
+            
+            download(BrowserWindow.getFocusedWindow(), fullUrl, {
+                saveAs: false,
+                directory: path.dirname(saveFilepath),
+                filename: path.basename(saveFilepath)
+            })
+            .catch();
+        }
     })
-    .catch();
 }
 
 //// ------------ User Info ------------ ////
@@ -105,10 +120,12 @@ app.on('ready', () => {
 const reserveTimeoutSend = (sender, messageType, timeoutSecond, callback) => {
     const timeout = setTimeout(() => {
         timeoutSent = true;
-        sender.send(messageType, {
-            err: "timeOut",
-            errMessage: "요청 시간이 초과되었습니다"
-        })
+        if (!sender.isDestroyed()) {
+            sender.send(messageType, {
+                err: "timeOut",
+                errMessage: "요청 시간이 초과되었습니다"
+            })
+        }
         callback();
     }, timeoutSecond * 1000);
 
@@ -157,8 +174,26 @@ const checkLoginElseTryPortal = (callback) => {
     })
 }
 
+const checkLoginElseTrySmart = (callback) => {
+    smartgls.loginCheck((result) => {
+        if (result == true) {
+            callback(true);
+        }
+        else {
+            smartgls.login(userId, userPass, (result) => {
+                if (result) {
+                    callback(true);
+                }
+                else {
+                    callback(false);
+                }
+            })
+        }
+    })
+}
+
 //// ------------ IPC frontend ------------ ////
-// for action
+////// for action
 ipcMain.on("loginReq", (event, message) => {
     userId = message.userId;
     userPass = message.userPass;
@@ -180,20 +215,6 @@ ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
 });
 
-ipcMain.on("icampusFileDownload", (event, message) => {
-    icampusFileDownload(message.url, message.name, message.saveName);
-});
-
-// for infor
-ipcMain.on("studentInfoReq", (event, message) => {
-    event.sender.send("studentInfoRes", {
-        data: {
-            name: portal.getName(),
-            department: portal.getDepartment()
-        }
-    });
-});
-
 ipcMain.on("openGLSReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "openGLSRes", 10, () => {
@@ -204,6 +225,21 @@ ipcMain.on("openGLSReq", (event, message) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("openGLSRes", result);
+        }
+    });
+});
+
+ipcMain.on("icampusFileDownload", (event, message) => {
+    icampusFileDownload(message.url, message.name, message.saveName);
+});
+
+////// for information
+// icampus
+ipcMain.on("studentInfoReq", (event, message) => {
+    event.sender.send("studentInfoRes", {
+        data: {
+            name: portal.getName(),
+            department: portal.getDepartment()
         }
     });
 });
@@ -278,6 +314,36 @@ ipcMain.on("messageReq", (event, message) => {
     })
 });
 
+// gls
+ipcMain.on("scoreListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "scoreListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    scoreListRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("scoreListRes", result);
+        }
+    })
+});
+
+ipcMain.on("scoreReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "scoreRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    scoreRequest(message.year, message.semester, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("scoreRes", result);
+        }
+    })
+});
+
+// weather
 ipcMain.on("weatherReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "weatherRes", 10, () => {
@@ -294,7 +360,7 @@ ipcMain.on("weatherReq", (event, message) => {
 
 
 //// ------------ IPC backend functions ------------ ////
-
+////// for action
 const loginReqest = (userId, userPass, callback) => {
     portal.login(userId, userPass, (result) => {});
     icampus.loginDirect(userId, userPass, (result) => {
@@ -346,6 +412,8 @@ const openGLSRequest = (callback) => {
     });
 }
 
+////// for information
+// icampus
 const classListRequest = (callback) => {
     checkLoginElseTryIcampus((result) => {
         if (result) {
@@ -478,6 +546,37 @@ const messageRequest = (messageId, callback) => {
     });
 }
 
+// gls
+const scoreListRequest = (callback) => {
+    checkLoginElseTrySmart((result) => {
+        if (result) {
+            smartgls.getScores((result) => {
+                callback({
+                    data: result
+                });
+            })
+        }
+        else {
+            reLoginFailed();
+        }
+    })
+}
+
+const scoreRequest = (year, semester, callback) => {
+    checkLoginElseTrySmart((result) => {
+        if (result) {
+            smartgls.getScoreDetail(year, semester, (result) => {
+                callback({
+                    data: result
+                });
+            })
+        }
+        else {
+            reLoginFailed();
+        }
+    })
+}
+// weather
 const weatherRequest = (callback) => {
     weather.getWeather(0, (result) => {
         callback({

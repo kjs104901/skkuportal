@@ -38,6 +38,7 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-skycons": "^0.7.0",
+    "recharts": "^1.1.0",
     "regedit": "^3.0.0",
     "xml2js": "^0.4.19"
   }

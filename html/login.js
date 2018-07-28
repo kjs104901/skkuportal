@@ -168,14 +168,6 @@ function loginRequest(userId, userPass) {
 }
 
 ipcRenderer.on("loginRes", (event, message) => {
-    loginButton.innerHTML = '로그인';
-    document.querySelector("#userId").readOnly = false; 
-    document.querySelector("#userPass").readOnly = false;
-    $("#userPass").val("")
-    autoSwitchery.enable();
-    idSaveSwitchery.enable();
-    isLoginRequest = false;
-
     if (message.err) {
         $('body').pgNotification({
             style: "circle",
@@ -184,11 +176,27 @@ ipcRenderer.on("loginRes", (event, message) => {
             type: "danger"
         }).show();
 
+        loginButton.innerHTML = '로그인';
+        document.querySelector("#userId").readOnly = false; 
+        document.querySelector("#userPass").readOnly = false;
+        $("#userPass").val("")
+        autoSwitchery.enable();
+        idSaveSwitchery.enable();
+        isLoginRequest = false;
+        
         saveSetting("user_pass", "");
         return;
     }
+    else {
+        $('body').pgNotification({
+            style: "circle",
+            timeout: 2000,
+            message: "로그인 성공",
+            type: "success"
+        }).show();
 
-    if (message.data.success) {
-        ipcRenderer.send("gotoMain", true);
+        if (message.data.success) {
+            ipcRenderer.send("gotoMain", true);
+        }
     }
 });

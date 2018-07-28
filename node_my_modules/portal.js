@@ -19,7 +19,7 @@ exports.login = (userId, userPwd, callback) => {
     const loginMainURL = "https://admin.skku.edu/co/COCOUsrLoginAction.do";
     const loginMainForm = {
         method: "loginMain",
-        retPage: "http://www.skku.edu/new_home/login/dummySSO.jsp",
+        retPage: "https://www.skku.edu/_custom/skkuedu/_common/login/old/dummySSO.jsp",
         D1: "null",
         D3: "null",
         roundkey: "null",
@@ -62,7 +62,7 @@ exports.login = (userId, userPwd, callback) => {
         const loginUserForm = {
             roundkey: roundkey,
             method: "loginUser",
-            retPage: "http://www.skku.edu/new_home/login/dummySSO.jsp",
+            retPage: "https://www.skku.edu/_custom/skkuedu/_common/login/old/dummySSO.jsp",
             language: "ko",
             loginId: userId,
             userPasswd: userPwd
@@ -108,11 +108,11 @@ exports.login = (userId, userPwd, callback) => {
     }
 
     function loginDummy () {
-        const loginDummyURL = "http://www.skku.edu/new_home/login/dummySSO.jsp";
+        const loginDummyURL = "https://www.skku.edu/_custom/skkuedu/_common/login/old/dummySSO.jsp";
         const loginDummyForm = {
             D1: D1,
             roundkey: roundkey,
-            retPage: "http://www.skku.edu/new_home/login/dummySSO.jsp",
+            retPage: "https://www.skku.edu/_custom/skkuedu/_common/login/old/dummySSO.jsp",
             D3: "SEED",
             type: "Y"
         };

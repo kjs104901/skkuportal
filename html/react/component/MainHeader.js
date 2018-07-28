@@ -54,7 +54,6 @@ export default class MainHeader extends React.Component {
                             {this.state.studentDepartment? this.state.studentDepartment: ""}
                         </li>
                     </ul>
-                    {shortcut(menuIndex)}
                 </div>
 
                 <div className="d-flex align-items-center">
@@ -72,37 +71,3 @@ export default class MainHeader extends React.Component {
         )
     }
 }
-
-const shortcut = (menuIndex) => {
-    if (menuIndex === 2) {
-        return (
-            <ul className="hidden-md-down notification-list no-margin hidden-sm-down b-grey no-style p-l-20 p-r-20"
-                id="header-link-button"
-                style={{ height:"27px", backgroundColor: "#1B484F", color: "#FFFFFF" }}
-                onClick={openGLS}>
-                <li className="p-l-5 p-r-5 inline">
-                    <i className="fas fa-play"></i>
-                </li>
-                <li className="p-l-5 p-r-5 inline">
-                    GLS 실행
-                </li>
-            </ul>
-        )
-    }
-};
-
-const openGLS = () => {
-    ipcRenderer.send("openGLSReq", true);
-}
-
-ipcRenderer.on("openGLSRes", (event, message) => {
-    if (message.err) {
-        $('body').pgNotification({
-            style: "circle",
-            timeout: 2000,
-            message: message.errMessage,
-            type: "danger"
-        }).show();
-        return;
-    }
-});
