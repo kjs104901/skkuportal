@@ -1,0 +1,40 @@
+body {
+    background-color: #FFFFFF;
+    -webkit-app-region: drag;
+    padding: 0px;
+    margin: 0px;
+}
+
+#start-button {
+    -webkit-app-region: no-drag;
+}
+
+#close-button {
+    -webkit-app-region: no-drag;
+    background: #FFFFFF;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#close-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #E81123;
+    cursor: pointer;
+}
+
+#minimize-button {
+    -webkit-app-region: no-drag;
+    background: #FFFFFF;
+    -webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+  
+#minimize-button:hover {
+    -webkit-app-region: no-drag;
+    background-color: #767676;
+    cursor: pointer;
+}

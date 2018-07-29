@@ -4759,6 +4759,9 @@ body > .pgn-wrapper {
 .progress.progress-small {
   height: 3px;
 }
+.progress.progress-big {
+  height: 30px;
+}
 /* Circular Progress : indeterminate color
 ------------------------------------
 */

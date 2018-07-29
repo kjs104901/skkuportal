@@ -25,6 +25,7 @@ const loginWindowSetting = {
     backgroundColor: colorSkkuBackground,
     icon: "./html/icon.ico"
 };
+
 let mainWindow;
 const mainWindowSetting = {
     //width: 790, height: 650,
@@ -36,6 +37,28 @@ const mainWindowSetting = {
     backgroundColor: "#F0F0F0",
     icon: "./html/icon.ico"
 };
+
+let glsInstallWindow;
+const glsInstallWindowSetting = {
+    //width: 500, height: 600,
+    width: 1200, height: 400,
+    frame: false,
+    show: false,
+    resizable: false,
+    backgroundColor: "#FFFFFF",
+    icon: "./html/icon.ico"
+};
+
+//// ------------ Application ------------ ////
+
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
+app.on('ready', () => {
+    //loginWindowOpen();
+    installGLSOpen();
+});
+
+//// ------------ Windows ------------ ////
 
 const loginWindowOpen = () => {
     if (loginWindow) {
@@ -107,15 +130,53 @@ const icampusFileDownload = (url, filename, saveFilename) => {
     })
 }
 
+const installGLSOpen = () => {
+    if (glsInstallWindow) {
+        if (!glsInstallWindow.isDestroyed()){
+            glsInstallWindow.close();
+        }
+    }
+    glsInstallWindow = new BrowserWindow(glsInstallWindowSetting);
+    glsInstallWindow.loadFile('./html/glsInstall.html');
+
+    glsInstallWindow.once('ready-to-show', () => {
+        glsInstallWindow.show();
+        glsInstallWindow.webContents.openDevTools();
+    })
+}
+
+const glsDownloadStart = () =>{
+    const glsInstallURL = "";
+    if (glsInstallWindow) {
+        if (!glsInstallWindow.isDestroyed()){
+            download(glsInstallWindow, glsInstallURL, {
+                onProgress: (percent) => {
+                    if (glsInstallWindow) {
+                        if (!glsInstallWindow.isDestroyed()){
+                            glsInstallWindow.webContents.send('glsProgress', percent);
+                        }
+                    }
+                }
+            })
+            .then((dl) => {
+                if (glsInstallWindow) {
+                    if (!glsInstallWindow.isDestroyed()){
+                        glsInstallWindow.webContents.send('glsFinished', dl.getSavePath());
+                    }
+                }
+            })
+        }
+    }
+}
+
 //// ------------ User Info ------------ ////
-let userId;
-let userPass;
+let userId = "";
+let userPass = "";
 
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+let userName = "";
+let userDepartment = "";
 
-app.on('ready', () => {
-    loginWindowOpen();
-});
+//// ------------ Timeout ------------ ////
 
 const reserveTimeoutSend = (sender, messageType, timeoutSecond, callback) => {
     const timeout = setTimeout(() => {
@@ -233,13 +294,17 @@ ipcMain.on("icampusFileDownload", (event, message) => {
     icampusFileDownload(message.url, message.name, message.saveName);
 });
 
+ipcMain.on("glsDownloadStart", (event, message) => {
+    glsDownloadStart();
+})
+
 ////// for information
 // icampus
 ipcMain.on("studentInfoReq", (event, message) => {
     event.sender.send("studentInfoRes", {
         data: {
-            name: portal.getName(),
-            department: portal.getDepartment()
+            name: userName,
+            department: userDepartment
         }
     });
 });
@@ -362,7 +427,13 @@ ipcMain.on("weatherReq", (event, message) => {
 //// ------------ IPC backend functions ------------ ////
 ////// for action
 const loginReqest = (userId, userPass, callback) => {
-    portal.login(userId, userPass, (result) => {});
+    portal.login(userId, userPass, (result) => {
+        if (result) {
+            userName = portal.getName();
+            userDepartment = portal.getDepartment();
+        }
+    });
+    
     icampus.loginDirect(userId, userPass, (result) => {
         if (result) {
             callback({
@@ -381,35 +452,49 @@ const loginReqest = (userId, userPass, callback) => {
 }
 
 const openGLSRequest = (callback) => {
-    checkLoginElseTryPortal((result) => {
-        if (result) {
-            portal.getGlobalVal((globalVal) => {
-                if (0 < globalVal.length) {
-                    gls.setGlobalVal(globalVal, (result) => {
-                        if (result == true) {
-                            gls.setImage();
-                            gls.executeGLS((result) => {});
-        
-                            callback({
-                                data: {
-                                    success: true
-                                }
-                            })
-                        }
-                    });
-                }
-                else {
-                    callback({
-                        err: "getGlobalValFailed",
-                        errMessage: "인증정보를 얻지 못했습니다"
-                    });
-                }
-            })
-        }
-        else {
-            reLoginFailed();
-        }
-    });
+    const isInstalled = gls.checkInstalled();
+    if (isInstalled){
+        checkLoginElseTryPortal((result) => {
+            if (result) {
+                console.log("1", result);
+                portal.getGlobalVal((globalVal) => {
+                    console.log("2", globalVal);
+                    if (0 < globalVal.length) {
+                        gls.setGlobalVal(globalVal, (result) => {
+                            console.log("3", result);
+                            if (result == true) {
+                                gls.setImage();
+                                gls.executeGLS((result) => {});
+            
+                                callback({
+                                    data: {
+                                        success: true
+                                    }
+                                })
+                            }
+                        });
+                    }
+                    else {
+                        callback({
+                            err: "getGlobalValFailed",
+                            errMessage: "인증정보를 얻지 못했습니다"
+                        });
+                    }
+                })
+            }
+            else {
+                reLoginFailed();
+            }
+        });
+    }
+    else {
+        callback({
+            err: "glsNotInstalled",
+            errMessage: "GLS가 설치되어 있지 않습니다"
+        })
+
+        installGLSOpen();
+    }
 }
 
 ////// for information
