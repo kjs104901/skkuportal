@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 
-const {download} = require('electron-dl');
+const { download } = require('electron-dl');
 
 const icampus = require("./node_my_modules/icampus");
 const library = require("./node_my_modules/library");
@@ -55,15 +55,51 @@ const glsInstallWindowSetting = {
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
+// single instance
+var shouldQuit = app.makeSingleInstance(function (commandLine, workingDirectory) {
+    let windowCount = 0;
+    if (loginWindow) {
+        if (!loginWindow.isDestroyed()) {
+            windowCount += 1;
+
+            if (loginWindow.isMinimized()) loginWindow.restore();
+            loginWindow.focus();
+        }
+    }
+    if (mainWindow) {
+        if (!mainWindow.isDestroyed()) {
+            windowCount += 1;
+
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.focus();
+        }
+    }
+    if (windowCount === 0) {
+        loginWindowOpen();
+    }
+});
+
+if (shouldQuit) {
+    app.quit();
+    return;
+}
+
 app.on('ready', () => {
     loginWindowOpen();
 });
+
+app.on('window-all-closed', ()=>{
+    loginWindow = null;
+    mainWindow = null;
+    glsInstallWindow = null;
+    app.quit();
+})
 
 //// ------------ Windows ------------ ////
 
 const loginWindowOpen = () => {
     if (loginWindow) {
-        if (!loginWindow.isDestroyed()){
+        if (!loginWindow.isDestroyed()) {
             loginWindow.close();
         }
     }
@@ -73,9 +109,9 @@ const loginWindowOpen = () => {
     loginWindow.once('ready-to-show', () => {
         loginWindow.show();
         loginWindow.webContents.openDevTools();
-        
+
         if (mainWindow) {
-            if (!mainWindow.isDestroyed()){
+            if (!mainWindow.isDestroyed()) {
                 mainWindow.close();
             }
         }
@@ -84,7 +120,7 @@ const loginWindowOpen = () => {
 
 const mainWindowOpen = () => {
     if (mainWindow) {
-        if (!mainWindow.isDestroyed()){
+        if (!mainWindow.isDestroyed()) {
             mainWindow.close();
         }
     }
@@ -97,9 +133,9 @@ const mainWindowOpen = () => {
         }, 500);
 
         mainWindow.webContents.openDevTools();
-        
+
         if (loginWindow) {
-            if (!loginWindow.isDestroyed()){
+            if (!loginWindow.isDestroyed()) {
                 loginWindow.close();
             }
         }
@@ -109,31 +145,31 @@ const mainWindowOpen = () => {
 const icampusFileDownload = (url, filename, saveFilename) => {
     let fullUrl = "http://www.icampus.ac.kr/FileManager.do?method=downloadOld&pathInfo=";
     fullUrl += url;
-    fullUrl += "&fileinfo=01|"+filename+"|"+saveFilename+"|0";
+    fullUrl += "&fileinfo=01|" + filename + "|" + saveFilename + "|0";
 
     dialog.showSaveDialog({
         title: "Download file",
         defaultPath: filename
-    },(filepath)=>{
-        if (filepath){
+    }, (filepath) => {
+        if (filepath) {
             let saveFilepath = filepath;
-            if (! path.extname(filepath)) {
+            if (!path.extname(filepath)) {
                 saveFilepath += path.extname(filename);
             }
-            
+
             download(BrowserWindow.getFocusedWindow(), fullUrl, {
                 saveAs: false,
                 directory: path.dirname(saveFilepath),
                 filename: path.basename(saveFilepath)
             })
-            .catch();
+                .catch();
         }
     })
 }
 
 const installGLSOpen = () => {
     if (glsInstallWindow) {
-        if (!glsInstallWindow.isDestroyed()){
+        if (!glsInstallWindow.isDestroyed()) {
             glsInstallWindow.close();
         }
     }
@@ -147,38 +183,38 @@ const installGLSOpen = () => {
 
 const installGLSClose = () => {
     if (glsInstallWindow) {
-        if (!glsInstallWindow.isDestroyed()){
+        if (!glsInstallWindow.isDestroyed()) {
             glsInstallWindow.close();
         }
     }
 }
 
-const glsDownloadStart = (callback) =>{
+const glsDownloadStart = (callback) => {
     const glsInstallURL = "https://admin.skku.edu/co/jsp/installer/MiPlatformInstallEngine320U_SKKU.exe";
     if (glsInstallWindow) {
-        if (!glsInstallWindow.isDestroyed()){
+        if (!glsInstallWindow.isDestroyed()) {
             download(glsInstallWindow, glsInstallURL, {
                 onProgress: (percent) => {
                     if (glsInstallWindow) {
-                        if (!glsInstallWindow.isDestroyed()){
+                        if (!glsInstallWindow.isDestroyed()) {
                             glsInstallWindow.webContents.send('glsProgress', percent);
                         }
                     }
                 }
             })
-            .then((dl) => {
-                if (glsInstallWindow) {
-                    if (!glsInstallWindow.isDestroyed()){
-                        glsInstallWindow.webContents.send('glsFinished', dl.getSavePath());
+                .then((dl) => {
+                    if (glsInstallWindow) {
+                        if (!glsInstallWindow.isDestroyed()) {
+                            glsInstallWindow.webContents.send('glsFinished', dl.getSavePath());
+                        }
                     }
-                }
-            })
-            .catch(()=>{
-                callback({
-                    err: "downloadFailed",
-                    errMessage: "다운로드 실패"
                 })
-            })
+                .catch(() => {
+                    callback({
+                        err: "downloadFailed",
+                        errMessage: "다운로드 실패"
+                    })
+                })
         }
     }
 }
@@ -188,6 +224,7 @@ let userId = "";
 let userPass = "";
 
 let userName = "";
+let userUniversity = "";
 let userDepartment = "";
 
 let userCampusType = 0; // 0:seoul 1:suwon
@@ -280,7 +317,7 @@ ipcMain.on("loginReq", (event, message) => {
         timeoutSent = true;
     })
 
-    loginReqest(userId, userPass, (result)=>{
+    loginReqest(userId, userPass, (result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("loginRes", result);
@@ -293,7 +330,7 @@ ipcMain.on("gotoMain", (event, message) => {
 });
 
 ipcMain.on("openIcampusGateReq", (event, message) => {
-    openIcampusGate((result)=>{
+    openIcampusGate((result) => {
         event.sender.send("openIcampusGateRes", result);
     });
 });
@@ -304,7 +341,7 @@ ipcMain.on("openGLSReq", (event, message) => {
         timeoutSent = true;
     });
 
-    openGLSRequest((result)=>{
+    openGLSRequest((result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("openGLSRes", result);
@@ -317,8 +354,8 @@ ipcMain.on("icampusFileDownload", (event, message) => {
 });
 
 ipcMain.on("glsDownloadStartReq", (event, message) => {
-    glsDownloadStart((result)=>{
-            event.sender.send("glsDownloadStartRes", result);
+    glsDownloadStart((result) => {
+        event.sender.send("glsDownloadStartRes", result);
     });
 })
 
@@ -461,11 +498,12 @@ const loginReqest = (userId, userPass, callback) => {
             userDepartment = portal.getDepartment();
         }
     });
-    
+
     library.loginDirect(userId, userPass, (result) => {
         if (result) {
             if (!loadSetting("campus_type")) {
                 userCampusType = library.getCampusType();
+                userUniversity = library.getUniversity();
                 saveSetting("campus_type", userCampusType);
             }
         }
@@ -494,7 +532,7 @@ const loginReqest = (userId, userPass, callback) => {
 
 const openGLSRequest = (callback) => {
     const isInstalled = gls.checkInstalled();
-    if (isInstalled){
+    if (isInstalled) {
         checkLoginElseTryPortal((result) => {
             if (result) {
                 portal.getGlobalVal((globalVal) => {
@@ -502,14 +540,18 @@ const openGLSRequest = (callback) => {
                         gls.setGlobalVal(globalVal, (result) => {
                             if (result == true) {
                                 gls.setImage();
-                                gls.executeGLS((result) => {});
-            
+                                gls.executeGLS((result) => { });
+
                                 callback({
                                     data: {
                                         success: true
                                     }
                                 })
                             }
+                            else ({
+                                err: "regFailed",
+                                errMessage: "레지스트리 수정 불가"
+                            })
                         });
                     }
                     else {
@@ -568,7 +610,7 @@ const openIcampusGate = (callback) => {
 const classListRequest = (callback) => {
     checkLoginElseTryIcampus((result) => {
         if (result) {
-            icampus.getClassList(2018, 10, (result)=>{
+            icampus.getClassList(2018, 10, (result) => {
                 callback({
                     data: result
                 });
@@ -585,7 +627,7 @@ const postListRequest = (identity, callback) => {
 
     checkLoginElseTryIcampus((result) => {
         if (result) {
-            icampus.getPostList(identity, icampus.NOTICE, (result)=>{
+            icampus.getPostList(identity, icampus.NOTICE, (result) => {
                 result.forEach(post => {
                     postList.push({
                         type: "notice",
@@ -608,7 +650,7 @@ const postListRequest = (identity, callback) => {
                                 post: post
                             })
                         });
-                        
+
                         postList.sort((a, b) => {
                             let aDate = new Date();
                             let bDate = new Date();
@@ -656,7 +698,7 @@ const messageListRequest = (callback) => {
 
 const postRequest = (url, type, callback) => {
     checkLoginElseTryIcampus((result) => {
-        if (result) { 
+        if (result) {
             let iType = -1;
             if (type === "notice") {
                 iType = icampus.NOTICE;
@@ -684,7 +726,7 @@ const postRequest = (url, type, callback) => {
 
 const messageRequest = (messageId, callback) => {
     checkLoginElseTryIcampus((result) => {
-        if (result) { 
+        if (result) {
             icampus.getMessage(messageId, (result) => {
                 callback({
                     data: result

@@ -1,12 +1,31 @@
 {
   "name": "skkuportal",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Portal for SKKU Students",
+  "main": "./index.js",
   "scripts": {
     "webpack": "webpack --mode=development",
     "webpackStart": "webpack --mode=development && electron .",
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "webpackDist": "webpack --mode=production && electron-builder"
+  },
+  "build": {
+    "appId": "com.lemon-puppy.skkuportal",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "./dist/icon.ico",
+      "asar": "false"
+    },
+    "nsis": {
+      "oneClick": true,
+      "createDesktopShortcut": "always",
+      "installerHeaderIcon": "./dist/icon.ico"
+    }
   },
   "keywords": [],
   "author": "",
@@ -19,7 +38,6 @@
     "url": "https://github.com/kjs104901/skkuportal/issues"
   },
   "homepage": "https://github.com/kjs104901/skkuportal#readme",
-  "description": "",
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
@@ -27,12 +45,14 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "electron": "^2.0.5",
+    "electron-builder": "^20.26.0",
     "webpack": "^4.16.1",
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
     "charset": "^1.0.1",
     "electron-dl": "^1.12.0",
+    "electron-updater": "^3.0.3",
     "iconv-lite": "^0.4.23",
     "jquery": "^3.3.1",
     "react": "^16.4.1",
@@ -41,6 +61,7 @@
     "react-skycons": "^0.7.0",
     "recharts": "^1.1.0",
     "regedit": "^3.0.0",
+    "request": "^2.87.0",
     "xml2js": "^0.4.19"
   }
 }

@@ -209,7 +209,7 @@ export default class CGLS extends React.Component {
                         <p className="col-2 large-text no-margin text-center">{semesterStr}</p>
                         <p className="col-2 large-text no-margin text-center">{score.hours} 학점</p>
                         <p className="col-2 large-text no-margin text-center">{score.average} 점</p>
-                        <p className="col-2 large-text no-margin text-center">{score.percent}%</p>
+                        <p className="col-2 large-text no-margin text-center">{0 < score.percent? score.percent: "-"} %</p>
                         <p className="col-1 large-text no-margin text-center">{cancleStr}</p>
                         <p className="col-1 large-text no-margin text-center">{warningStr}</p>
                     </div>

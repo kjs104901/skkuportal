@@ -3,6 +3,7 @@ const request = require('request'); // to request http
 const { crawler } = require('./util.js');
 
 let userCampusType = 0;
+let userUniversity = "";
 
 exports.getSeats = (campusType, callback) => {
     let seatsUrl = "";
@@ -103,6 +104,9 @@ exports.loginDirect = (userId, userPass, callback) => {
             if (body.data.branch.id === 2) {
                 userCampusType = 1;
             }
+            if (body.data.parentDept) {
+                userUniversity = body.data.parentDept.name
+            }
             crawler.setLibraryHeaderAccessToken(body.data.accessToken)
             callback(true);
         }
@@ -140,6 +144,10 @@ exports.loginCheck = (callback) => {
 
 exports.getCampusType = () => {
     return userCampusType;
+}
+
+exports.getUniversity = () => {
+    return userUniversity;
 }
 
 exports.getHold = (callback) => {

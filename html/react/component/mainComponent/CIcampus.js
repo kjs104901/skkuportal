@@ -122,7 +122,6 @@ export default class CIcampus extends React.Component {
         });
 
         ipcRenderer.on("messageRes", (event, message) => {
-            console.log(message.data);
             if (!message.err) {
                 this.setState({
                     messageLoading: false,
