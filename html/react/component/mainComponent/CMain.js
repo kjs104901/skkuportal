@@ -17,6 +17,8 @@ export default class CMain extends React.Component {
         weather: [],
         weatherError: false,
         weatherErrorMessage: "",
+
+        campusType: 0
     }
 
     componentDidMount() {
@@ -48,6 +50,7 @@ export default class CMain extends React.Component {
                     weatherLoading: false,
                     weather: message.data,
                     weatherError: false,
+                    campusType: message.campusType
                 });
             }
             else {
@@ -299,7 +302,7 @@ export default class CMain extends React.Component {
                         <div className="card card-default card-condensed" style={{ height: "300px" }}>
                             <div className="card-header">
                                 <div className="card-title">
-                                    <i className="pg-map"></i> 수원시 장안구
+                                    <i className="pg-map"></i>{this.state.campusType===0? " 서울시 종로구": " 수원시 장안구"}
                                 </div>
                                 <div className="card-controls">
                                     <ul><li>

@@ -179,5 +179,10 @@ exports.saveSetting = (key, value) => {
 
 exports.loadSetting = (key) => {
     let setting = JSON.parse(fs.readFileSync(settingFile));
-    return setting[key];
+    if (key in setting){
+        return setting[key];
+    }
+    else {
+        return null;
+    }
 };

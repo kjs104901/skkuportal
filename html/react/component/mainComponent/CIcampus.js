@@ -224,6 +224,10 @@ export default class CIcampus extends React.Component {
         })
     }
 
+    openIcampusGate = () => {
+        ipcRenderer.send("openIcampusGateReq", true);
+    }
+
     menuSelect = (messageIndex, classIndex) => {
         if (-1 < classIndex) {
             this.postListRequest(this.state.classList[classIndex].identity);
@@ -258,6 +262,15 @@ export default class CIcampus extends React.Component {
                 </li>
             )
         });
+        if (rows.length === 0) {
+            if (this.state.classListLoading) {
+                rows.push(
+                    <li key={0}>
+                        <div className="progress-circle-indeterminate m-t-50"></div> 
+                    </li>
+                )
+            }
+        }
         return (
             <React.Fragment>
                 {rows}
@@ -522,7 +535,7 @@ export default class CIcampus extends React.Component {
             <React.Fragment>
                 <nav className="secondary-sidebar">
                     <div className=" m-b-20 m-l-10 m-r-10 d-sm-none d-md-block d-lg-block d-xl-block">
-                        <a href="email_compose.html" className="btn btn-block btn-compose">Icampus 열기</a>
+                        <a href="#" onClick={this.openIcampusGate} className="btn btn-block btn-compose">Icampus 열기</a>
                     </div>
                     <p className="menu-title" style={{ marginBottom: "0px", marginTop: "10px" }}>쪽지</p>
                     <ul className="main-menu">

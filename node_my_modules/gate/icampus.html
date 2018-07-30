@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script language="javascript">
+        function init() {
+            var data = {
+// data //
+
+// data //
+            }
+
+	        document.submitForm.D1.value = data.D1;
+	        document.submitForm.D3.value = data.D3;
+	        document.submitForm.roundkey.value = data.roundkey;
+	        document.submitForm.inFrom.value = data.inFrom;
+	        document.submitForm.rtncd.value = data.rtncd;
+	        document.submitForm.type.value = data.type;
+            document.submitForm.submit();
+        }
+    </script>
+</head>
+
+<body onLoad="javascript:init();">
+    <form name="submitForm" method="post" action="http://www.icampus.ac.kr/front/login/loginAction.do?method=checkLoginAuth">
+        <input type="hidden" name="D1" value="">
+        <input type="hidden" name="D3" value="">
+        <input type="hidden" name="roundkey" value="">
+        <input type="hidden" name="inFrom" value="">
+        <input type="hidden" name="rtncd" value="">
+        <input type="hidden" name="type" value="">
+    </form>
+</body>
+
+</html>

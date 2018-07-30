@@ -2,11 +2,15 @@ const request = require('request'); // to request http
 
 const iconv = require('iconv-lite'); // to encode enc-kr
 const charset = require('charset'); // to find charset
+const fs = require('fs'); // to find charset
 
 const { crawler } = require('./util.js');
 
 let studentName = "";
 let studentDepartment = "";
+
+const gateIcampusPath = __dirname + "/gate/icampus.html";
+
 exports.getName = () => {
     return studentName;
 }
@@ -25,7 +29,7 @@ exports.login = (userId, userPwd, callback) => {
         roundkey: "null",
         language: "ko",
     };
-    
+
     request(
         {
             url: loginMainURL,
@@ -33,11 +37,11 @@ exports.login = (userId, userPwd, callback) => {
             method: "POST",
             form: loginMainForm,
             jar: crawler.getCookieJar()
-        }, 
+        },
         loginMainCallback
     );
 
-    function loginMainCallback (error, response, body){
+    function loginMainCallback(error, response, body) {
         if (error) {
             callback(false);
             return;
@@ -67,7 +71,7 @@ exports.login = (userId, userPwd, callback) => {
             loginId: userId,
             userPasswd: userPwd
         };
-        
+
         request(
             {
                 url: loginUserURL,
@@ -107,7 +111,7 @@ exports.login = (userId, userPwd, callback) => {
         }
     }
 
-    function loginDummy () {
+    function loginDummy() {
         const loginDummyURL = "https://www.skku.edu/_custom/skkuedu/_common/login/old/dummySSO.jsp";
         const loginDummyForm = {
             D1: D1,
@@ -116,7 +120,7 @@ exports.login = (userId, userPwd, callback) => {
             D3: "SEED",
             type: "Y"
         };
-        
+
         request(
             {
                 url: loginDummyURL,
@@ -129,12 +133,12 @@ exports.login = (userId, userPwd, callback) => {
         );
     }
 
-    function loginDummyCallback (error, response, body) {
+    function loginDummyCallback(error, response, body) {
         if (error) {
             callback(false);
             return;
         }
-        else if (response.statusCode === 200) {                    
+        else if (response.statusCode === 200) {
             loginPortalWeb();
         }
         else {
@@ -142,14 +146,14 @@ exports.login = (userId, userPwd, callback) => {
         }
     }
 
-    function loginPortalWeb () {
+    function loginPortalWeb() {
         const loginPortalWebURL = "http://portal.skku.edu/EP/web/login/auto_login.jsp?type=param";
         const loginPortalWebForm = {
             D1: D1,
             roundkey: roundkey,
             D3: "SEED"
         };
-        
+
         request(
             {
                 url: loginPortalWebURL,
@@ -162,7 +166,7 @@ exports.login = (userId, userPwd, callback) => {
         );
     }
 
-    function loginPortalWebCallback (error, response, body) {
+    function loginPortalWebCallback(error, response, body) {
         if (error) {
             callback(false);
             return;
@@ -175,7 +179,7 @@ exports.login = (userId, userPwd, callback) => {
         }
     }
 
-    function loginPortalMain () {
+    function loginPortalMain() {
         const loginPortalMainURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_Default1.jsp";
         const loginPortalMainForm = {
             D1: D1,
@@ -202,9 +206,9 @@ exports.login = (userId, userPwd, callback) => {
             callback(false);
             return;
         }
-        else if (response.statusCode === 200) {         
+        else if (response.statusCode === 200) {
             const encodingType = charset(response.headers, body)
-            const encodedBody = iconv.decode(body, encodingType) 
+            const encodedBody = iconv.decode(body, encodingType)
             if (-1 < encodedBody.indexOf("다시 로그인")) {
                 callback(false);
             }
@@ -212,7 +216,7 @@ exports.login = (userId, userPwd, callback) => {
                 crawler.setTargetStr(encodedBody);
 
                 crawler.moveTargetAfter("<title>");
-                const nameDepartStr = crawler.getBetweenMoveTarget(" - ","</title>");
+                const nameDepartStr = crawler.getBetweenMoveTarget(" - ", "</title>");
                 const nameDepartArr = nameDepartStr.split('/');
 
                 studentName = nameDepartArr[0];
@@ -241,7 +245,7 @@ exports.loginCheck = (callback) => {
             if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
-                
+
                 if (-1 < encodedBody.indexOf("다시 로그인")) {
                     callback(false);
                 }
@@ -267,12 +271,12 @@ exports.getGlobalVal = (callback) => {
         getGlobalValCallback
     );
 
-    function getGlobalValCallback (error, response, body) {
+    function getGlobalValCallback(error, response, body) {
         if (error) {
             callback("");
             return;
         }
-        else if (response.statusCode){    
+        else if (response.statusCode) {
             crawler.setTargetStr(body);
             roundkey2 = crawler.getBetweenMoveTarget("var roundkey_c = \"", "\"");
             if (0 < roundkey2.length) {
@@ -306,7 +310,7 @@ exports.getGlobalVal = (callback) => {
         );
     }
 
-    function getGlobalValLoginCallback (error, response, body) {
+    function getGlobalValLoginCallback(error, response, body) {
         if (error) {
             callback("");
             return;
@@ -356,7 +360,7 @@ exports.getGlobalVal = (callback) => {
         }
     }
 
-    function getGlobalValFinalCallback (error, response, body) {
+    function getGlobalValFinalCallback(error, response, body) {
         if (error) {
             callback("");
             return;
@@ -375,4 +379,262 @@ exports.getGlobalVal = (callback) => {
             callback("");
         }
     }
+}
+
+exports.gateIcampus = (setGate, callback) => {
+    let postURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_setCert_post.jsp?method=SEED";
+    postURL += "&url=http://www.icampus.ac.kr/gate.jsp";
+
+    request(
+        {
+            url: postURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar()
+        },
+        postCallback
+    );
+
+    function postCallback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            crawler.setTargetStr(body);
+            crawler.moveTargetAfter("roundkey_c =");
+            const roundkey = crawler.getBetween('"', '"')
+            postNew(roundkey);
+        }
+    }
+
+    function postNew(roundkey) {
+        const postNewURL = "http://portal.skku.edu/EP/web/portal/jsp/EP_setCert_post_new.jsp";
+        const postNewForm = {
+            roundkey: roundkey,
+            url: "http://www.icampus.ac.kr/gate.jsp",
+            pmethod: "SEED"
+        };
+
+        request(
+            {
+                url: postNewURL,
+                headers: crawler.getNormalHeader(),
+                method: "POST",
+                form: postNewForm,
+                jar: crawler.getCookieJar()
+            }
+            , postNewCallback)
+    }
+
+    function postNewCallback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            crawler.setTargetStr(body);
+
+            crawler.moveTargetAfter('name="D0"');
+            const D0 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D1"');
+            const D1 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D2"');
+            const D2 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D3"');
+            const D3 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="userid"');
+            const userid = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="roundkey"');
+            const roundkey = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="color_style"');
+            const color_style = crawler.getBetweenMoveTarget('value="', '"');
+
+            gate(D0, D1, D2, D3, userid, roundkey, color_style);
+        }
+    }
+
+    function gate(D0, D1, D2, D3, userid, roundkey, color_style) {
+        const gateURL = "http://www.icampus.ac.kr/gate.jsp";
+        const gateForm = {
+            D0: D0,
+            D1: D1,
+            D2: D2,
+            D3: D3,
+            userid: userid,
+            roundkey: roundkey,
+            color_style: color_style
+        };
+
+        request(
+            {
+                url: gateURL,
+                headers: crawler.getNormalHeader(),
+                method: "POST",
+                form: gateForm,
+                jar: crawler.getCookieJar()
+            }
+            , gateCallback)
+    }
+
+    function gateCallback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            crawler.setTargetStr(body);
+
+            crawler.moveTargetAfter('name="D1"');
+            const D1 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D3"');
+            const D3 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="roundkey"');
+            const roundkey = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="inFrom"');
+            const inFrom = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="type"');
+            const type = crawler.getBetweenMoveTarget('value="', '"');
+
+            gate2(D1, D3, roundkey, inFrom, type);
+        }
+    }
+
+    function gate2(D1, D3, roundkey, inFrom, type) {
+        const gate2URL = "http://www.icampus.ac.kr/gate2.jsp";
+        const gate2Form = {
+            D1: D1,
+            D3: D3,
+            roundkey: roundkey,
+            inFrom: inFrom,
+            type: type
+        };
+
+        request(
+            {
+                url: gate2URL,
+                headers: crawler.getNormalHeader(),
+                method: "POST",
+                form: gate2Form,
+                jar: crawler.getCookieJar()
+            }
+            , gate2Callback)
+    }
+
+    function gate2Callback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            crawler.setTargetStr(body);
+
+            crawler.moveTargetAfter('name="D1"');
+            const D1 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D3"');
+            const D3 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="roundkey"');
+            const roundkey = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="inFrom"');
+            const inFrom = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="rtncd"');
+            const rtncd = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="type"');
+            const type = crawler.getBetweenMoveTarget('value="', '"');
+
+            if (setGate) {
+                setIcampusGate(D1, D3, roundkey, inFrom, rtncd, type);
+                callback(true);
+            }
+            else {
+                gate3(D1, D3, roundkey, inFrom, rtncd, type);
+            }
+        }
+    }
+
+    function gate3(D1, D3, roundkey, inFrom, rtncd, type) {
+        const gate3URL = "http://www.icampus.ac.kr/front/login/loginAction.do?method=checkLoginAuth";
+        const gate3Form = {
+            D1: D1,
+            D3: D3,
+            roundkey: roundkey,
+            inFrom: inFrom,
+            rtncd: rtncd,
+            type: type
+        };
+
+        request(
+            {
+                url: gate3URL,
+                headers: crawler.getNormalHeader(),
+                method: "POST",
+                form: gate3Form,
+                jar: crawler.getCookieJar(),
+                followAllRedirects: true,
+                encoding: null
+            }
+            , gate3Callback)
+    }
+
+    function gate3Callback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            const encodingType = charset(response.headers, body);
+            const encodedBody = iconv.decode(body, encodingType);
+
+            if (-1 < encodedBody.indexOf("로그아웃")) {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        }
+    }
+}
+
+setIcampusGate = (D1, D3, roundkey, inFrom, rtncd, type) => {
+    let gateStr = fs.readFileSync(gateIcampusPath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+    gateStr[1] += 'D1: "'+D1+'",\n';
+    gateStr[1] += 'D3: "'+D3+'",\n';
+    gateStr[1] += 'roundkey: "'+roundkey+'",\n';
+    gateStr[1] += 'inFrom: "'+inFrom+'",\n';
+    gateStr[1] += 'rtncd: "'+rtncd+'",\n';
+    gateStr[1] += 'type: "'+type+'",\n';
+    gateStr[1] += '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gateIcampusPath, newGateStr);
+};
+
+exports.getGateIcampus = () => {
+    return gateIcampusPath;
 }

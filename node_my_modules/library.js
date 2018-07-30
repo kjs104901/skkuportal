@@ -11,12 +11,11 @@ exports.getSeats = (campusType, callback) => {
         seatsUrl = "http://lib.skku.edu/smufu-api/mo/1/rooms-at-seat?buildingId=1&roomTypeId=2";
     }
     else if (campusType === 1) {
-        seatsUrl = "http://lib.skku.edu/smufu-api/mo/1/rooms-at-seat?buildingId=1&roomTypeId=2";
+        seatsUrl = "http://lib.skku.edu/smufu-api/mo/2/rooms-at-seat?buildingId=3&roomTypeId=2";
     }
     else {
         return;
     }
-
 
     request(
         {
@@ -35,13 +34,29 @@ exports.getSeats = (campusType, callback) => {
 
                 if (0 < resultNumber) {
                     let finalArray = resultArray.map((obj) => {
+                        let beginTime = "";
+                        let endTime = "";
+                        if (obj.periodSeatChargeRule) {
+                            beginTime = obj.periodSeatChargeRule.beginTime;
+                            endTime = obj.periodSeatChargeRule.endTime;
+                        }
+
+                        let disablePeriod = false;
+                        let disablePeriodName = "";
+                        if (obj.disablePeriod) {
+                            disablePeriod = true;
+                            disablePeriodName = obj.disablePeriod.name;
+                        }
+
                         return {
                             name: obj.room.name,
                             isActive: obj.room.isActive,
                             total: obj.total,
                             occupied: obj.occupied,
-                            beginTime: obj.periodSeatChargeRule.beginTime,
-                            endTime: obj.periodSeatChargeRule.endTime
+                            beginTime: beginTime,
+                            endTime: endTime,
+                            disablePeriod: disablePeriod,
+                            disablePeriodName: disablePeriodName
                         };
                     });
                     callback(finalArray);

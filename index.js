@@ -1,13 +1,16 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 
 const {download} = require('electron-dl');
 
 const icampus = require("./node_my_modules/icampus");
+const library = require("./node_my_modules/library");
 const gls = require("./node_my_modules/gls");
 const smartgls = require("./node_my_modules/smartgls");
 const portal = require("./node_my_modules/portal");
 const weather = require("./node_my_modules/weather");
 const path = require('path')
+
+const { loadSetting, saveSetting } = require("./node_my_modules/util");
 
 const colorSkkuBackground = "#1B484F";
 const colorSkkuBackgroundDoom = "#3D7178";
@@ -187,6 +190,8 @@ let userPass = "";
 let userName = "";
 let userDepartment = "";
 
+let userCampusType = 0; // 0:seoul 1:suwon
+
 //// ------------ Timeout ------------ ////
 
 const reserveTimeoutSend = (sender, messageType, timeoutSecond, callback) => {
@@ -285,6 +290,12 @@ ipcMain.on("loginReq", (event, message) => {
 
 ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
+});
+
+ipcMain.on("openIcampusGateReq", (event, message) => {
+    openIcampusGate((result)=>{
+        event.sender.send("openIcampusGateRes", result);
+    });
 });
 
 ipcMain.on("openGLSReq", (event, message) => {
@@ -451,6 +462,19 @@ const loginReqest = (userId, userPass, callback) => {
         }
     });
     
+    library.loginDirect(userId, userPass, (result) => {
+        if (result) {
+            if (!loadSetting("campus_type")) {
+                userCampusType = library.getCampusType();
+                saveSetting("campus_type", userCampusType);
+            }
+        }
+    })
+
+    if (loadSetting("campus_type")) {
+        userCampusType = loadSetting("campus_type");
+    }
+
     icampus.loginDirect(userId, userPass, (result) => {
         if (result) {
             callback({
@@ -509,6 +533,34 @@ const openGLSRequest = (callback) => {
 
         installGLSOpen();
     }
+}
+
+const openIcampusGate = (callback) => {
+    checkLoginElseTryPortal((result) => {
+        if (result) {
+            portal.gateIcampus(true, (result) => {
+                if (result) {
+                    shell.openExternal(portal.getGateIcampus(), {}, (error) => {
+                        if (error) {
+                            callback({
+                                err: "openGateFailed",
+                                errMessage: "Gate 실행 실패"
+                            });
+                        }
+                    });
+                }
+                else {
+                    callback({
+                        err: "gateFailed",
+                        errMessage: "통합 로그인 실패"
+                    });
+                }
+            });
+        }
+        else {
+            reLoginFailed();
+        }
+    });
 }
 
 ////// for information
@@ -677,9 +729,10 @@ const scoreRequest = (year, semester, callback) => {
 }
 // weather
 const weatherRequest = (callback) => {
-    weather.getWeather(0, (result) => {
+    weather.getWeather(userCampusType, (result) => {
         callback({
-            data: result
+            data: result,
+            campusType: userCampusType
         });
     });
 }
