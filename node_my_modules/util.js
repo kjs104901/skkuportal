@@ -5,15 +5,21 @@ const fs = require('fs');
 let cookieJar = request.jar();
 
 const normalHeader = {
-    "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36",
+    "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"
 };
 
-let icampusRefererHeader = normalHeader;
-icampusRefererHeader.Referer = "http://www.icampus.ac.kr/front/login/loginAction.do?method=list";
+let icampusRefererHeader = {
+    "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36",
+    Referer: "http://www.icampus.ac.kr/front/login/loginAction.do?method=list"
+}
 
 const mobileHeader = {
     "User-Agent" : "Mozilla/5.0 (Linux; Android 6.0.1; Z832 Build/MMB29M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36"
 }
+
+let libraryHeader = {
+    "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"
+};
 
 let targetStr = "";
 
@@ -92,6 +98,14 @@ exports.crawler = {
 
     getMobileHeader: () => {
         return mobileHeader;
+    },
+
+    getLibraryHeader: () => {
+        return libraryHeader;
+    },
+
+    setLibraryHeaderAccessToken: (accessToken) => {
+        libraryHeader['pyxis-auth-token'] = accessToken;
     },
 
     getCookieJar: () => {

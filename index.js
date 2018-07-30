@@ -40,8 +40,7 @@ const mainWindowSetting = {
 
 let glsInstallWindow;
 const glsInstallWindowSetting = {
-    //width: 500, height: 600,
-    width: 1200, height: 400,
+    width: 500, height: 250,
     frame: false,
     show: false,
     resizable: false,
@@ -54,8 +53,7 @@ const glsInstallWindowSetting = {
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 app.on('ready', () => {
-    //loginWindowOpen();
-    installGLSOpen();
+    loginWindowOpen();
 });
 
 //// ------------ Windows ------------ ////
@@ -141,12 +139,19 @@ const installGLSOpen = () => {
 
     glsInstallWindow.once('ready-to-show', () => {
         glsInstallWindow.show();
-        glsInstallWindow.webContents.openDevTools();
     })
 }
 
-const glsDownloadStart = () =>{
-    const glsInstallURL = "";
+const installGLSClose = () => {
+    if (glsInstallWindow) {
+        if (!glsInstallWindow.isDestroyed()){
+            glsInstallWindow.close();
+        }
+    }
+}
+
+const glsDownloadStart = (callback) =>{
+    const glsInstallURL = "https://admin.skku.edu/co/jsp/installer/MiPlatformInstallEngine320U_SKKU.exe";
     if (glsInstallWindow) {
         if (!glsInstallWindow.isDestroyed()){
             download(glsInstallWindow, glsInstallURL, {
@@ -164,6 +169,12 @@ const glsDownloadStart = () =>{
                         glsInstallWindow.webContents.send('glsFinished', dl.getSavePath());
                     }
                 }
+            })
+            .catch(()=>{
+                callback({
+                    err: "downloadFailed",
+                    errMessage: "다운로드 실패"
+                })
             })
         }
     }
@@ -294,9 +305,15 @@ ipcMain.on("icampusFileDownload", (event, message) => {
     icampusFileDownload(message.url, message.name, message.saveName);
 });
 
-ipcMain.on("glsDownloadStart", (event, message) => {
-    glsDownloadStart();
+ipcMain.on("glsDownloadStartReq", (event, message) => {
+    glsDownloadStart((result)=>{
+            event.sender.send("glsDownloadStartRes", result);
+    });
 })
+
+ipcMain.on("glsInstallFinished", (event, message) => {
+    installGLSClose();
+});
 
 ////// for information
 // icampus
@@ -456,12 +473,9 @@ const openGLSRequest = (callback) => {
     if (isInstalled){
         checkLoginElseTryPortal((result) => {
             if (result) {
-                console.log("1", result);
                 portal.getGlobalVal((globalVal) => {
-                    console.log("2", globalVal);
                     if (0 < globalVal.length) {
                         gls.setGlobalVal(globalVal, (result) => {
-                            console.log("3", result);
                             if (result == true) {
                                 gls.setImage();
                                 gls.executeGLS((result) => {});
