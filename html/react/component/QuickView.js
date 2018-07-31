@@ -151,7 +151,6 @@ export default class QuickView extends React.Component {
                         </a>
                     </li>
                 </ul>
-
                 <div className="tab-content">
                     <div className="tab-pane p-l-10 p-r-10 active" id="quickview-setting">
                         <h5>캠퍼스 전환</h5>
