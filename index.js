@@ -477,14 +477,43 @@ ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
 });
 
+//consent
 ipcMain.on("consentAgree", (event, message) => {
     saveSetting("consent", true);
-    loginWindowOpen();
+    saveSetting("consentDate", new Date());
+
+    if (mainWindow) {
+        if (!mainWindow.isDestroyed()) {
+            if (consentWindow) {
+                if (!consentWindow.isDestroyed()) {
+                    consentWindow.close();
+                }
+            }
+        }
+        else {
+            loginWindowOpen();
+        }
+    }
+    else {
+        loginWindowOpen();
+    }
 });
 
 ipcMain.on("consentDisagree", (event, message) => {
     saveSetting("consent", false);
     closeAllWindows();
+});
+
+ipcMain.on("consentDateReq", (event, message) => {
+    event.sender.send("consentDateRes", {
+        data: {
+            consentDate: loadSetting("consentDate")
+        }
+    });
+});
+
+ipcMain.on("consentShow", (event, message) => {
+    consentWindowOpen();
 });
 
 // updater
@@ -558,6 +587,7 @@ ipcMain.on("settingCampusType", (event, message) => {
     userCampusType = message;
     saveSetting("campus_type", userCampusType);
 });
+
 
 ////// for information
 // icampus
