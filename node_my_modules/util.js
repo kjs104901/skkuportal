@@ -1,5 +1,6 @@
 const request = require('request');
 const fs = require('fs');
+const { machineIdSync } = require('node-machine-id');
 
 /* -------------- Requests -------------- */
 let cookieJar = request.jar();
@@ -150,7 +151,7 @@ exports.xmlParser = parser.parseString;
 /* -------------- Cryption -------------- */
 const crypto = require("crypto");
 exports.encrypt = (text) => {
-    const key = config["secretAESKey"];
+    const key = machineIdSync(false).substr(0, 32);
     const iv = config["secretAESIV"];
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
     const encryptedText = cipher.update(text, 'utf8', 'hex') + cipher.final('hex');
@@ -158,7 +159,7 @@ exports.encrypt = (text) => {
 };
 
 exports.decrypt = (text) => {
-    const key = config["secretAESKey"];
+    const key = machineIdSync(false).substr(0, 32);
     const iv = config["secretAESIV"];
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     const decryptedText = decipher.update(text, 'hex', 'utf8') + decipher.final('utf8');

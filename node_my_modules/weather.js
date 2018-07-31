@@ -11,6 +11,8 @@ exports.getWeather = (campusType, callback) => {
     const currentDate = new Date();
     let weatherURL = "";
 
+    let resultArray = [];
+
     if (campusType === 0) {
         weatherURL = "http://www.kma.go.kr/wid/queryDFS.jsp?gridx=60&gridy=127";
     }
@@ -18,11 +20,12 @@ exports.getWeather = (campusType, callback) => {
         weatherURL = "http://www.kma.go.kr/wid/queryDFS.jsp?gridx=60&gridy=121";
     }
     else {
-        callback(-1);
+        callback({
+            date: currentDate,
+            weather: resultArray,
+        });
         return;
     }
-
-    resultArray = [];
 
     request(
         {

@@ -687,7 +687,10 @@ exports.getMessageList = (callback) => {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 
@@ -737,7 +740,10 @@ exports.getMessage = (messageId, callback) => {
             jar: crawler.getCookieJar(),
             encoding: null
         }, (error, response, body) => {
-            if (response.statusCode === 200) {
+            if (error) {
+
+            }
+            else if (response.statusCode === 200) {
                 const encodingType = charset(response.headers, body);
                 const encodedBody = iconv.decode(body, encodingType);
 

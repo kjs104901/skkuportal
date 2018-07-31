@@ -363,13 +363,21 @@ ipcMain.on("glsInstallFinished", (event, message) => {
     installGLSClose();
 });
 
+////// for setting
+ipcMain.on("settingCampusType", (event, message) => {
+    userCampusType = message;
+    saveSetting("campus_type", userCampusType);
+});
+
 ////// for information
 // icampus
 ipcMain.on("studentInfoReq", (event, message) => {
     event.sender.send("studentInfoRes", {
         data: {
             name: userName,
-            department: userDepartment
+            userUniversity: userUniversity,
+            department: userDepartment,
+            campusType: userCampusType
         }
     });
 });
@@ -501,9 +509,9 @@ const loginReqest = (userId, userPass, callback) => {
 
     library.loginDirect(userId, userPass, (result) => {
         if (result) {
+            userUniversity = library.getUniversity();
             if (!loadSetting("campus_type")) {
                 userCampusType = library.getCampusType();
-                userUniversity = library.getUniversity();
                 saveSetting("campus_type", userCampusType);
             }
         }
@@ -772,9 +780,17 @@ const scoreRequest = (year, semester, callback) => {
 // weather
 const weatherRequest = (callback) => {
     weather.getWeather(userCampusType, (result) => {
-        callback({
-            data: result,
-            campusType: userCampusType
-        });
+        if (result.weather.length === 0) {
+            callback({
+                err: "WeatherFailed",
+                errMessage: "날씨 정보 불러오기 실패"
+            });
+        }
+        else {
+            callback({
+                data: result,
+                campusType: userCampusType
+            });
+        }
     });
 }
