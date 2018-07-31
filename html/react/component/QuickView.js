@@ -34,8 +34,6 @@ export default class QuickView extends React.Component {
 
         ipcRenderer.send("updateInfoReq", true);
         ipcRenderer.on("updateInfoRes", (event, message) => {
-            console.log("updateInfoRes", message);
-
             if (message.data.updateLoading) {
                 this.setState({
                     currentVersion: message.data.currentVersion
@@ -59,7 +57,6 @@ export default class QuickView extends React.Component {
 
         ipcRenderer.send("consentDateReq", true);
         ipcRenderer.on("consentDateRes", (event, message) => {
-            console.log("consentDateRes", message.data);
             if (!message.err) {
                 this.setState({
                     consentDate: message.data.consentDate
@@ -202,8 +199,8 @@ export default class QuickView extends React.Component {
                             style={{ backgroundColor: "#DDDDDD"}}>
                             동의서 재검토
                         </a>
-                        <p class="no-margin p-t-20">- 본 프로그램은 성균관대의 공식 프로그램이 아니며 본 프로그램을 사용함으로써 발생하는 모든 문제에 대한 책임은 사용자에게 있습니다.</p>
-                        <p class="no-margin p-t-20">- 본 프로그램은 학교 데이터 베이스에 직접 접속하는게 아닌 웹 페이지를 크롤링 하여 작동하며, 웹 페이지의 변화에 따라 발생하는 정보의 누락이 있을 수 있으므로 중요한 정보는 학교 공식
+                        <p className="no-margin p-t-20">- 본 프로그램은 성균관대의 공식 프로그램이 아니며 본 프로그램을 사용함으로써 발생하는 모든 문제에 대한 책임은 사용자에게 있습니다.</p>
+                        <p className="no-margin p-t-20">- 본 프로그램은 학교 데이터 베이스에 직접 접속하는게 아닌 웹 페이지를 크롤링 하여 작동하며, 웹 페이지의 변화에 따라 발생하는 정보의 누락이 있을 수 있으므로 중요한 정보는 학교 공식
                     홈페이지를 통해 확인해야 합니다.</p>
                     </div>
 
