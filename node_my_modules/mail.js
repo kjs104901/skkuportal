@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const { crawler } = require('./util.js');
 
-const mailBoxDir = __dirname + "/mailbox/mail_";
+const mailBoxDir = __dirname + "/mailbox/";
 
 let isProccessing = false;
 let emailList = [];
@@ -15,6 +15,8 @@ let totalNumber = 0;
 let currentNumber = 0;
 
 exports.getEmailList = (userId, userPass, callback) => {
+    const mailBoxDirPrefix = __dirname + "/mailbox/" + userId + "/mail_";
+
     let error;
 
     if (isProccessing) {
@@ -63,7 +65,7 @@ exports.getEmailList = (userId, userPass, callback) => {
         } else {
             emailList = [];
             for (let index = 1; index <= msgcount; index++) {
-                emailList[index]={
+                emailList[index] = {
                     status: false,
                     id: data[index],
                     title: "",
@@ -90,8 +92,8 @@ exports.getEmailList = (userId, userPass, callback) => {
 
     let retrvStart = () => {
         if (0 < currentNumber) {
-            if (fs.existsSync(mailBoxDir + emailList[currentNumber].id  + ".json")){
-                fs.readFile(mailBoxDir + emailList[currentNumber].id  + ".json", (err, data) => {
+            if (fs.existsSync(mailBoxDirPrefix + emailList[currentNumber].id + ".json")) {
+                fs.readFile(mailBoxDirPrefix + emailList[currentNumber].id + ".json", (err, data) => {
                     if (!err) {
                         emailList[currentNumber] = JSON.parse(data);
                     }
@@ -128,7 +130,7 @@ exports.getEmailList = (userId, userPass, callback) => {
                     crawler.setTargetStr(decodedData);
                     bodyStr = crawler.getAfter("\r\n\r\n");
                 }
-                else if (mail.headers.get("content-type").value === 'multipart/mixed'){
+                else if (mail.headers.get("content-type").value === 'multipart/mixed') {
                     decodedData = iconv.decode(buffer, "euc-kr");
                     crawler.setTargetStr(decodedData);
 
@@ -175,7 +177,7 @@ exports.getEmailList = (userId, userPass, callback) => {
 
                 let mailId = emailList[msgnumber].id;
 
-                fs.writeFile(mailBoxDir+mailId+".json", JSON.stringify(emailList[msgnumber]), () =>{
+                fs.writeFile(mailBoxDirPrefix + mailId + ".json", JSON.stringify(emailList[msgnumber]), () => {
 
                 });
             });
@@ -216,4 +218,26 @@ exports.getTotalNumber = () => {
 
 exports.getCurrentNumber = () => {
     return currentNumber;
+};
+
+const rmDir = function (dirPath, removeSelf) {
+    if (removeSelf === undefined)
+        removeSelf = true;
+    try { var files = fs.readdirSync(dirPath); }
+    catch (e) { return; }
+    if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+            var filePath = dirPath + '/' + files[i];
+            if (fs.statSync(filePath).isFile() && files[i] !== "empty") 
+                fs.unlinkSync(filePath);
+            else
+                rmDir(filePath);
+        }
+    if (removeSelf)
+        fs.rmdirSync(dirPath);
+};
+
+exports.clearMailbox = () => {
+    const fd = mailBoxDir;
+    rmDir(fd, false);
 };

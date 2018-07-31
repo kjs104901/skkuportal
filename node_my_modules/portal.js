@@ -638,3 +638,11 @@ setIcampusGate = (D1, D3, roundkey, inFrom, rtncd, type) => {
 exports.getGateIcampus = () => {
     return gateIcampusPath;
 }
+
+exports.clearGate = () => {
+    let gateStr = fs.readFileSync(gateIcampusPath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gateIcampusPath, newGateStr);
+}

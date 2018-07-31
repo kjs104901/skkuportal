@@ -165,6 +165,7 @@ export default class CIcampus extends React.Component {
             ignoreOverlay: false
         });
     }
+    
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("messageListRes");

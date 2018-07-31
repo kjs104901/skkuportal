@@ -7,7 +7,15 @@ export default class QuickView extends React.Component {
         super();
 
         this.state = {
-            campusType: 0
+            campusType: 0,
+
+            updateLoading: true,
+
+            updateError: false,
+            updateAvailable: false,
+
+            updateVersion: "Loading...",
+            currentVersion: ""
         }
         this.campusChange = this.campusChange.bind(this);
     }
@@ -21,10 +29,36 @@ export default class QuickView extends React.Component {
                 });
             }
         });
+
+        ipcRenderer.send("updateInfoReq", true);
+        ipcRenderer.on("updateInfoRes", (event, message) => {
+            console.log("updateInfoRes", message);
+
+            if (message.data.updateLoading) {
+                this.setState({
+                    currentVersion: message.data.currentVersion
+                });
+                setTimeout(()=>{
+                    ipcRenderer.send("updateInfoReq", true);
+                }, 1000);
+            }
+            else {
+                this.setState({
+                    updateLoading: false,
+                    
+                    updateError: message.data.updateError,
+                    updateAvailable: message.data.updateAvailable,
+
+                    updateVersion: message.data.updateVersion,
+                    currentVersion: message.data.currentVersion
+                });
+            }
+        });
     }
 
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("studentInfoRes");
+        ipcRenderer.removeAllListeners("updateInfoRes");
     }
 
     campusChange(changeEvent) {
@@ -34,7 +68,49 @@ export default class QuickView extends React.Component {
         ipcRenderer.send("settingCampusType", changeEvent.target.value * 1);
     }
 
+    logout() {
+        ipcRenderer.send("logoutReq", true);
+    }
+
+    clearCache() {
+        ipcRenderer.send("clearCacheReq", true);
+    }
+
+    openUpdater() {
+        if (this.state.updateAvailable) {
+            ipcRenderer.send("openUpdaterReq", true);
+        }
+        else {
+            $('body').pgNotification({
+                style: "circle",
+                timeout: 2000,
+                message: "업데이트 할 수 없습니다",
+                type: "danger"
+            }).show();
+        }
+    }
+
     render() {
+        let updateStr = "";
+        let updateButtonColor = "#FFFFFF";
+        let updateButtonFontColor = "#575757";
+        if (this.state.updateLoading) {
+            updateStr = "업데이트 검사 중"
+        }
+        else {
+            if (this.state.updateAvailable) {
+                updateButtonColor = "#F35958";
+                updateButtonFontColor = "#FFFFFF";
+                updateStr = "업데이트 다운로드"
+            }
+            else if (this.state.updateError) {
+                updateStr = "업데이트 오류"
+            }
+            else {
+                updateStr = "최신버전 입니다"
+            }
+        }
+
         return (
             <div id="quickview" className="quickview-wrapper" data-pages="quickview" style={{ height: "70%" }}>
                 <ul className="nav nav-tabs" role="tablist">
@@ -59,7 +135,7 @@ export default class QuickView extends React.Component {
                     <div className="tab-pane p-l-10 p-r-10 active" id="quickview-setting">
                         <h5>캠퍼스 전환</h5>
                         <form>
-                            <div className="radio radio-default">
+                            <div className="radio radio-warning">
                                 <input type="radio" value={0}
                                     checked={this.state.campusType == 0 ? "checked" : ""}
                                     onChange={this.campusChange}
@@ -73,6 +149,27 @@ export default class QuickView extends React.Component {
                                 <label htmlFor="campusY">율전</label>
                             </div>
                         </form>
+                        <h5 className="m-t-10">사용자 정보</h5>
+                        <a href="#" className="btn btn-block btn-compose m-t-10"
+                            onClick={() => { this.logout() }}
+                            style={{ backgroundColor: "#DDDDDD"}}>
+                            로그아웃
+                        </a>
+                        <a href="#" className="btn btn-block btn-compose m-t-10"
+                            onClick={() => { this.clearCache() }}
+                            style={{ backgroundColor: "#DDDDDD"}}>
+                            캐시 삭제
+                        </a>
+                        <h5 className="m-t-10">업데이트</h5>
+                        <a href="#" className="btn btn-block btn-compose m-t-10"
+                            onClick={() => { this.openUpdater() }}
+                            style={{ backgroundColor: updateButtonColor, color: updateButtonFontColor}}>
+                            {updateStr}
+                        </a>
+                        <div className="m-t-10" style={{textAlign: "center"}}>
+                            <p className="no-margin large-text">현재 버전: [{this.state.currentVersion}]</p>
+                            <p className="no-margin large-text">최신 버전: [{this.state.updateVersion}]</p>
+                        </div>
                     </div>
 
                     <div className="tab-pane p-l-10 p-r-10" id="quickview-agree">

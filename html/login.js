@@ -123,6 +123,10 @@ function loginTry() {
         if (userIdSave || userAuto) {
             saveSetting("user_id", userId)
         }
+        else {
+            saveSetting("user_id", "");
+        }
+        
         if (userAuto) {
             sv = encrypt(userPass);
             saveSetting("user_pass", sv);

@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
-
+const { autoUpdater } = require('electron-updater')
 const { download } = require('electron-dl');
 
 const icampus = require("./node_my_modules/icampus");
@@ -8,6 +8,7 @@ const gls = require("./node_my_modules/gls");
 const smartgls = require("./node_my_modules/smartgls");
 const portal = require("./node_my_modules/portal");
 const weather = require("./node_my_modules/weather");
+const mail = require("./node_my_modules/mail");
 const path = require('path')
 
 const { loadSetting, saveSetting } = require("./node_my_modules/util");
@@ -51,6 +52,16 @@ const glsInstallWindowSetting = {
     icon: "./html/icon.ico"
 };
 
+let updaterWindow;
+const updaterWindowSetting = {
+    width: 500, height: 250,
+    frame: false,
+    show: false,
+    resizable: false,
+    backgroundColor: "#FFFFFF",
+    icon: "./html/icon.ico"
+}
+
 //// ------------ Application ------------ ////
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
@@ -86,13 +97,63 @@ if (shouldQuit) {
 
 app.on('ready', () => {
     loginWindowOpen();
+    
+    autoUpdater.autoDownload = false;
+    autoUpdater.checkForUpdates();
 });
 
-app.on('window-all-closed', ()=>{
+app.on('window-all-closed', () => {
     loginWindow = null;
     mainWindow = null;
     glsInstallWindow = null;
+    updaterWindow = null;
     app.quit();
+})
+
+//// ------------ updater ------------ ////
+
+const packageJson = require('./package.json');
+const currentVersion = packageJson.version;
+
+let updateVersion = "";
+let updateLoading = true;
+
+let updateError = false;
+let updateAvailable = false;
+
+autoUpdater.on('checking-for-update', () => { });
+
+autoUpdater.on('update-available', (info) => {
+    updateLoading = false;
+    updateAvailable = true;
+    updateVersion = info.version;
+});
+
+autoUpdater.on('update-not-available', (info) => {
+    updateLoading = false;
+    updateAvailable = false;
+    updateVersion = info.version;
+});
+
+autoUpdater.on('error', (err) => {
+    updateLoading = false;
+    updateError = true;
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+    if (updaterWindow) {
+        if (!updaterWindow.isDestroyed()) {
+            updaterWindow.webContents.send('updaterProgress', progressObj.percent);
+        }
+    }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+    if (updaterWindow) {
+        if (!updaterWindow.isDestroyed()) {
+            updaterWindow.webContents.send('updaterFinished', true);
+        }
+    }
 })
 
 //// ------------ Windows ------------ ////
@@ -139,6 +200,20 @@ const mainWindowOpen = () => {
                 loginWindow.close();
             }
         }
+    })
+}
+
+const updaterWindowOpen = () => {
+    if (updaterWindow) {
+        if (!updaterWindow.isDestroyed()) {
+            updaterWindow.close();
+        }
+    }
+    updaterWindow = new BrowserWindow(updaterWindowSetting);
+    updaterWindow.loadFile('./html/updater.html');
+
+    updaterWindow.once('ready-to-show', () => {
+        updaterWindow.show();
     })
 }
 
@@ -308,6 +383,7 @@ const checkLoginElseTrySmart = (callback) => {
 
 //// ------------ IPC frontend ------------ ////
 ////// for action
+//login
 ipcMain.on("loginReq", (event, message) => {
     userId = message.userId;
     userPass = message.userPass;
@@ -325,8 +401,46 @@ ipcMain.on("loginReq", (event, message) => {
     });
 });
 
+ipcMain.on("logoutReq", (event, message) => {
+    saveSetting("auto_login", false);
+    saveSetting("user_pass", "");
+    loginWindowOpen();
+});
+
 ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
+});
+
+// updater
+ipcMain.on("updateInfoReq", (event, message) => {
+    event.sender.send("updateInfoRes", {
+        data: {
+            currentVersion: currentVersion,
+            updateVersion: updateVersion,
+            updateLoading: updateLoading,
+            updateError: updateError,
+            updateAvailable: updateAvailable,
+        }
+    });
+});
+
+ipcMain.on("openUpdaterReq", (event, message) => {
+    updaterWindowOpen();
+});
+
+ipcMain.on("downUpdaterReq", (event, message) => {
+    autoUpdater.downloadUpdate();
+});
+
+ipcMain.on("installUpdaterReq", (event, message) => {
+    autoUpdater.quitAndInstall();
+});
+
+// etc
+ipcMain.on("clearCacheReq", (event, message) => {
+    portal.clearGate();
+    mail.clearMailbox();
+    saveSetting("campus_type", null);
 });
 
 ipcMain.on("openIcampusGateReq", (event, message) => {
@@ -777,6 +891,7 @@ const scoreRequest = (year, semester, callback) => {
         }
     })
 }
+
 // weather
 const weatherRequest = (callback) => {
     weather.getWeather(userCampusType, (result) => {
