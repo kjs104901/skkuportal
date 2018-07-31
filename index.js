@@ -62,6 +62,17 @@ const updaterWindowSetting = {
     icon: "./html/icon.ico"
 }
 
+let consentWindow;
+const consentWindowSetting = {
+    width: 600, height: 430,
+    frame: true,
+    autoHideMenuBar: true,
+    show: false,
+    resizable: false,
+    backgroundColor: "#FFFFFF",
+    icon: "./html/icon.ico"
+}
+
 //// ------------ Application ------------ ////
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
@@ -96,7 +107,13 @@ if (shouldQuit) {
 }
 
 app.on('ready', () => {
-    loginWindowOpen();
+    const isConsented = loadSetting("consent");
+    if (isConsented) {
+        loginWindowOpen();
+    }
+    else {
+        consentWindowOpen();
+    }
     
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
@@ -107,6 +124,7 @@ app.on('window-all-closed', () => {
     mainWindow = null;
     glsInstallWindow = null;
     updaterWindow = null;
+    consentWindow = null;
     app.quit();
 })
 
@@ -176,6 +194,11 @@ const loginWindowOpen = () => {
                 mainWindow.close();
             }
         }
+        if (consentWindow) {
+            if (!consentWindow.isDestroyed()) {
+                consentWindow.close();
+            }
+        }
     })
 }
 
@@ -215,6 +238,49 @@ const updaterWindowOpen = () => {
     updaterWindow.once('ready-to-show', () => {
         updaterWindow.show();
     })
+}
+
+const consentWindowOpen = () => {
+    if (consentWindow) {
+        if (!consentWindow.isDestroyed()) {
+            consentWindow.close();
+        }
+    }
+    consentWindow = new BrowserWindow(consentWindowSetting);
+    consentWindow.loadFile('./html/consentForm.html');
+    consentWindow.setMenu(null);
+
+    consentWindow.once('ready-to-show', () => {
+        consentWindow.show();
+    })
+}
+
+const closeAllWindows = () => {
+    if (consentWindow) {
+        if (!consentWindow.isDestroyed()) {
+            consentWindow.close();
+        }
+    }
+    if (updaterWindow) {
+        if (!updaterWindow.isDestroyed()) {
+            updaterWindow.close();
+        }
+    }
+    if (mainWindow) {
+        if (!mainWindow.isDestroyed()) {
+            mainWindow.close();
+        }
+    }
+    if (loginWindow) {
+        if (!loginWindow.isDestroyed()) {
+            loginWindow.close();
+        }
+    }
+    if (glsInstallWindow) {
+        if (!glsInstallWindow.isDestroyed()) {
+            glsInstallWindow.close();
+        }
+    }
 }
 
 const icampusFileDownload = (url, filename, saveFilename) => {
@@ -409,6 +475,16 @@ ipcMain.on("logoutReq", (event, message) => {
 
 ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
+});
+
+ipcMain.on("consentAgree", (event, message) => {
+    saveSetting("consent", true);
+    loginWindowOpen();
+});
+
+ipcMain.on("consentDisagree", (event, message) => {
+    saveSetting("consent", false);
+    closeAllWindows();
 });
 
 // updater

@@ -1,5 +1,7 @@
-xml2js
-iconv-lite
-charset
-regedit
-node-machine-id
+xml2js [MIT] - Leonidas-from-XIV
+iconv-lite [MIT] - ashtuchkin
+charset [MIT] - node-modules
+regedit [MIT] - ironSource
+node-machine-id [MIT] - automation-stack
+mailparser [UPL-1.1+] - nodemailer
+parse-multipart [MIT] - freesoftwarefactory

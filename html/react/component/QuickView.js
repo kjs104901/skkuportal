@@ -177,7 +177,21 @@ export default class QuickView extends React.Component {
                     </div>
 
                     <div className="tab-pane p-l-10 p-r-10" id="quickview-info">
-                        <h1>Hello 3</h1>
+                        <div style={{textAlign: "center"}}>
+                            <h4>SKKU portal</h4>
+                            <img src='./assets/img/skkulogoback.png' width="100" height="100"/>
+                            <p className="m-t-10">License</p>
+                            <p className="text-danger no-margin">학교 정보: www.skku.edu</p>
+                            <p className="small-text no-margin">.</p>
+                            <p className="small-text no-margin">버스 정보: CC BY 경기도</p>
+                            <p className="small-text no-margin">[MIT] xml2js: Leonidas-from-XIV</p>
+                            <p className="small-text no-margin">[MIT] iconv-lite: ashtuchkin</p>
+                            <p className="small-text no-margin">[MIT] charset: node-modules</p>
+                            <p className="small-text no-margin">[MIT] regedit: ironSource</p>
+                            <p className="small-text no-margin">[MIT] node-machine-id: automation-stack</p>
+                            <p className="small-text no-margin">[MIT] parse-multipart: freesoftwarefactory</p>
+                            <p className="small-text no-margin">[UPL-1.1+] mailparser: nodemailer</p>
+                        </div>
                     </div>
                 </div>
             </div>
