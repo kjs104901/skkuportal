@@ -242,3 +242,33 @@ exports.getOverDue = (callback) => {
         }
     }
 }
+
+/// gate
+const gatePath = __dirname + "/gate/library.html";
+exports.setGate = (gate) => {
+    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+    gateStr[1] += 'D0: "'+gate.D0+'",\n';
+    gateStr[1] += 'D1: "'+gate.D1+'",\n';
+    gateStr[1] += 'D2: "'+gate.D2+'",\n';
+    gateStr[1] += 'D3: "'+gate.D3+'",\n';
+    gateStr[1] += 'userid: "'+gate.userid+'",\n';
+    gateStr[1] += 'roundkey: "'+gate.roundkey+'",\n';
+    gateStr[1] += 'color_style: "'+gate.color_style+'",\n';
+    gateStr[1] += '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gatePath, newGateStr);
+};
+
+exports.getGatePath = () => {
+    return gatePath;
+}
+
+exports.clearGatePath = () => {
+    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gatePath, newGateStr);
+}

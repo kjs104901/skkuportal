@@ -335,12 +335,12 @@ export default class CGLS extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 0 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(0) }}>
-                                <span className="title"><i className="pg-inbox"></i> 학기별 성적</span>
+                                <span className="title"><i className="far fa-star"></i> 학기별 성적</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 1 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(1) }}>
-                                <span className="title"><i className="pg-inbox"></i> 성적 차트</span>
+                                <span className="title"><i className="fas fa-chart-line"></i> 성적 차트</span>
                             </a>
                         </li>
                     </ul>

@@ -545,6 +545,7 @@ ipcMain.on("installUpdaterReq", (event, message) => {
 ipcMain.on("clearCacheReq", (event, message) => {
     icampus.clearGatePath();
     mail.clearGatePath();
+    library.clearGatePath();
     
     mail.clearMailbox();
     saveSetting("campus_type", null);
