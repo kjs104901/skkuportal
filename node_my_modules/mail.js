@@ -8,8 +8,6 @@ const { crawler } = require('./util.js');
 
 const mailBoxDir = __dirname + "/mailbox/";
 
-
-
 let popClient = null;
 
 let isProcessing = false;
