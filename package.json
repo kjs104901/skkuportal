@@ -7,6 +7,7 @@
     "webpack": "webpack --mode=development",
     "webpackStart": "webpack --mode=development && electron .",
     "start": "electron .",
+    "module": "node indexModule.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dist": "electron-builder",
     "postinstall": "electron-builder install-app-deps",

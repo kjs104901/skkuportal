@@ -5,6 +5,9 @@ const charset = require('charset'); // to find charset
 
 const { crawler } = require('./util.js');
 
+const fs = require('fs');
+
+
 /// enum ///
 exports.NOTICE = 2;
 exports.MATERIAL = 4;
@@ -173,6 +176,155 @@ exports.loginDirect = (userId, userPwd, callback) => {
     }
 }
 
+exports.loginGate = (gate, callback) => {
+    const gateURL = "http://www.icampus.ac.kr/gate.jsp";
+    const gateForm = {
+        D0: gate.D0,
+        D1: gate.D1,
+        D2: gate.D2,
+        D3: gate.D3,
+        userid: gate.userid,
+        roundkey: gate.roundkey,
+        color_style: gate.color_style
+    };
+
+    request(
+        {
+            url: gateURL,
+            headers: crawler.getNormalHeader(),
+            method: "POST",
+            form: gateForm,
+            jar: crawler.getCookieJar()
+        }
+        , gateCallback)
+
+    function gateCallback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            crawler.setTargetStr(body);
+
+            crawler.moveTargetAfter('name="D1"');
+            const D1 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D3"');
+            const D3 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="roundkey"');
+            const roundkey = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="inFrom"');
+            const inFrom = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="type"');
+            const type = crawler.getBetweenMoveTarget('value="', '"');
+
+            gate2(D1, D3, roundkey, inFrom, type);
+        }
+    }
+
+    function gate2(D1, D3, roundkey, inFrom, type) {
+        const gate2URL = "http://www.icampus.ac.kr/gate2.jsp";
+        const gate2Form = {
+            D1: D1,
+            D3: D3,
+            roundkey: roundkey,
+            inFrom: inFrom,
+            type: type
+        };
+
+        request(
+            {
+                url: gate2URL,
+                headers: crawler.getNormalHeader(),
+                method: "POST",
+                form: gate2Form,
+                jar: crawler.getCookieJar()
+            }
+            , gate2Callback)
+    }
+
+    function gate2Callback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            crawler.setTargetStr(body);
+
+            crawler.moveTargetAfter('name="D1"');
+            const D1 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="D3"');
+            const D3 = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="roundkey"');
+            const roundkey = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="inFrom"');
+            const inFrom = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="rtncd"');
+            const rtncd = crawler.getBetweenMoveTarget('value="', '"');
+
+            crawler.moveTargetAfter('name="type"');
+            const type = crawler.getBetweenMoveTarget('value="', '"');
+
+            gate3(D1, D3, roundkey, inFrom, rtncd, type);
+        }
+    }
+
+    function gate3(D1, D3, roundkey, inFrom, rtncd, type) {
+        const gate3URL = "http://www.icampus.ac.kr/front/login/loginAction.do?method=checkLoginAuth";
+        const gate3Form = {
+            D1: D1,
+            D3: D3,
+            roundkey: roundkey,
+            inFrom: inFrom,
+            rtncd: rtncd,
+            type: type
+        };
+
+        request(
+            {
+                url: gate3URL,
+                headers: crawler.getNormalHeader(),
+                method: "POST",
+                form: gate3Form,
+                jar: crawler.getCookieJar(),
+                followAllRedirects: true,
+                encoding: null
+            }
+            , gate3Callback)
+    }
+
+    function gate3Callback(error, response, body) {
+        if (error) {
+            callback(false);
+        }
+        else if (response.statusCode !== 200) {
+            callback(false);
+        }
+        else {
+            const encodingType = charset(response.headers, body);
+            const encodedBody = iconv.decode(body, encodingType);
+
+            if (-1 < encodedBody.indexOf("로그아웃")) {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        }
+    }
+}
+
 exports.loginCheck = (callback) => {
     const loginCheckURL = "http://www.icampus.ac.kr/front/main/MainAction.do?method=list";
 
@@ -204,6 +356,36 @@ exports.loginCheck = (callback) => {
         }
     );
 };
+
+/// gate
+const gatePath = __dirname + "/gate/icampus.html";
+exports.setGate = (gate) => {
+    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+    gateStr[1] += 'D0: "'+gate.D0+'",\n';
+    gateStr[1] += 'D1: "'+gate.D1+'",\n';
+    gateStr[1] += 'D2: "'+gate.D2+'",\n';
+    gateStr[1] += 'D3: "'+gate.D3+'",\n';
+    gateStr[1] += 'userid: "'+gate.userid+'",\n';
+    gateStr[1] += 'roundkey: "'+gate.roundkey+'",\n';
+    gateStr[1] += 'color_style: "'+gate.color_style+'",\n';
+    gateStr[1] += '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gatePath, newGateStr);
+};
+
+exports.getGatePath = () => {
+    return gatePath;
+}
+
+exports.clearGatePath = () => {
+    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gatePath, newGateStr);
+}
 
 exports.getSemesterList = () => {
     return semesterList;

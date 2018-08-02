@@ -543,7 +543,9 @@ ipcMain.on("installUpdaterReq", (event, message) => {
 
 // etc
 ipcMain.on("clearCacheReq", (event, message) => {
-    portal.clearGate();
+    icampus.clearGatePath();
+    mail.clearGatePath();
+    
     mail.clearMailbox();
     saveSetting("campus_type", null);
 });
@@ -808,9 +810,10 @@ const openGLSRequest = (callback) => {
 const openIcampusGate = (callback) => {
     checkLoginElseTryPortal((result) => {
         if (result) {
-            portal.gateIcampus(true, (result) => {
+            portal.getGate((result) => {
                 if (result) {
-                    shell.openExternal(portal.getGateIcampus(), {}, (error) => {
+                    icampus.setGate(result);
+                    shell.openExternal(icampus.getGatePath(), {}, (error) => {
                         if (error) {
                             callback({
                                 err: "openGateFailed",

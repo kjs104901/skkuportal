@@ -8,37 +8,58 @@ const { crawler } = require('./util.js');
 
 const mailBoxDir = __dirname + "/mailbox/";
 
-let isProccessing = false;
+
+
+let popClient = null;
+
+let isProcessing = false;
 let emailList = [];
 
 let totalNumber = 0;
-let currentNumber = 0;
+let currentNumber = -1;
 
-exports.getEmailList = (userId, userPass, callback) => {
-    const mailBoxDirPrefix = __dirname + "/mailbox/" + userId + "/mail_";
+exports.init = () => {
+    if (isProcessing) {
+        if (popClient) {
+            popClient.quit();
+            popClient = null;
+        }
+        isProcessing = false;
+    }
+    emailList = [];
+
+    totalNumber = 0;
+    currentNumber = -1;
+}
+
+exports.retreiveStart = (userId, userPass, callbackError) => {
+    const mailBoxDirUser = mailBoxDir + userId;
+    const mailBoxDirPrefix = mailBoxDirUser + "/mail_";
+
+    const isDirExists = fs.existsSync(mailBoxDirUser) && fs.lstatSync(mailBoxDirUser).isDirectory();
+    if (!isDirExists) {
+        fs.mkdirSync(mailBoxDirUser);
+    }
 
     let error;
 
-    if (isProccessing) {
+    if (isProcessing) {
         error = "is Proccessing";
-        callback(error);
+        callbackError(error);
         return;
     }
-    isProccessing = true;
+    isProcessing = true;
 
-    totalNumber = 0;
-    currentNumber = 0;
-
-    const popClient = new poplib(110, "mail.skku.edu", {
+    popClient = new poplib(110, "mail.skku.edu", {
         tlserrs: false,
         enabletls: false,
         debug: false
     });
 
     popClient.on("error", function (err) {
-        error = err;
-        callback(error);
-        isProccessing = false;
+        error = "err";
+        callbackError(error);
+        isProcessing = false;
     });
 
     popClient.on("connect", function () {
@@ -50,8 +71,8 @@ exports.getEmailList = (userId, userPass, callback) => {
             popClient.list();
         } else {
             error = "Login failed";
-            callback(error);
-            isProccessing = false;
+            callbackError(error);
+            isProcessing = false;
             popClient.quit();
         }
     });
@@ -59,8 +80,8 @@ exports.getEmailList = (userId, userPass, callback) => {
     popClient.on("list", function (status, msgcount, msgnumber, data, rawdata) {
         if (status === false) {
             error = "List failed";
-            callback(error);
-            isProccessing = false;
+            callbackError(error);
+            isProcessing = false;
             popClient.quit();
         } else {
             emailList = [];
@@ -83,8 +104,9 @@ exports.getEmailList = (userId, userPass, callback) => {
                 retrvStart();
             }
             else {
-                callback(error);
-                isProccessing = false;
+                error = "mgscount 0"
+                callbackError(error);
+                isProcessing = false;
                 popClient.quit();
             }
         }
@@ -108,8 +130,9 @@ exports.getEmailList = (userId, userPass, callback) => {
             }
         }
         else {
-            callback(error);
-            isProccessing = false;
+            error = "currentNumber";
+            callbackError(error);
+            isProcessing = false;
             popClient.quit();
         }
     }
@@ -186,8 +209,8 @@ exports.getEmailList = (userId, userPass, callback) => {
 
         } else {
             error = "Retr failed";
-            callback(error);
-            isProccessing = false;
+            callbackError(error);
+            isProcessing = false;
             popClient.quit();
         }
     });
@@ -212,6 +235,22 @@ exports.getEmail = (emailIndex) => {
     return email;
 };
 
+exports.attachmentDownload = (emailIndex, attachIndex, downDirectory) => {
+    if (emailList[emailIndex]) {
+        if (emailList[emailIndex].status) {
+            if (attachIndex < emailList[emailIndex].attachments.length) {
+                fs.writeFile(downDirectory,
+                    Buffer.from((emailList[emailIndex].attachments)[attachIndex].content.data)
+                )
+            }
+        }
+    }
+};
+
+exports.checkProcessing = () => {
+    return isProcessing;
+}
+
 exports.getTotalNumber = () => {
     return totalNumber;
 };
@@ -220,7 +259,7 @@ exports.getCurrentNumber = () => {
     return currentNumber;
 };
 
-const rmDir = function (dirPath, removeSelf) {
+const rmDir = (dirPath, removeSelf) => {
     if (removeSelf === undefined)
         removeSelf = true;
     try { var files = fs.readdirSync(dirPath); }
@@ -241,3 +280,33 @@ exports.clearMailbox = () => {
     const fd = mailBoxDir;
     rmDir(fd, false);
 };
+
+/// gate web mail
+const gatePath = __dirname + "/gate/mail.html";
+exports.setGate = (gate) => {
+    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+    gateStr[1] += 'D0: "'+gate.D0+'",\n';
+    gateStr[1] += 'D1: "'+gate.D1+'",\n';
+    gateStr[1] += 'D2: "'+gate.D2+'",\n';
+    gateStr[1] += 'D3: "'+gate.D3+'",\n';
+    gateStr[1] += 'userid: "'+gate.userid+'",\n';
+    gateStr[1] += 'roundkey: "'+gate.roundkey+'",\n';
+    gateStr[1] += 'color_style: "'+gate.color_style+'",\n';
+    gateStr[1] += '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gatePath, newGateStr);
+};
+
+exports.getGatePath = () => {
+    return gatePath;
+}
+
+exports.clearGatePath = () => {
+    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(gatePath, newGateStr);
+}

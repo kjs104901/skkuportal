@@ -6,28 +6,38 @@
         function init() {
             var data = {
 // data //
+D0: "SDS",
+D1: "Ngv-W6wh8pFclenm0C9NJ7f5T-ngiesGsKXV62iLGP75JyksP40dBC2DT6nI1AiEoOSTu6FXYzvi+vKNC2A663-eNOExo0PMMogDKgz5EfNlxSMpi-5BDbuZ7ebSFDioP7l5VXokfy9tIfhZ2AU5pM2DgznxTwRMd9CVjU1+7xjGdel8TwOakhdaeZfXQHwP2tHRa75ZDavFI6SXc9cL9bEIwsMkVD4n0RoBG3FHtyBMVzDN9gFnLjoUdO2RVG7TK5QIyX0eHN3Ajbb9K2Zhjhi6usf05Vgk2quqejQEqohlxyyPZsQc96dGWCzQzVMYEbmzGJycxXqcndF1bVV8A1910TWBjP4rvX95j09eSXSebz47P9z7oLWXIiXGCkEGtLUXFO96U2YDZbTP-RVUKANzhgp6BUvH68J6baSe5CLCt2lgGzE3HpJD+oUleUCrcB9cGSGc6+Q-mvyfQPf+Yc1t6DMhrC6XMkqN0tEqU1erJCM2WnhmCF2TVNgCkNDx9cMRKzZzdjRf+F3qTUhEiWgB-yFoqtFR9CPv1pZVmkU7K8OTE3ETH-7ZxP68js8ulCiXsWZqiKtxAtCW2S-CZanAxMIRYEsd0TS9d5cq7JN850zoaJR1yfk835dbdFHsUgHE+w14GdVoCF+Q5a7JkTSYcDk1fXzJc8lA-e2EEU3p7uRq+qyfCH60fSy96-g86jZjOogdd+rn0-zAOlS7Y9R4h4MWyl2E08xheE-nDZY70kUphemCU0EUrj5qt-sB0UAIqfCs6b+3vJf3Sqba72uxtlYldGtZS+DftL3FjBVEo1+O3OnTczqsIXroAHto",
+D2: "",
+D3: "SEED",
+userid: "kjs104901",
+roundkey: "bT0BS8Xvy8+bygy6aKgLTVHcpORLzKVhV5R7nc0AkCuEvIphPpJ+HyuiHQx8rChV5Ja24INjjMUe4LcXvuhyIJ-8w6DHoNceIcHPoN6uXoXGSIcyJteWfWy9F0fKrNWhx+dBCsG+7-q6pY7KAZkTTuXjXjKeBYfkk1BOU4pI7QqYtopm7cd5TPm+3ftQxoDdH+5n-w2WJLtSWEazcL581kjWmfIlwQ-dpnd9cD2cxo+XpAMAZdE7cerxIgr32P3zj7P5AxOZf01nivzx7lD-e1Z6dHZqoSb00vq-6AVPMf8j+7zcHnETg3QQc7PdLkDjDJWjUv54FxklIO7zAfRIdbQcYNmr-4-ORNPVDEn4EgopEKzsXpC5cV3qsnu-yEpP-4toDxDXMigGrJgTeLfLsnE8q+DSJfGUFOy6OgIlEDe17qF8tiA5erfqHK5-DYDHlhzQ7dpmYXSQqh4fJUHXMxESjan8h2YYcza59lO8nndFTxa1XHUaHE+MVOXACRZyh84wPjPGQM6vyR9neuyYUPlFVa2J7mJQuoQE9i+bs6wZz7aQNp9zVLmIyq9mEtp3U4kYhrENiFbYwVyylzyI9RoKYoYkOUoBS+wcgmGPflX8HhP59FefKRLCVAu0t74QNuGQSDcV7NFi+4Ns2lDbGk++",
+color_style: "green",
+
 // data //
             }
 
+	        document.submitForm.D0.value = data.D0;
 	        document.submitForm.D1.value = data.D1;
+	        document.submitForm.D2.value = data.D2;
 	        document.submitForm.D3.value = data.D3;
+	        document.submitForm.userid.value = data.userid;
 	        document.submitForm.roundkey.value = data.roundkey;
-	        document.submitForm.inFrom.value = data.inFrom;
-	        document.submitForm.rtncd.value = data.rtncd;
-	        document.submitForm.type.value = data.type;
+	        document.submitForm.color_style.value = data.color_style;
             document.submitForm.submit();
         }
     </script>
 </head>
 
 <body onLoad="javascript:init();">
-    <form name="submitForm" method="post" action="http://www.icampus.ac.kr/front/login/loginAction.do?method=checkLoginAuth">
+    <form name="submitForm" method="post" action="http://www.icampus.ac.kr/gate.jsp">
+        <input type="hidden" name="D0" value="">
         <input type="hidden" name="D1" value="">
+        <input type="hidden" name="D2" value="">
         <input type="hidden" name="D3" value="">
+        <input type="hidden" name="userid" value="">
         <input type="hidden" name="roundkey" value="">
-        <input type="hidden" name="inFrom" value="">
-        <input type="hidden" name="rtncd" value="">
-        <input type="hidden" name="type" value="">
+        <input type="hidden" name="color_style" value="">
     </form>
 </body>
 
