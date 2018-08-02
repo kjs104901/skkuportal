@@ -2,6 +2,78 @@ const request = require('request');
 
 const { crawler } = require('./util.js');
 
+const universityNoticeURLList = [
+    {
+        name: "학부",
+        url: "http://hakbu.skku.edu/hakbu/menu_7/sub_07_01.jsp"
+    },
+    {
+        name: "유학",
+        url: "http://scos.skku.edu/scos/menu_4/sub_04_01_01.jsp"
+    },
+    {
+        name: "문과",
+        url: "http://liberalarts.skku.edu/liberal/menu_10/data_01.jsp"
+    },
+    {
+        name: "사회과학",
+        url: "http://sscience.skku.edu/sscience/menu_4/sub4_1.jsp"
+    },
+    {
+        name: "경제",
+        url: "http://ecostat.skku.edu/ecostat/menu_6/sub6_1.jsp"
+    },
+    {
+        name: "경영",
+        url: "https://biz.skku.edu/kr/boardList.do?bbsId=BBSMSTR_000000000002"
+    },
+    {
+        name: "사범",
+        url: "http://coe.skku.edu/coe/menu_2/sub_02_7_1.jsp"
+    },
+    {
+        name: "예술",
+        url: "http://art.skku.edu/art/menu_4/sub4_1.jsp"
+    },
+    {
+        name: "자연과학",
+        url: "http://cscience.skku.edu/cscience_kor/menu_5/sub5_3.jsp"
+    },
+    {
+        name: "정보통신",
+        url: "http://icc.skku.ac.kr/icc_new/board_list_square?boardName=board_notice"
+    },
+    {
+        name: "소프트웨어",
+        url: "http://cs.skku.edu/open/notice/list"
+    },
+    {
+        name: "공과",
+        url: "http://shb.skku.edu/enc/menu_6/sub6_2.jsp"
+    },
+    {
+        name: "약학",
+        url: "http://pharm.skku.edu/board/board.jsp?catg=notice	"
+    },
+    {
+        name: "생명공학",
+        url: "https://skb.skku.edu/biotech/community/under_notice.do"
+    },
+    {
+        name: "스포츠과학",
+        url: "http://sport.skku.edu/sports/menu_4/sub4_1.jsp"
+    },
+    {
+        name: "의과",
+        url: "http://www.skkumed.ac.kr/notice.asp"
+    },
+    {
+        name: "성균융합원",
+        url: "http://icon.skku.edu/icon/menu_5/sub5_1.jsp"
+    }
+];
+
+
 exports.getNotice = (type, offset, callback) => {
     let noticeObj = {
         list: [],
@@ -246,4 +318,14 @@ exports.getDomNotice = (campusType, offset, callback) => {
             }
         }
     );
+}
+
+exports.getUniversityNoticeURL = (universityName) => {
+    let url = "https://www.skku.edu/skku/campus/skk_comm/notice01.do"
+    universityNoticeURLList.forEach(element => {
+        if (-1 < universityName.indexOf(element.name)) {
+            url = element.url;
+        }
+    });
+    return url;
 }
