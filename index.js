@@ -614,7 +614,7 @@ ipcMain.on("glsInstallFinished", (event, message) => {
 
 ipcMain.on("openUnivNoticeRequest", (event, message) => {
     const univNoticeURL = notice.getUniversityNoticeURL(userUniversity);
-    
+
     shell.openExternal(univNoticeURL);
 });
 
@@ -779,7 +779,39 @@ ipcMain.on("noticeReq", (event, message) => {
             event.sender.send("noticeRes", result);
         }
     });
-})
+});
+
+// mail
+ipcMain.on("mailTotalReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "mailTotalRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    mailTotalRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("mailTotalRes", result);
+        }
+    });
+
+    let mailRepeatID = setInterval(mailRepeat, 100)
+    function mailRepeat() {
+        if (0 <= mail.getTotalNumber()) {
+            if (mail.getTotalNumber() <= mail.getCurrentNumber() || mail.checkProcessing() === false) {
+                let mailList = [];
+                for (let index = 1; index <= mail.getTotalNumber(); index++) {
+                    mailList[index - 1] = mail.getEmail(index);
+                }
+                event.sender.send("mail", {
+                    data: mailList
+                });
+
+                clearInterval(mailRepeatID);
+            }
+        }
+    }
+});
 
 
 //// ------------ IPC backend functions ------------ ////
@@ -805,6 +837,8 @@ const loginReqest = (userId, userPass, callback) => {
     if (loadSetting("campus_type")) {
         userCampusType = loadSetting("campus_type");
     }
+
+    mail.init();
 
     icampus.loginDirect(userId, userPass, (result) => {
         if (result) {
@@ -1121,5 +1155,28 @@ const noticeRequest = (type, url, callback) => {
                 data: result
             })
         })
+    }
+}
+
+// mail
+const mailTotalRequest = (callback) => {
+    if (!mail.checkProcessing()) {
+        mail.retreiveStart(userId, userPass, (result) => {
+            callback({
+                err: result,
+                errMessage: "메일 서버 통신 실패" + result
+            })
+        })
+    }
+
+    let intervalID = setInterval(getTotalNumberRepeat, 100);
+
+    function getTotalNumberRepeat() {
+        if (0 <= mail.getTotalNumber()) {
+            callback({
+                data: mail.getTotalNumber()
+            });
+            clearInterval(intervalID);
+        }
     }
 }

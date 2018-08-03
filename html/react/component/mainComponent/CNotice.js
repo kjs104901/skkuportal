@@ -86,7 +86,7 @@ export default class CNotice extends React.Component {
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("noticeListRes");
         ipcRenderer.removeAllListeners("noticeRes");
-        
+
         /// jQuery plugin - scroll 
         this.$el.scrollbar('destroy');
     }
@@ -242,7 +242,6 @@ export default class CNotice extends React.Component {
                 </div>
             )
         }
-
 
         let rows = [];
         this.state.noticeList.forEach((notice, index) => {

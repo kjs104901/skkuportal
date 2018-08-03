@@ -13,7 +13,7 @@ let popClient = null;
 let isProcessing = false;
 let emailList = [];
 
-let totalNumber = 0;
+let totalNumber = -1;
 let currentNumber = -1;
 
 exports.init = () => {
@@ -26,7 +26,7 @@ exports.init = () => {
     }
     emailList = [];
 
-    totalNumber = 0;
+    totalNumber = -1;
     currentNumber = -1;
 }
 
@@ -128,8 +128,6 @@ exports.retreiveStart = (userId, userPass, callbackError) => {
             }
         }
         else {
-            error = "currentNumber";
-            callbackError(error);
             isProcessing = false;
             popClient.quit();
         }
