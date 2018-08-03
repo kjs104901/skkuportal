@@ -18,6 +18,13 @@ export default class CMain extends React.Component {
         weatherError: false,
         weatherErrorMessage: "",
 
+        noticeListLoading: true,
+        noticeList: [],
+        noticeListOffset: 0,
+        noticeListLast: 0,
+        noticeListError: false,
+        noticeListErrorMessage: "",
+
         campusType: 0
     }
 
@@ -63,9 +70,44 @@ export default class CMain extends React.Component {
             }
         });
 
+        /// notice list
+        ipcRenderer.send("noticeListReq", {
+            type: 2,
+            offset: 0
+        });
+        ipcRenderer.on("noticeListRes", (event, message) => {
+            if (!message.err) {
+                this.setState({
+                    noticeListLoading: false,
+                    noticeList: message.data.list,
+                    noticeListLast: message.data.last,
+                    noticeListError: false,
+                });
+            }
+            else {
+                warningMessage(message.errMessage);
+                this.setState({
+                    noticeListLoading: false,
+                    noticeList: [],
+                    noticeListOffset: 0,
+                    noticeListLast: 0,
+                    noticeListError: true,
+                    scoreListErrorMessage: message.errMessage
+                });
+            }
+        });
+
         /// jQuery plugin - scroll 
         this.$el = $(this.el)
         this.$el.scrollbar({
+            ignoreOverlay: false
+        });
+        this.$el2 = $(this.el2)
+        this.$el2.scrollbar({
+            ignoreOverlay: false
+        });
+        this.$el3 = $(this.el3)
+        this.$el3.scrollbar({
             ignoreOverlay: false
         });
     }
@@ -73,9 +115,12 @@ export default class CMain extends React.Component {
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("weatherRes");
+        ipcRenderer.removeAllListeners("noticeListRes");
 
         /// jQuery plugin - scroll 
         this.$el.scrollbar('destroy');
+        this.$el2.scrollbar('destroy');
+        this.$el3.scrollbar('destroy');
     }
 
     classListReload = () => {
@@ -96,6 +141,21 @@ export default class CMain extends React.Component {
             weatherErrorMessage: "",
         });
         ipcRenderer.send("weatherReq", true);
+    }
+
+    noticeListReload = () => {
+        this.setState({
+            noticeListLoading: true,
+            noticeList: [],
+            noticeListOffset: 0,
+            noticeListLast: 0,
+            noticeListError: false,
+            noticeListErrorMessage: "",
+        });
+        ipcRenderer.send("noticeListReq", {
+            type: 2,
+            offset: 0
+        });
     }
 
     icampusRender = () => {
@@ -226,9 +286,9 @@ export default class CMain extends React.Component {
 
                 const weatherList = this.state.weather.weather;
 
-                const currentTemp = Math.floor(weatherList[0].currentTemp*1);
-                const currentWind = Math.floor(weatherList[0].windSpeed*1);
-                const currentHumidity = Math.floor(weatherList[0].humidity*1);
+                const currentTemp = Math.floor(weatherList[0].currentTemp * 1);
+                const currentWind = Math.floor(weatherList[0].windSpeed * 1);
+                const currentHumidity = Math.floor(weatherList[0].humidity * 1);
 
                 const currentSkyStr = getSkyString(currentDate.getHours() + 1.5, weatherList[0].sky, weatherList[0].prec, weatherList[0].windSpeed);
 
@@ -274,46 +334,118 @@ export default class CMain extends React.Component {
         }
     }
 
-    render() {
-        return (
-            <div className="container-fluid padding-20">
-                <div className="row no-gutters">
-                    <div className="col-6 p-r-20">
-                        <div className="card card-default card-condensed" style={{ height: "300px" }}>
-                            <div className="card-header">
-                                <div className="card-title">아이캠퍼스</div>
+    noticeListRender = () => {
+        let menuGoto = this.props.menuGoto;
 
-                                <div className="card-controls">
-                                    <ul><li>
-                                        <a href="#" onClick={this.classListReload}>
-                                            <i className="card-icon card-icon-refresh"></i>
-                                        </a>
-                                    </li></ul>
-                                </div>
-                            </div>
-                            <div className="card-body" ref={el => this.el = el}>
-                                <div>
-                                    {this.icampusRender()}
-                                </div>
-                            </div>
+        if (this.state.noticeListLoading) {
+            return (
+                <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
+                    <div className="col-8" style={{ textAlign: "center" }}>
+                        <div className="progress-circle-indeterminate"></div>
+                    </div>
+                </div>
+            );
+        }
+        else {
+            if (this.state.noticeListError) {
+                return (
+                    <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
+                        <div className="col-8" style={{ textAlign: "center" }}>
+                            {this.state.noticeListErrorMessage}
                         </div>
                     </div>
-                    <div className="col-6">
-                        <div className="card card-default card-condensed" style={{ height: "300px" }}>
-                            <div className="card-header">
-                                <div className="card-title">
-                                    <i className="pg-map"></i>{this.state.campusType===0? " 서울시 종로구": " 수원시 장안구"}
+                )
+            }
+            else {
+                let rows = [];
+                this.state.noticeList.forEach((noticeElement, index) => {
+                    rows.push(
+                        <div className="row no-gutters m-t-10" key={index}>
+                            <div className="col b-b b-t b-grey" style={{ textAlign: "center" }}>
+                                <a href="#" onClick={()=>{menuGoto(3)}}>
+                                    {noticeElement.title.substr(0, 25)}
+                                </a>
+                            </div>
+                        </div>
+                    );
+                });
+                return (
+                    <React.Fragment>
+                        {rows}
+                    </React.Fragment>
+                )
+            }
+        }
+    }
+
+    render() {
+        return (
+            <div className="full-height">
+                <div ref={el3 => this.el3 = el3}>
+                    <div style={{ height: "590px" }}>
+                        <div className="container-fluid padding-20">
+                            <div className="row no-gutters">
+                                <div className="col-6 p-r-20">
+                                    <div className="card card-default card-condensed" style={{ height: "300px" }}>
+                                        <div className="card-header">
+                                            <div className="card-title">아이캠퍼스</div>
+
+                                            <div className="card-controls">
+                                                <ul><li>
+                                                    <a href="#" onClick={this.classListReload}>
+                                                        <i className="card-icon card-icon-refresh"></i>
+                                                    </a>
+                                                </li></ul>
+                                            </div>
+                                        </div>
+                                        <div className="card-body" ref={el => this.el = el}>
+                                            <div>
+                                                {this.icampusRender()}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="card-controls">
-                                    <ul><li>
-                                        <a href="#" onClick={this.weatherReload}>
-                                            <i className="card-icon card-icon-refresh"></i>
-                                        </a>
-                                    </li></ul>
+                                <div className="col-6">
+                                    <div className="card card-default card-condensed" style={{ height: "300px" }}>
+                                        <div className="card-header">
+                                            <div className="card-title">
+                                                <i className="pg-map"></i>{this.state.campusType === 0 ? " 서울시 종로구" : " 수원시 장안구"}
+                                            </div>
+                                            <div className="card-controls">
+                                                <ul><li>
+                                                    <a href="#" onClick={this.weatherReload}>
+                                                        <i className="card-icon card-icon-refresh"></i>
+                                                    </a>
+                                                </li></ul>
+                                            </div>
+                                        </div>
+                                        <div className="card-body">
+                                            {this.weatherRender()}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="card-body">
-                                {this.weatherRender()}
+                            <div className="row no-gutters m-t-20">
+                                <div className="col-6 p-r-20">
+                                    <div className="card card-default card-condensed" style={{ height: "300px" }}>
+                                        <div className="card-header">
+                                            <div className="card-title">학사 공지</div>
+
+                                            <div className="card-controls">
+                                                <ul><li>
+                                                    <a href="#" onClick={this.noticeListReload}>
+                                                        <i className="card-icon card-icon-refresh"></i>
+                                                    </a>
+                                                </li></ul>
+                                            </div>
+                                        </div>
+                                        <div className="card-body" ref={el2 => this.el2 = el2}>
+                                            <div>
+                                                {this.noticeListRender()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

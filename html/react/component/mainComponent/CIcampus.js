@@ -453,7 +453,7 @@ export default class CIcampus extends React.Component {
         return (
             <React.Fragment>
                 <div className="row align-items-center no-gutters b-b" style={{ width: "100%", height: "40px" }}>
-                    <div className="col-10" style={{overflow: "auto"}}>
+                    <div className="col-10" style={{overflow: "auto", height:"40px"}}>
                         {attachments}
                     </div>
                     <div className="col-2" style={{ textAlign: "center" }}>

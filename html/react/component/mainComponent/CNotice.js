@@ -35,7 +35,6 @@ export default class CNotice extends React.Component {
             type: 1,
             offset: 0
         });
-
         ipcRenderer.on("noticeListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
@@ -87,6 +86,9 @@ export default class CNotice extends React.Component {
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("noticeListRes");
         ipcRenderer.removeAllListeners("noticeRes");
+        
+        /// jQuery plugin - scroll 
+        this.$el.scrollbar('destroy');
     }
 
     menuSelect = (index) => {
@@ -333,7 +335,7 @@ export default class CNotice extends React.Component {
         return (
             <React.Fragment>
                 <div className="row align-items-center no-gutters b-b" style={{ width: "100%", height: "40px" }}>
-                    <div className="col-10" style={{overflow: "auto"}}>
+                    <div className="col-10" style={{overflow: "auto", height: "40px"}}>
                         {attachments}
                     </div>
                     <div className="col-2" style={{ textAlign: "center" }}>
