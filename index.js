@@ -9,6 +9,8 @@ const smartgls = require("./node_my_modules/smartgls");
 const portal = require("./node_my_modules/portal");
 const weather = require("./node_my_modules/weather");
 const mail = require("./node_my_modules/mail");
+const notice = require("./node_my_modules/notice");
+
 const path = require('path')
 
 const { loadSetting, saveSetting } = require("./node_my_modules/util");
@@ -114,7 +116,7 @@ app.on('ready', () => {
     else {
         consentWindowOpen();
     }
-    
+
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
 });
@@ -299,6 +301,27 @@ const icampusFileDownload = (url, filename, saveFilename) => {
             }
 
             download(BrowserWindow.getFocusedWindow(), fullUrl, {
+                saveAs: false,
+                directory: path.dirname(saveFilepath),
+                filename: path.basename(saveFilepath)
+            })
+                .catch();
+        }
+    })
+}
+
+const fileDownload = (url, filename) => {
+    dialog.showSaveDialog({
+        title: "Download file",
+        defaultPath: filename
+    }, (filepath) => {
+        if (filepath) {
+            let saveFilepath = filepath;
+            if (!path.extname(filepath)) {
+                saveFilepath += path.extname(filename);
+            }
+
+            download(BrowserWindow.getFocusedWindow(), url, {
                 saveAs: false,
                 directory: path.dirname(saveFilepath),
                 filename: path.basename(saveFilepath)
@@ -546,7 +569,7 @@ ipcMain.on("clearCacheReq", (event, message) => {
     icampus.clearGatePath();
     mail.clearGatePath();
     library.clearGatePath();
-    
+
     mail.clearMailbox();
     saveSetting("campus_type", null);
 });
@@ -575,6 +598,10 @@ ipcMain.on("icampusFileDownload", (event, message) => {
     icampusFileDownload(message.url, message.name, message.saveName);
 });
 
+ipcMain.on("fileDownload", (event, message) => {
+    fileDownload(message.url, message.name)
+});
+
 ipcMain.on("glsDownloadStartReq", (event, message) => {
     glsDownloadStart((result) => {
         event.sender.send("glsDownloadStartRes", result);
@@ -583,6 +610,12 @@ ipcMain.on("glsDownloadStartReq", (event, message) => {
 
 ipcMain.on("glsInstallFinished", (event, message) => {
     installGLSClose();
+});
+
+ipcMain.on("openUnivNoticeRequest", (event, message) => {
+    const univNoticeURL = notice.getUniversityNoticeURL(userUniversity);
+    
+    shell.openExternal(univNoticeURL);
 });
 
 ////// for setting
@@ -718,6 +751,35 @@ ipcMain.on("weatherReq", (event, message) => {
         }
     });
 });
+
+// notice
+ipcMain.on("noticeListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "noticeListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    noticeListRequest(message.type, message.offset, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("noticeListRes", result);
+        }
+    });
+});
+
+ipcMain.on("noticeReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "noticeRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    noticeRequest(message.type, message.url, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("noticeRes", result);
+        }
+    });
+})
 
 
 //// ------------ IPC backend functions ------------ ////
@@ -1018,4 +1080,46 @@ const weatherRequest = (callback) => {
             });
         }
     });
+}
+
+// notice
+const noticeListRequest = (type, offset, callback) => {
+    if (type === 9) {
+        notice.getDomNoticeList(0, offset, (result) => {
+            callback({
+                data: result
+            });
+        })
+    }
+    else if (type === 10) {
+        notice.getDomNoticeList(1, offset, (result) => {
+            callback({
+                data: result
+            });
+        })
+    }
+    else {
+        notice.getNoticeList(type, offset, (result) => {
+            callback({
+                data: result
+            });
+        })
+    }
+}
+
+const noticeRequest = (type, url, callback) => {
+    if (9 <= type) {
+        notice.getDomNotice(url, (result) => {
+            callback({
+                data: result
+            })
+        })
+    }
+    else {
+        notice.getNotice(url, (result) => {
+            callback({
+                data: result
+            })
+        })
+    }
 }

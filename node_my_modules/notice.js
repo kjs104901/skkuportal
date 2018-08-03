@@ -74,14 +74,14 @@ const universityNoticeURLList = [
 ];
 
 
-exports.getNotice = (type, offset, callback) => {
+exports.getNoticeList = (type, offset, callback) => {
     let noticeObj = {
         list: [],
         last: 0
     }
 
     let noticeURL = "https://www.skku.edu/skku/campus/skk_comm/notice0"
-    noticeURL += type+".do?mode=list&&articleLimit=10";
+    noticeURL += type + ".do?mode=list&&articleLimit=10";
     noticeURL += "&article.offset=" + offset;
 
     request(
@@ -100,7 +100,7 @@ exports.getNotice = (type, offset, callback) => {
                 crawler.setTargetStr(body);
                 const tbodyStr = crawler.getBetween("<tbody>", "</tbody>");
                 const pageingStr = crawler.getBetween('<ul class="paging">', "</ul>");
-                
+
                 let trStrList = [];
                 crawler.setTargetStr(tbodyStr);
                 while (-1 < crawler.getTargetStr().indexOf("<tr")) {
@@ -124,10 +124,10 @@ exports.getNotice = (type, offset, callback) => {
                         const tdStr = crawler.getBetweenMoveTarget(">", "</td>");
                         if (column === 0) {
                             let noTmp = tdStr;
-                            noTmp = noTmp.replace(/\r/g,"");
-                            noTmp = noTmp.replace(/\n/g,"");
-                            noTmp = noTmp.replace(/\t/g,"");
-                            noTmp = noTmp.replace(/ /g,"");
+                            noTmp = noTmp.replace(/\r/g, "");
+                            noTmp = noTmp.replace(/\n/g, "");
+                            noTmp = noTmp.replace(/\t/g, "");
+                            noTmp = noTmp.replace(/ /g, "");
                             ntc.no = noTmp * 1;
                         }
                         else if (column === 1) {
@@ -135,19 +135,24 @@ exports.getNotice = (type, offset, callback) => {
 
                             crawler.setTargetStr(tdStr);
                             let ntcURL = crawler.getBetweenMoveTarget('href="', '"');
-                            ntcURL = ntcURL.replace(/&amp;/g,"&");
-                            ntc.url = "https://www.skku.edu/skku/campus/skk_comm/notice0"+type+".do" + ntcURL;
+                            ntcURL = ntcURL.replace(/&amp;/g, "&");
+                            ntc.url = "https://www.skku.edu/skku/campus/skk_comm/notice0" + type + ".do" + ntcURL;
 
                             let titleTmp = crawler.getBetween('>', '<');
-                            titleTmp = titleTmp.replace(/\r/g,"");
-                            titleTmp = titleTmp.replace(/\n/g,"");
-                            titleTmp = titleTmp.replace(/\t/g,"");
-                            titleTmp = titleTmp.replace(/  /g,"");
+                            titleTmp = titleTmp.replace(/\r/g, "");
+                            titleTmp = titleTmp.replace(/\n/g, "");
+                            titleTmp = titleTmp.replace(/\t/g, "");
+                            titleTmp = titleTmp.replace(/  /g, "");
+                            titleTmp = titleTmp.replace(/&#034;/g, '"');
+                            titleTmp = titleTmp.replace(/&gt;/g, '>');
+                            titleTmp = titleTmp.replace(/&lt;/g, '<');
+                            titleTmp = titleTmp.replace(/&amp;/g, '&');
+                            titleTmp = titleTmp.replace(/&#039;/g, "'");
                             ntc.title = titleTmp
 
                             crawler.setTargetStr(tmpStr);
                         }
-                        else if (column === 2) {ntc.date = tdStr}
+                        else if (column === 2) { ntc.date = tdStr }
                         else if (column === 4) {
                             const tmpStr = crawler.getTargetStr();
 
@@ -157,12 +162,12 @@ exports.getNotice = (type, offset, callback) => {
                             while (-1 < crawler.getTargetStr().indexOf('href="')) {
                                 const fileURLStr = crawler.getBetweenMoveTarget('href="', '"');
                                 let fileName = crawler.getBetweenMoveTarget('>', '<');
-                                fileName = fileName.replace(/\r/g,"");
-                                fileName = fileName.replace(/\n/g,"");
-                                fileName = fileName.replace(/\t/g,"");
+                                fileName = fileName.replace(/\r/g, "");
+                                fileName = fileName.replace(/\n/g, "");
+                                fileName = fileName.replace(/\t/g, "");
 
-                                let fileURL = "https://www.skku.edu/skku/campus/skk_comm/notice0"+type+".do" + fileURLStr;
-                                fileURL = fileURL.replace(/&amp;/g,"&");
+                                let fileURL = "https://www.skku.edu/skku/campus/skk_comm/notice0" + type + ".do" + fileURLStr;
+                                fileURL = fileURL.replace(/&amp;/g, "&");
 
                                 ntc.attachment.push({
                                     name: fileName,
@@ -196,7 +201,59 @@ exports.getNotice = (type, offset, callback) => {
     );
 }
 
-exports.getDomNotice = (campusType, offset, callback) => {
+exports.getNotice = (noticeURL, callback) => {
+    let notice = {
+        title: "",
+        body: "",
+        attachment: []
+    };
+    request(
+        {
+            url: noticeURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET"
+        }, (error, response, body) => {
+            if (error) {
+                callback(notice);
+            }
+            else if (response.statusCode !== 200) {
+                callback(notice);
+            }
+            else {
+                crawler.setTargetStr(body);
+
+                const theadStr = crawler.getBetween('<em class="ellipsis">', "</em>");
+                const attachmentStr = crawler.getBetween('<ul class="filedown_list">', "</ul>");
+                let tbodyStr = crawler.getBetween('<dd>', "</dd>");
+                tbodyStr = tbodyStr.replace(/src="/g, 'src="https://www.skku.edu');
+
+
+                notice.title = theadStr;
+                notice.body = tbodyStr;
+
+                crawler.setTargetStr(attachmentStr);
+                while (-1 < crawler.getTargetStr().indexOf('href="')) {
+                    const fileURLStr = crawler.getBetweenMoveTarget('href="', '"');
+                    let fileName = crawler.getBetweenMoveTarget('>', '<');
+                    fileName = fileName.replace(/\r/g, "");
+                    fileName = fileName.replace(/\n/g, "");
+                    fileName = fileName.replace(/\t/g, "");
+
+                    let fileURL = "https://www.skku.edu/skku/campus/skk_comm/notice01.do" + fileURLStr;
+                    fileURL = fileURL.replace(/&amp;/g, "&");
+
+                    notice.attachment.push({
+                        name: fileName,
+                        url: fileURL
+                    });
+                }
+                callback(notice);
+            }
+        }
+    );
+}
+
+exports.getDomNoticeList = (campusType, offset, callback) => {
     let noticeObj = {
         list: [],
         last: 0
@@ -229,14 +286,14 @@ exports.getDomNotice = (campusType, offset, callback) => {
                 crawler.setTargetStr(body);
                 const tbodyStr = crawler.getBetween("<tbody>", "</tbody>");
                 const pageingStr = crawler.getBetween('<div class="paging">', "</html>");
-                
+
                 let trStrList = [];
                 crawler.setTargetStr(tbodyStr);
                 while (-1 < crawler.getTargetStr().indexOf("<tr")) {
                     const trStr = crawler.getBetweenMoveTarget("<tr", "</tr>");
                     trStrList.push(trStr);
                 }
-                
+
                 trStrList.forEach(trStr => {
                     crawler.setTargetStr(trStr);
 
@@ -255,10 +312,10 @@ exports.getDomNotice = (campusType, offset, callback) => {
                         const tdStr = crawler.getBetweenMoveTarget(">", "</td>");
                         if (column === 0) {
                             let noTmp = tdStr;
-                            noTmp = noTmp.replace(/\r/g,"");
-                            noTmp = noTmp.replace(/\n/g,"");
-                            noTmp = noTmp.replace(/\t/g,"");
-                            noTmp = noTmp.replace(/ /g,"");
+                            noTmp = noTmp.replace(/\r/g, "");
+                            noTmp = noTmp.replace(/\n/g, "");
+                            noTmp = noTmp.replace(/\t/g, "");
+                            noTmp = noTmp.replace(/ /g, "");
                             ntc.no = noTmp * 1;
                             if (!ntc.no) {
                                 ntc.no = -1;
@@ -266,10 +323,10 @@ exports.getDomNotice = (campusType, offset, callback) => {
                         }
                         else if (column === 1) {
                             let typeTmp = tdStr;
-                            typeTmp = typeTmp.replace(/\r/g,"");
-                            typeTmp = typeTmp.replace(/\n/g,"");
-                            typeTmp = typeTmp.replace(/\t/g,"");
-                            typeTmp = typeTmp.replace(/ /g,"");
+                            typeTmp = typeTmp.replace(/\r/g, "");
+                            typeTmp = typeTmp.replace(/\n/g, "");
+                            typeTmp = typeTmp.replace(/\t/g, "");
+                            typeTmp = typeTmp.replace(/ /g, "");
                             ntc.type = typeTmp
                         }
                         else if (column === 2) {
@@ -277,14 +334,19 @@ exports.getDomNotice = (campusType, offset, callback) => {
 
                             crawler.setTargetStr(tdStr);
                             let ntcURL = crawler.getBetweenMoveTarget('href="', '"');
-                            ntcURL = ntcURL.replace(/&amp;/g,"&");
-                            ntc.url = ntcURL;
+                            ntcURL = ntcURL.replace(/&amp;/g, "&");
+                            if (campusType === 0) {
+                                ntc.url = "https://dorm.skku.edu/skku_seoul/notice/notice_all.jsp" + ntcURL;
+                            }
+                            if (campusType === 1) {
+                                ntc.url = "https://dorm.skku.edu/skku/notice/notice_all.jsp" + ntcURL;
+                            }
 
                             let titleTmp = crawler.getBetween('>', '<');
-                            titleTmp = titleTmp.replace(/\r/g,"");
-                            titleTmp = titleTmp.replace(/\n/g,"");
-                            titleTmp = titleTmp.replace(/\t/g,"");
-                            titleTmp = titleTmp.replace(/  /g,"");
+                            titleTmp = titleTmp.replace(/\r/g, "");
+                            titleTmp = titleTmp.replace(/\n/g, "");
+                            titleTmp = titleTmp.replace(/\t/g, "");
+                            titleTmp = titleTmp.replace(/  /g, "");
                             ntc.title = titleTmp
 
                             crawler.setTargetStr(tmpStr);
@@ -294,7 +356,7 @@ exports.getDomNotice = (campusType, offset, callback) => {
                                 ntc.attachment = true;
                             }
                         }
-                        else if (column === 4) {ntc.date = tdStr}
+                        else if (column === 4) { ntc.date = tdStr }
 
                         column += 1;
                     }
@@ -315,6 +377,67 @@ exports.getDomNotice = (campusType, offset, callback) => {
                 noticeObj.last = maxOffset;
 
                 callback(noticeObj);
+            }
+        }
+    );
+}
+
+exports.getDomNotice = (noticeURL, callback) => {
+    let notice = {
+        title: "",
+        body: "",
+        attachment: []
+    };
+    request(
+        {
+            url: noticeURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET"
+        }, (error, response, body) => {
+            if (error) {
+                callback(notice);
+            }
+            else if (response.statusCode !== 200) {
+                callback(notice);
+            }
+            else {
+                crawler.setTargetStr(body);
+
+                crawler.moveTargetAfter("td title");
+                let titleStr = crawler.getBetweenMoveTarget(">", "<");
+                titleStr = titleStr.replace(/\r/g, "");
+                titleStr = titleStr.replace(/\n/g, "");
+                titleStr = titleStr.replace(/\t/g, "");
+                titleStr = titleStr.replace(/  /g, "");
+                notice.title = titleStr;
+
+                while (-1 < crawler.getTargetStr().indexOf('<a href="/_custom/skku/_common/board/download.jsp?')) {
+                    const attachNoStr = crawler.getBetweenMoveTarget('<a href="/_custom/skku/_common/board/download.jsp?', '"');
+                    const attachURL = "https://dorm.skku.edu/_custom/skku/_common/board/download.jsp?" + attachNoStr;
+
+                    let attachName = crawler.getBetweenMoveTarget('title="', ' 다운로드"');
+                    attachName = attachName.replace(/&#40;/g, "(");
+                    attachName = attachName.replace(/&#41;/g, ")");
+                    attachName = attachName.replace(/&nbsp;/g," ");
+                    attachName = attachName.replace(/&lt;/g,"<");
+                    attachName = attachName.replace(/&gt;/g,">");
+                    attachName = attachName.replace(/&amp;/g,"&");
+                    attachName = attachName.replace(/&quot;/g,"\"");
+                    attachName = attachName.replace(/&#035;/g,"#");
+                    attachName = attachName.replace(/&#039;/g,"'");
+
+                    notice.attachment.push({
+                        name: attachName,
+                        url: attachURL
+                    });
+                }
+
+                crawler.moveTargetAfter('<div id="article_text"');
+                let bodyStr = crawler.getBetween('>', "</td>");
+                bodyStr = bodyStr.replace(/src="/g, 'src="https://dorm.skku.edu');
+                notice.body = bodyStr;
+
+                callback(notice);
             }
         }
     );

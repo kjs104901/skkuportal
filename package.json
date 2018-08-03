@@ -17,7 +17,12 @@
     "appId": "com.lemon-puppy.skkuportal",
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "./dist/icon.ico",
       "asar": "false"

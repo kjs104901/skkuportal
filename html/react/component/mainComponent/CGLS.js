@@ -35,7 +35,7 @@ export default class CGLS extends React.Component {
                 this.setState({
                     scoreListLoading: false,
                     scoreList: message.data,
-                    scoreListErrorMessage: false,
+                    scoreListError: false,
                 });
             }
             else {
@@ -53,7 +53,7 @@ export default class CGLS extends React.Component {
                 this.setState({
                     scoreLoading: false,
                     score: message.data,
-                    scoreErrorMessage: false,
+                    scoreError: false,
                 });
             }
             else {
