@@ -465,7 +465,7 @@ export default class CIcampus extends React.Component {
                     </div>
                 </div>
                 <div className="padding-10" style={{ width: "100%", height: "550px", overflow: "auto" }}
-                    dangerouslySetInnerHTML={{ __html: this.state.post.content.replace(/href/, 'h') }} >
+                    dangerouslySetInnerHTML={{ __html: this.state.post.content.replace(/href/g, 'h') }} >
                 </div>
             </React.Fragment>
         );

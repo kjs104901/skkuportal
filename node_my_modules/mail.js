@@ -220,12 +220,37 @@ exports.getEmail = (emailIndex) => {
         from: "",
         to: "",
         date: "",
+        body: "",
         attachments: []
     };
 
     if (emailList[emailIndex]) {
         if (emailList[emailIndex].status) {
-            email = emailList[emailIndex]
+            let fromEmail = emailList[emailIndex];
+            if (fromEmail.status) { email.status = fromEmail.status; }
+            if (fromEmail.id) { email.id = fromEmail.id; }
+            if (fromEmail.title) { email.title = fromEmail.title; }
+            if (fromEmail.from) { email.from = fromEmail.from; }
+            if (fromEmail.to) { email.to = fromEmail.to; }
+            if (fromEmail.date) { email.date = fromEmail.date; }
+            if (fromEmail.body) {
+                if (-1 < fromEmail.body.indexOf("<body")) {
+                    crawler.setTargetStr(fromEmail.body);
+                    crawler.moveTargetAfter("<body");
+                    email.body = crawler.getBetween(">", "</body");
+                }
+                else {
+                    email.body = fromEmail.body;
+                }
+            }
+
+            if (fromEmail.attachments.forEach) {
+                fromEmail.attachments.forEach(attach => {
+                    email.attachments.push({
+                        filename: attach.filename
+                    })
+                });
+            }
         }
     }
     return email;
@@ -235,7 +260,7 @@ exports.attachmentDownload = (emailIndex, attachIndex, downDirectory) => {
     if (emailList[emailIndex]) {
         if (emailList[emailIndex].status) {
             if (attachIndex < emailList[emailIndex].attachments.length) {
-                fs.writeFile(downDirectory,
+                fs.writeFileSync(downDirectory,
                     Buffer.from((emailList[emailIndex].attachments)[attachIndex].content.data)
                 )
             }
@@ -263,7 +288,7 @@ const rmDir = (dirPath, removeSelf) => {
     if (files.length > 0)
         for (var i = 0; i < files.length; i++) {
             var filePath = dirPath + '/' + files[i];
-            if (fs.statSync(filePath).isFile() && files[i] !== "empty") 
+            if (fs.statSync(filePath).isFile() && files[i] !== "empty")
                 fs.unlinkSync(filePath);
             else
                 rmDir(filePath);
@@ -280,15 +305,15 @@ exports.clearMailbox = () => {
 /// gate web mail
 const gatePath = __dirname + "/gate/mail.html";
 exports.setGate = (gate) => {
-    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    let gateStr = fs.readFileSync(gatePath, { encoding: "utf8" }).split("// data //");
     gateStr[1] = '\n';
-    gateStr[1] += 'D0: "'+gate.D0+'",\n';
-    gateStr[1] += 'D1: "'+gate.D1+'",\n';
-    gateStr[1] += 'D2: "'+gate.D2+'",\n';
-    gateStr[1] += 'D3: "'+gate.D3+'",\n';
-    gateStr[1] += 'userid: "'+gate.userid+'",\n';
-    gateStr[1] += 'roundkey: "'+gate.roundkey+'",\n';
-    gateStr[1] += 'color_style: "'+gate.color_style+'",\n';
+    gateStr[1] += 'D0: "' + gate.D0 + '",\n';
+    gateStr[1] += 'D1: "' + gate.D1 + '",\n';
+    gateStr[1] += 'D2: "' + gate.D2 + '",\n';
+    gateStr[1] += 'D3: "' + gate.D3 + '",\n';
+    gateStr[1] += 'userid: "' + gate.userid + '",\n';
+    gateStr[1] += 'roundkey: "' + gate.roundkey + '",\n';
+    gateStr[1] += 'color_style: "' + gate.color_style + '",\n';
     gateStr[1] += '\n';
 
     const newGateStr = gateStr.join("// data //");
@@ -300,7 +325,7 @@ exports.getGatePath = () => {
 }
 
 exports.clearGatePath = () => {
-    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
+    let gateStr = fs.readFileSync(gatePath, { encoding: "utf8" }).split("// data //");
     gateStr[1] = '\n';
 
     const newGateStr = gateStr.join("// data //");

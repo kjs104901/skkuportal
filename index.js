@@ -331,6 +331,22 @@ const fileDownload = (url, filename) => {
     })
 }
 
+const mailFileDownloadRequest = (mailIndex, attachIndex, filename) => {
+    dialog.showSaveDialog({
+        title: "Download file",
+        defaultPath: filename
+    }, (filepath) => {
+        if (filepath) {
+            let saveFilepath = filepath;
+            if (!path.extname(filepath)) {
+                saveFilepath += path.extname(filename);
+            }
+
+            mail.attachmentDownload(mailIndex, attachIndex, saveFilepath);
+        }
+    })
+}
+
 const installGLSOpen = () => {
     if (glsInstallWindow) {
         if (!glsInstallWindow.isDestroyed()) {
@@ -500,6 +516,19 @@ ipcMain.on("gotoMain", (event, message) => {
     mainWindowOpen();
 });
 
+//gate
+ipcMain.on("openIcampusGateReq", (event, message) => {
+    openIcampusGate((result) => {
+        event.sender.send("openIcampusGateRes", result);
+    });
+});
+
+ipcMain.on("openWebMailReq", (event, message) => {
+    openWebMailRequest((result) => {
+        event.sender.send("openWebMailRes", result);
+    });
+});
+
 //consent
 ipcMain.on("consentAgree", (event, message) => {
     saveSetting("consent", true);
@@ -564,6 +593,21 @@ ipcMain.on("installUpdaterReq", (event, message) => {
     autoUpdater.quitAndInstall();
 });
 
+// file donwload
+
+ipcMain.on("icampusFileDownload", (event, message) => {
+    icampusFileDownload(message.url, message.name, message.saveName);
+});
+
+ipcMain.on("fileDownload", (event, message) => {
+    fileDownload(message.url, message.name)
+});
+
+ipcMain.on("mailFileDownloadReq", (event, message) => {
+    mailFileDownloadRequest(message.mailIndex, message.attachIndex, message.filename);
+});
+
+
 // etc
 ipcMain.on("clearCacheReq", (event, message) => {
     icampus.clearGatePath();
@@ -572,12 +616,6 @@ ipcMain.on("clearCacheReq", (event, message) => {
 
     mail.clearMailbox();
     saveSetting("campus_type", null);
-});
-
-ipcMain.on("openIcampusGateReq", (event, message) => {
-    openIcampusGate((result) => {
-        event.sender.send("openIcampusGateRes", result);
-    });
 });
 
 ipcMain.on("openGLSReq", (event, message) => {
@@ -592,14 +630,6 @@ ipcMain.on("openGLSReq", (event, message) => {
             event.sender.send("openGLSRes", result);
         }
     });
-});
-
-ipcMain.on("icampusFileDownload", (event, message) => {
-    icampusFileDownload(message.url, message.name, message.saveName);
-});
-
-ipcMain.on("fileDownload", (event, message) => {
-    fileDownload(message.url, message.name)
 });
 
 ipcMain.on("glsDownloadStartReq", (event, message) => {
@@ -618,12 +648,12 @@ ipcMain.on("openUnivNoticeRequest", (event, message) => {
     shell.openExternal(univNoticeURL);
 });
 
+
 ////// for setting
 ipcMain.on("settingCampusType", (event, message) => {
     userCampusType = message;
     saveSetting("campus_type", userCampusType);
 });
-
 
 ////// for information
 // icampus
@@ -781,6 +811,7 @@ ipcMain.on("noticeReq", (event, message) => {
     });
 });
 
+let mailList = [];
 // mail
 ipcMain.on("mailTotalReq", (event, message) => {
     let timeoutSent = false;
@@ -798,8 +829,8 @@ ipcMain.on("mailTotalReq", (event, message) => {
     let mailRepeatID = setInterval(mailRepeat, 100)
     function mailRepeat() {
         if (0 <= mail.getTotalNumber()) {
-            if (mail.getTotalNumber() <= mail.getCurrentNumber() || mail.checkProcessing() === false) {
-                let mailList = [];
+            mailList = [];
+            if (mail.getTotalNumber() <= mail.getCurrentNumber() || !mail.checkProcessing()) {
                 for (let index = 1; index <= mail.getTotalNumber(); index++) {
                     mailList[index - 1] = mail.getEmail(index);
                 }
@@ -904,6 +935,7 @@ const openGLSRequest = (callback) => {
     }
 }
 
+//gate
 const openIcampusGate = (callback) => {
     checkLoginElseTryPortal((result) => {
         if (result) {
@@ -929,6 +961,28 @@ const openIcampusGate = (callback) => {
         }
         else {
             reLoginFailed();
+        }
+    });
+}
+
+const openWebMailRequest = (callback) => {
+    portal.getGate((result) => {
+        if (result) {
+            mail.setGate(result);
+            shell.openExternal(mail.getGatePath(), {}, (error) => {
+                if (error) {
+                    callback({
+                        err: "openGateFailed",
+                        errMessage: "Gate 실행 실패"
+                    });
+                }
+            });
+        }
+        else {
+            callback({
+                err: "gateFailed",
+                errMessage: "통합 로그인 실패"
+            });
         }
     });
 }
