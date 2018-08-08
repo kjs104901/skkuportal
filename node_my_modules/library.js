@@ -5,6 +5,8 @@ const { crawler } = require('./util.js');
 let userCampusType = 0;
 let userUniversity = "";
 
+const fs = require('fs');
+
 exports.getSeats = (campusType, callback) => {
     let seatsUrl = "";
 
@@ -49,11 +51,17 @@ exports.getSeats = (campusType, callback) => {
                             disablePeriodName = obj.disablePeriod.name;
                         }
 
+                        let percent = 0;
+                        if (0 < obj.total) {
+                            percent = Math.floor(obj.occupied / obj.total * 100);
+                        }
+
                         return {
                             name: obj.room.name,
                             isActive: obj.room.isActive,
                             total: obj.total,
                             occupied: obj.occupied,
+                            percent: percent,
                             beginTime: beginTime,
                             endTime: endTime,
                             disablePeriod: disablePeriod,

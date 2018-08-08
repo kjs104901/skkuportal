@@ -7,6 +7,7 @@ import CNotice from './mainComponent/CNotice'
 import CMail from './mainComponent/CMail'
 import CLibrary from './mainComponent/CLibrary'
 import CMeal from './mainComponent/CMeal'
+import CFuture from './mainComponent/CFuture'
 
 export default class MainContent extends React.Component {
     componentWillMount() {
@@ -43,9 +44,9 @@ const dialog = (menuIndex, menuGoto) => {
         case 5:
             return <CMail menuGoto={menuGoto} />;
         case 6:
-            return "구글 드라이브 컴포넌트: " + menuIndex;
+            return <CFuture menuGoto={menuGoto} />; // 구글 드라이브
         case 7:
-            return "Q&A 컴포넌트: " + menuIndex;
+            return <CFuture menuGoto={menuGoto} />; // QnA
         case 8:
             return <CLibrary menuGoto={menuGoto} />;
         case 9:

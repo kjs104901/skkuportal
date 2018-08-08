@@ -486,6 +486,24 @@ const checkLoginElseTrySmart = (callback) => {
     })
 }
 
+const checkLoginElseTryLibrary = (callback) => {
+    library.loginCheck((result) => {
+        if (result == true) {
+            callback(true);
+        }
+        else {
+            library.loginDirect(userId, userPass, (result) => {
+                if (result) {
+                    callback(true);
+                }
+                else {
+                    callback(false);
+                }
+            });
+        }
+    })
+}
+
 //// ------------ IPC frontend ------------ ////
 ////// for action
 //login
@@ -528,6 +546,12 @@ ipcMain.on("openWebMailReq", (event, message) => {
         event.sender.send("openWebMailRes", result);
     });
 });
+
+ipcMain.on("openLibraryReq", (event, message) => {
+    openLibraryRequest((result) => {
+        event.sender.send("openLibraryRes", result);
+    });
+})
 
 //consent
 ipcMain.on("consentAgree", (event, message) => {
@@ -594,7 +618,6 @@ ipcMain.on("installUpdaterReq", (event, message) => {
 });
 
 // file donwload
-
 ipcMain.on("icampusFileDownload", (event, message) => {
     icampusFileDownload(message.url, message.name, message.saveName);
 });
@@ -607,6 +630,11 @@ ipcMain.on("mailFileDownloadReq", (event, message) => {
     mailFileDownloadRequest(message.mailIndex, message.attachIndex, message.filename);
 });
 
+// setting
+ipcMain.on("settingCampusType", (event, message) => {
+    userCampusType = message;
+    saveSetting("campus_type", userCampusType);
+});
 
 // etc
 ipcMain.on("clearCacheReq", (event, message) => {
@@ -646,13 +674,6 @@ ipcMain.on("openUnivNoticeRequest", (event, message) => {
     const univNoticeURL = notice.getUniversityNoticeURL(userUniversity);
 
     shell.openExternal(univNoticeURL);
-});
-
-
-////// for setting
-ipcMain.on("settingCampusType", (event, message) => {
-    userCampusType = message;
-    saveSetting("campus_type", userCampusType);
 });
 
 ////// for information
@@ -811,8 +832,8 @@ ipcMain.on("noticeReq", (event, message) => {
     });
 });
 
-let mailList = [];
 // mail
+let mailList = [];
 ipcMain.on("mailTotalReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "mailTotalRes", 10, () => {
@@ -844,6 +865,35 @@ ipcMain.on("mailTotalReq", (event, message) => {
     }
 });
 
+
+// library
+ipcMain.on("libraryListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "libraryListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    libraryListRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("libraryListRes", result);
+        }
+    });
+});
+
+ipcMain.on("seatListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "seatListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    seatListRequest(message.campusType, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("seatListRes", result);
+        }
+    });
+});
 
 //// ------------ IPC backend functions ------------ ////
 ////// for action
@@ -970,6 +1020,28 @@ const openWebMailRequest = (callback) => {
         if (result) {
             mail.setGate(result);
             shell.openExternal(mail.getGatePath(), {}, (error) => {
+                if (error) {
+                    callback({
+                        err: "openGateFailed",
+                        errMessage: "Gate 실행 실패"
+                    });
+                }
+            });
+        }
+        else {
+            callback({
+                err: "gateFailed",
+                errMessage: "통합 로그인 실패"
+            });
+        }
+    });
+}
+
+const openLibraryRequest = (callback) => {
+    portal.getGate((result) => {
+        if (result) {
+            library.setGate(result);
+            shell.openExternal(library.getGatePath(), {}, (error) => {
                 if (error) {
                     callback({
                         err: "openGateFailed",
@@ -1233,4 +1305,65 @@ const mailTotalRequest = (callback) => {
             clearInterval(intervalID);
         }
     }
+}
+
+// library
+const libraryListRequest = (callback) => {
+    let chargeList = [];
+    let overDueList = [];
+    let holdList = [];
+    let loadCount = 0;
+    let intvCount = 0;
+
+    checkLoginElseTryLibrary((result) => {
+        if (result) {
+            library.getCharge((result) => {
+                loadCount += 1;
+                if (0 < result.length) {
+                    chargeList = result;
+                }
+            })
+            library.getOverDue((result) => {
+                loadCount += 1;
+                if (0 < result.length) {
+                    overDueList = result;
+                }
+            })
+            library.getHold((result) => {
+                loadCount += 1;
+                if (0 < result.length) {
+                    holdList = result;
+                }
+            })
+        }
+        else {
+            reLoginFailed();
+        }
+    })
+
+    let intv = setInterval(()=>{
+        intvCount += 1;
+        if (3 <= loadCount) {
+            clearInterval(intv);
+
+            callback({
+                data: {
+                    chargeList: chargeList,
+                    overDueList: overDueList,
+                    holdList: holdList
+                }
+            });
+        }
+        if (10 < intvCount) {
+            clearInterval(intv);
+        }
+    }, 1000)
+}
+
+const seatListRequest = (campusType, callback) => {
+    library.getSeats(campusType, (result) => {
+        callback({
+            data: result
+        })
+    })
 }

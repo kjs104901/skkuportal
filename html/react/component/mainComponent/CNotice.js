@@ -1,5 +1,8 @@
 import React from 'react';
 
+import $ from 'jquery';
+import '../js/jquery.scrollbar.js';
+
 const { ipcRenderer } = require('electron');
 
 const warningMessage = (errMessage) => {
