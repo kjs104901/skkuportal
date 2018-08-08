@@ -10,6 +10,7 @@ const portal = require("./node_my_modules/portal");
 const weather = require("./node_my_modules/weather");
 const mail = require("./node_my_modules/mail");
 const notice = require("./node_my_modules/notice");
+const meal = require("./node_my_modules/meal");
 
 const path = require('path')
 
@@ -895,6 +896,35 @@ ipcMain.on("seatListReq", (event, message) => {
     });
 });
 
+// meal
+ipcMain.on("resturantReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "resturantRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    resturantRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("resturantRes", result);
+        }
+    });
+})
+
+ipcMain.on("mealListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "mealListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    mealListRequest(message.resturant, message.category, message.year, message.month, message.day, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("mealListRes", result);
+        }
+    });
+})
+
 //// ------------ IPC backend functions ------------ ////
 ////// for action
 const loginReqest = (userId, userPass, callback) => {
@@ -1362,6 +1392,32 @@ const libraryListRequest = (callback) => {
 
 const seatListRequest = (campusType, callback) => {
     library.getSeats(campusType, (result) => {
+        callback({
+            data: result
+        })
+    })
+}
+
+// meal
+const resturantRequest = (callback) => {
+    const restaurantList =  meal.getRestaurantList();
+    const currentCategory = meal.getCurrentCategory();
+    let initialResturant = 0
+    if (userCampusType === 1) {
+        initialResturant = 5
+    }
+    
+    callback({
+        data: {
+            initialResturant: initialResturant,
+            currentCategory: currentCategory,
+            restaurantList: restaurantList,
+        }
+    })
+}
+
+const mealListRequest = (resturant, category, year, month, day, callback) => {
+    meal.getMealList(resturant, category, year, month, day, (result) => {
         callback({
             data: result
         })

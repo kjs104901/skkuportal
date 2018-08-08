@@ -280,19 +280,19 @@ export default class CLibrary extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 0 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(0) }}>
-                                <span className="title"><i className="pg-inbox"></i> 대여 목록</span>
+                                <span className="title"><i className="fas fa-book"></i> 대여 목록</span>
                                 <span className="badge pull-right">{this.state.chargeList.length}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 1 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(1) }}>
-                                <span className="title"><i className="pg-inbox"></i> 연체 목록</span>
+                                <span className="title"><i className="fas fa-book"></i> 연체 목록</span>
                                 <span className="badge pull-right">{this.state.overDueList.length}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 2 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(2) }}>
-                                <span className="title"><i className="pg-inbox"></i> 예약 목록</span>
+                                <span className="title"><i className="fas fa-book"></i> 예약 목록</span>
                                 <span className="badge pull-right">{this.state.holdList.length}</span>
                             </a>
                         </li>
@@ -301,12 +301,12 @@ export default class CLibrary extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 3 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(3) }}>
-                                <span className="title"><i className="pg-inbox"></i> 인사캠</span>
+                                <span className="title"><i className="fas fa-book-reader"></i> 인사캠</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 4 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(4) }}>
-                                <span className="title"><i className="pg-inbox"></i> 자과캠</span>
+                                <span className="title"><i className="fas fa-book-reader"></i> 자과캠</span>
                             </a>
                         </li>
                     </ul>
