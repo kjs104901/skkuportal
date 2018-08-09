@@ -181,10 +181,10 @@ exports.getMealList = (restaurant, category, year, month, day, callback) => {
                 method: "GET"
             }, (error, response, body) => {
                 if (error) {
-                    callback(mealObj);
+                    callback([]);
                 }
                 else if (response.statusCode !== 200) {
-                    callback(mealObj);
+                    callback([]);
                 }
                 else {
                     crawler.setTargetStr(body);

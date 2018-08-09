@@ -65,6 +65,7 @@ export default class CMeal extends React.Component {
 
         ipcRenderer.on("mealListRes", (event, message) => {
             if (!message.err) {
+                console.log(message.data);
                 this.setState({
                     mealListLoading: false,
                     mealList: message.data,
@@ -122,6 +123,25 @@ export default class CMeal extends React.Component {
             year: this.state.targetDate.getFullYear(),
             month: this.state.targetDate.getMonth() + 1,
             day: this.state.targetDate.getDate()
+        });
+    }
+
+    changeDate = (dayMove) => {
+        let newDate = new Date(this.state.targetDate);
+        const dayOfMonth = newDate.getDate();
+        newDate.setDate(dayOfMonth + dayMove);
+
+        this.setState({
+            mealListLoading: true,
+            targetDate: newDate
+        });
+
+        ipcRenderer.send("mealListReq", {
+            resturant: this.state.resturant[this.state.menuIndex],
+            category: this.state.menuCategoryIndex,
+            year: newDate.getFullYear(),
+            month: newDate.getMonth() + 1,
+            day: newDate.getDate()
         });
     }
 
@@ -236,7 +256,7 @@ export default class CMeal extends React.Component {
 
         if (rows.length === 0) {
             rows.push(
-                <div className="row justify-content-center align-items-center no-gutters" style={{ width: "100%", height: "500px" }}>
+                <div className="row justify-content-center align-items-center no-gutters" key={0} style={{ width: "100%", height: "500px" }}>
                     <div className="col-4" style={{ textAlign: "center" }}>
                         <p className="large-text m-t-20">메뉴가 없습니다</p>
                     </div>
@@ -252,6 +272,13 @@ export default class CMeal extends React.Component {
     }
 
     render() {
+        const left = "<";
+        const right = ">";
+
+        const month = this.state.targetDate.getMonth()+1;
+        const day = this.state.targetDate.getDate();
+        const year = this.state.targetDate.getFullYear();
+
         return (
             <React.Fragment>
                 <nav className="secondary-sidebar">
@@ -274,8 +301,23 @@ export default class CMeal extends React.Component {
                     {this.resturantRender()}
                 </nav>
                 <div className="inner-content full-height">
+                    <div style={{ width: "100%", height: "40px" }}>
+                        <div className="row no-gutters justify-content-center">
+                            <div className="col-1" style={{ textAlign: "center" }}>
+                                <a href="#" onClick={() => { this.changeDate(-1) }}
+                                    className="btn btn-block">{left}</a>
+                            </div>
+                            <div className="col-4" style={{ textAlign: "center" }}>
+                                <h4 className="no-margin">{ year + '-' + month + '-' + day }</h4>
+                            </div>
+                            <div className="col-1" style={{ textAlign: "center" }}>
+                                <a href="#" onClick={() => { this.changeDate(1) }}
+                                    className="btn btn-block">{right}</a>
+                            </div>
+                        </div>
+                    </div>
                     <div ref={el => this.el = el}>
-                        <div style={{ width: "100%", height: "590px" }}>
+                        <div style={{ width: "100%", height: "550px" }}>
                             {this.contentRender()}
                         </div>
                     </div>

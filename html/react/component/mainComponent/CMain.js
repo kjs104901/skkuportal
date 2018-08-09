@@ -248,6 +248,7 @@ export default class CMain extends React.Component {
                 <Skycons
                     color='black'
                     icon={currentSkyStr}
+                    autoplay={false}
                     style={{ width: "100%", height: "auto" }}
                 />
                 <h5 className="text-danger no-margin">{Math.floor(weather.currentTemp)}°</h5>
@@ -317,6 +318,7 @@ export default class CMain extends React.Component {
                                 <Skycons
                                     color='black'
                                     icon={currentSkyStr}
+                                    autoplay={false}
                                     style={{ width: "100%", height: "auto" }}
                                 />
                             </div>
