@@ -12,6 +12,7 @@ const mail = require("./node_my_modules/mail");
 const notice = require("./node_my_modules/notice");
 const meal = require("./node_my_modules/meal");
 const transportation = require("./node_my_modules/transportation");
+const calendar = require("./node_my_modules/calendar");
 
 const path = require('path')
 
@@ -988,6 +989,21 @@ ipcMain.on("subwayReq", (event, message) => {
     });
 })
 
+// calendar
+ipcMain.on("calendarReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "calendarRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    calendarRequest(message.calendar, message.year, message.month, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("calendarRes", result);
+        }
+    });
+})
+
 //// ------------ IPC backend functions ------------ ////
 ////// for action
 const loginReqest = (userId, userPass, callback) => {
@@ -1573,4 +1589,29 @@ const subwayRequest = (campusType, direction, callback) => {
             data: result
         })
     })
+}
+
+// calendar
+const calendarRequest = (calendarIndex, year, month, callback) => {
+    if (calendarIndex === 0) {
+        calendar.getCalendar(year, month, (result) => {
+            callback({
+                data: result
+            });
+        });
+    }
+    else if (calendarIndex === 1) {
+        calendar.getDomCalendar(0, year, month, (result) => {
+            callback({
+                data: result
+            });
+        });
+    }
+    else if (calendarIndex === 2) {
+        calendar.getDomCalendar(1, year, month, (result) => {
+            callback({
+                data: result
+            });
+        });
+    }
 }

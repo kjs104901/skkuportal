@@ -27,8 +27,7 @@ exports.getCalendar = (year, month, callback) => {
                         calendar.push({
                             title: calElement.title,
                             startDate: calElement.etcDate1,
-                            endDate: calElement.etcDate2,
-                            color: calElement.color
+                            endDate: calElement.etcDate2
                         })
                     });
                 }
@@ -38,10 +37,14 @@ exports.getCalendar = (year, month, callback) => {
     );
 }
 
-exports.getDomCalendar = (year, month, callback) => {
+exports.getDomCalendar = (campusType, year, month, callback) => {
     month = "0" + month; month = month.slice(-2);
+    let boardNo = 92;
+    if (campusType === 1) {
+        boardNo = 63;
+    }
     let calendarURL = "https://dorm.skku.edu/_custom/skku/_common/board/miniboard/calendarDetailList.jsp?";
-    calendarURL += "searchDate=+"+year+month+"&board_no=63&calendarType=MONTH&locale=ko"
+    calendarURL += "searchDate=+"+year+month+"&board_no="+boardNo+"&calendarType=MONTH&locale=ko"
 
     let calendar = [];
     request(

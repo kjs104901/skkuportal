@@ -51,7 +51,6 @@ export default class CIcampus extends React.Component {
         ipcRenderer.send("semesterListReq", true);
         ipcRenderer.on("semesterListRes", (event, message) => {
             if (!message.err) {
-                console.log(message.data)
                 this.setState({
                     semesterList: message.data,
                 });

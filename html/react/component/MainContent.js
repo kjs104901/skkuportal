@@ -11,6 +11,7 @@ import CFuture from './mainComponent/CFuture'
 import CTransportation from './mainComponent/CTransportation'
 import CQna from './mainComponent/CQna'
 import CCommunity from './mainComponent/CCommunity'
+import CCalendar from './mainComponent/CCalendar'
 
 const warningMessage = (errMessage) => {
     $('body').pgNotification({
@@ -52,7 +53,7 @@ const dialog = (menuIndex, menuGoto) => {
         case 3:
             return <CNotice menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 4:
-            return "일정 컴포넌트: " + menuIndex;
+            return <CCalendar menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 5:
             return <CMail menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 6:
