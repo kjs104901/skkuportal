@@ -6,7 +6,7 @@ const calendar = require("./node_my_modules/calendar")
 
 const request = require('request');
 
-calendar.getTodayCalendar((result) => {
+transportation.getSuttleInfo((result) => {
     console.log(result);
 });
 /*

@@ -152,6 +152,15 @@ export default class CGLS extends React.Component {
                 )
             }
         }
+        else {
+            return (
+                <div className="row justify-content-center align-items-center no-gutters" style={{ width: "100%", height: "580px" }}>
+                    <div className="col-4" style={{ textAlign: "center" }}>
+                        <p className="large-text">지원 예정입니다</p>
+                    </div>
+                </div>
+            );
+        }
     }
 
     contentLoadingRender = () => {
@@ -333,6 +342,19 @@ export default class CGLS extends React.Component {
                         <li className={this.state.menuIndex === 1 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(1) }}>
                                 <span className="title"><i className="fas fa-chart-line"></i> 성적 차트</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p className="menu-title" style={{ marginBottom: "0px", marginTop: "10px" }}>수업</p>
+                    <ul className="main-menu">
+                        <li className={this.state.menuIndex === 2 ? "active" : ""}>
+                            <a href="#" onClick={() => { this.menuSelect(2) }}>
+                                <span className="title"><i className="fas fa-table"></i> 주간 테이블</span>
+                            </a>
+                        </li>
+                        <li className={this.state.menuIndex === 3 ? "active" : ""}>
+                            <a href="#" onClick={() => { this.menuSelect(3) }}>
+                                <span className="title"><i className="fas fa-list"></i> 전자 시간표</span>
                             </a>
                         </li>
                     </ul>

@@ -280,8 +280,8 @@ exports.getBus = (busType, callback) => {
 //// https://kingom.skku.edu/skkuapp/getBusData.do?route=2009 ////
 //// 2009: 인문캠 2002: 자과-사당 2004: 자과-분당
 exports.getSuttle = (route, callback) => {
-    const suttleURL = "https://kingom.skku.edu/skkuapp/getBusData.do?route="+route;
-    
+    const suttleURL = "https://kingom.skku.edu/skkuapp/getBusData.do?route=" + route;
+
     request(
         {
             url: suttleURL,
@@ -296,6 +296,38 @@ exports.getSuttle = (route, callback) => {
             }
             else {
                 callback(JSON.parse(body).items);
+            }
+        }
+    );
+}
+
+exports.getSuttleInfo = (callback) => {
+    suttleInfo = {
+        url0: "",
+        url01: "",
+        url1: ""
+    }
+
+    suttleInfoURL = "https://www.skku.edu/skku/mobile/bus.do";
+    request(
+        {
+            url: suttleInfoURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET"
+        }, (error, response, body) => {
+            if (error) {
+                callback(suttleInfo);
+            }
+            else if (response.statusCode !== 200) {
+                callback(suttleInfo);
+            }
+            else {
+                crawler.setTargetStr(body);
+                suttleInfo.url0 = "https://www.skku.edu/skku/mobile/bus.do?mode=hView&"+crawler.getBetween('href="?mode=hView&amp;', '"');
+                suttleInfo.url01 = "https://www.skku.edu/skku/mobile/bus.do?mode=hnView&"+crawler.getBetween('href="?mode=hnView&amp;', '"');
+                suttleInfo.url1 = "https://www.skku.edu/skku/mobile/bus.do?mode=nView&"+crawler.getBetween('href="?mode=nView&amp;', '"');
+
+                callback(suttleInfo);
             }
         }
     );

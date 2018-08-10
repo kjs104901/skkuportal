@@ -14,6 +14,11 @@ export default class CTransportation extends React.Component {
         suttleError: false,
         suttleErrorMessage: "",
 
+        suttleInfoLoading: true,
+        suttleInfo: {},
+        suttleInfoError: false,
+        suttleInfoErrorMessage: "",
+
         busLoading: false,
         bus: [],
         busError: false,
@@ -31,6 +36,7 @@ export default class CTransportation extends React.Component {
         ipcRenderer.send("suttleReq", {
             route: 2009
         });
+        ipcRenderer.send("suttleInfoReq", true);
 
         ipcRenderer.on("suttleRes", (event, message) => {
             if (!message.err) {
@@ -49,6 +55,25 @@ export default class CTransportation extends React.Component {
                     suttle: [],
                     suttleError: true,
                     suttleErrorMessage: message.errMessage,
+                });
+            }
+        });
+        ipcRenderer.on("suttleInfoRes", (event, message) => {
+            if (!message.err) {
+                this.setState({
+                    suttleInfoLoading: false,
+                    suttleInfo: message.data,
+                    suttleInfoError: false,
+                    suttleInfoErrorMessage: "",
+                });
+            }
+            else {
+                warningMessage(message.errMessage);
+                this.setState({
+                    suttleInfoLoading: false,
+                    suttleInfo: [],
+                    suttleInfoError: true,
+                    suttleInfoErrorMessage: message.errMessage,
                 });
             }
         });
@@ -102,9 +127,10 @@ export default class CTransportation extends React.Component {
 
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("suttleRes");
+        ipcRenderer.removeAllListeners("suttleInfoRes");
         ipcRenderer.removeAllListeners("busRes");
         ipcRenderer.removeAllListeners("subwayRes");
-        
+
         /// jQuery plugin - scroll 
         this.$el.scrollbar('destroy');
     }
@@ -158,6 +184,11 @@ export default class CTransportation extends React.Component {
                 direction: direction
             });
         }
+        else if (menuIndex === 11) {
+            this.setState({
+                menuIndex: menuIndex
+            })
+        }
     }
 
     contentRender = () => {
@@ -170,7 +201,7 @@ export default class CTransportation extends React.Component {
                 </React.Fragment>
             )
         }
-        else if (this.state.menuIndex <= 2) {
+        else if (this.state.menuIndex <= 2 || this.state.menuIndex === 11) {
             return (
                 <React.Fragment>
                     {this.suttleRender()}
@@ -204,7 +235,38 @@ export default class CTransportation extends React.Component {
     }
 
     suttleRender = () => {
+        let rows = [];
+        if (this.state.suttleInfoLoading) {
+            rows.push(
+                <div className="col-6" key={0} style={{ height: "590px" }}>
+                </div>
+            )
+        }
+        else {
 
+            let infoURL = "";
+            if (this.state.menuIndex === 0) {
+                infoURL = this.state.suttleInfo.url0;
+            }
+            else if (this.state.menuIndex === 1 || this.state.menuIndex === 2) {
+                infoURL = this.state.suttleInfo.url1;
+            }
+            else if (this.state.menuIndex === 11) {
+                infoURL = this.state.suttleInfo.url01;
+            }
+
+            rows.push(
+                <div className="col-6" key={0} style={{ height: "590px" }}>
+                    <iframe src={infoURL} style={{height: "580px"}}></iframe>
+                </div>
+            )
+        }
+
+        return (
+            <div className="row no-gutter" style={{ width: "100%", height: "590px" }}>
+                {rows}
+            </div>
+        )
     }
 
     busRender = () => {
@@ -320,6 +382,12 @@ export default class CTransportation extends React.Component {
                         <li className={this.state.menuIndex === 0 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(0) }}>
                                 <span className="title"><i className="fas fa-bus-alt"></i> 인문캠 순환</span>
+                                <span className="badge pull-right">{this.state.messageUnchecked}</span>
+                            </a>
+                        </li>
+                        <li className={this.state.menuIndex === 11 ? "active" : ""}>
+                            <a href="#" onClick={() => { this.menuSelect(11) }}>
+                                <span className="title"><i className="fas fa-bus-alt"></i> 인문 ↔ 자과</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>

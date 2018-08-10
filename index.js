@@ -961,6 +961,20 @@ ipcMain.on("suttleReq", (event, message) => {
     });
 })
 
+ipcMain.on("suttleInfoReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "suttleInfoRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    suttleInfoRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("suttleInfoRes", result);
+        }
+    });
+})
+
 ipcMain.on("busReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "busRes", 10, () => {
@@ -1537,6 +1551,14 @@ const suttleRequest = (route, callback) => {
             data: result
         });
     })
+}
+
+const suttleInfoRequest = (callback) => {
+    transportation.getSuttleInfo((result) => {
+        callback({
+            data: result
+        });
+    });
 }
 
 const busRequest = (type, callback) => {
