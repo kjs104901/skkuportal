@@ -73,3 +73,49 @@ exports.getDomCalendar = (campusType, year, month, callback) => {
         }
     );
 }
+
+exports.getTodayCalendar = (callback) => {
+    const today = new Date();
+    const year = today.getFullYear();
+    let month = (today.getMonth() + 1)
+    month = "0" + month; month = month.slice(-2);
+    let day = today.getDate();
+    day = "0" + day; day = day.slice(-2);
+
+    let todayCalendarURL = "https://www.skku.edu/app/board/calendar/getCalendarData.do?boardNo=23"
+    todayCalendarURL += "&date="+year+"-"+month+"-"+day;
+
+    let todayStr = today.getFullYear() + "-" + (today.getMonth()+1) + "-" + today.getDate();
+
+    let todayCalendar = {
+        today: todayStr,
+        list: []
+    }
+    request(
+        {
+            url: todayCalendarURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET",
+        }, (error, response, body) => {
+            if (error) {
+                callback(todayCalendar);
+            }
+            else if (response.statusCode !== 200) {
+                callback(todayCalendar);
+            }
+            else {
+                const resultJSON = JSON.parse(body);
+                if (resultJSON.success) {
+                    resultJSON.data.forEach(calElement => {
+                        todayCalendar.list.push({
+                            title: calElement.title,
+                            startDate: calElement.etcDate1,
+                            endDate: calElement.etcDate2
+                        })
+                    });
+                }
+                callback(todayCalendar);
+            }
+        }
+    );
+}

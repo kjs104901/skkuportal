@@ -6,6 +6,10 @@ const calendar = require("./node_my_modules/calendar")
 
 const request = require('request');
 
+calendar.getTodayCalendar((result) => {
+    console.log(result);
+});
+/*
 calendar.getCalendar(2018, 8, (result) => {
     //console.log(result);
 });
@@ -13,7 +17,6 @@ calendar.getDomCalendar(2018, 8, (result) => {
     console.log(result);
 });
 
-/*
 transportation.getSuttle(2002, (result)=>{
     console.log(result);
 })

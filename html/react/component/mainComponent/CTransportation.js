@@ -268,7 +268,7 @@ export default class CTransportation extends React.Component {
                 trainList.push(
                     <div className="col-3" key={index}>
                         <img src={trainSrc} />
-                        {train.station + " " + train.doing + " " + train.destination + (train.isExpress ? "(급}" : "")}
+                        {train.destination + (train.isExpress ? "(급}" : "")}
                     </div>
                 )
             });
@@ -319,19 +319,19 @@ export default class CTransportation extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 0 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(0) }}>
-                                <span className="title"><i className="pg-inbox"></i> 인문캠 순환</span>
+                                <span className="title"><i className="fas fa-bus-alt"></i> 인문캠 순환</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 1 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(1) }}>
-                                <span className="title"><i className="pg-inbox"></i> 자과 ↔ 사당</span>
+                                <span className="title"><i className="fas fa-bus-alt"></i> 자과 ↔ 사당</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 2 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(2) }}>
-                                <span className="title"><i className="pg-inbox"></i> 자과 ↔ 분당</span>
+                                <span className="title"><i className="fas fa-bus-alt"></i> 자과 ↔ 분당</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
@@ -340,25 +340,25 @@ export default class CTransportation extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 3 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(3) }}>
-                                <span className="title"><i className="pg-inbox"></i> 자과 → 사당</span>
+                                <span className="title"><i className="fas fa-bus"></i> 자과 → 사당</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 4 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(4) }}>
-                                <span className="title"><i className="pg-inbox"></i> 사당 → 자과</span>
+                                <span className="title"><i className="fas fa-bus"></i> 사당 → 자과</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 5 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(5) }}>
-                                <span className="title"><i className="pg-inbox"></i> 자과 → 강남</span>
+                                <span className="title"><i className="fas fa-bus"></i> 자과 → 강남</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 6 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(6) }}>
-                                <span className="title"><i className="pg-inbox"></i> 강남 → 자과</span>
+                                <span className="title"><i className="fas fa-bus"></i> 강남 → 자과</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
@@ -367,25 +367,25 @@ export default class CTransportation extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 7 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(7) }}>
-                                <span className="title"><i className="pg-inbox"></i> 혜화역 상행</span>
+                                <span className="title"><i className="fas fa-subway"></i> 혜화역 상행</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 8 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(8) }}>
-                                <span className="title"><i className="pg-inbox"></i> 혜화역 하행</span>
+                                <span className="title"><i className="fas fa-subway"></i> 혜화역 하행</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 9 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(9) }}>
-                                <span className="title"><i className="pg-inbox"></i> 성대역 상행</span>
+                                <span className="title"><i className="fas fa-subway"></i> 성대역 상행</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>
                         <li className={this.state.menuIndex === 10 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(10) }}>
-                                <span className="title"><i className="pg-inbox"></i> 성대역 하행</span>
+                                <span className="title"><i className="fas fa-subway"></i> 성대역 하행</span>
                                 <span className="badge pull-right">{this.state.messageUnchecked}</span>
                             </a>
                         </li>

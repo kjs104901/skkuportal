@@ -25,6 +25,11 @@ export default class CMain extends React.Component {
         noticeListError: false,
         noticeListErrorMessage: "",
 
+        calendarLoading: true,
+        calendar: {},
+        calendarError: false,
+        calendarErrorMessage: "",
+
         campusType: 0
     }
 
@@ -32,10 +37,21 @@ export default class CMain extends React.Component {
         const warningMessage = this.props.warningMessage;
 
         /// icampus
-        ipcRenderer.send("classListReq", {
-            year: -1,
-            semester: -1
-        });
+        ipcRenderer.send("semesterListReq", true);
+        ipcRenderer.on("semesterListRes", (event, message) => {
+            if (!message.err) {
+                if (0 < message.data.length) {
+                    ipcRenderer.send("classListReq", {
+                        year: message.data[0].year,
+                        semester: message.data[0].semester
+                    });
+                }
+            }
+            else {
+                warningMessage(message.errMessage);
+            }
+        })
+
         ipcRenderer.on("classListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
@@ -102,6 +118,29 @@ export default class CMain extends React.Component {
             }
         });
 
+        /// calendar
+        ipcRenderer.send("todayCalendarReq", true);
+        ipcRenderer.on("todayCalendarRes", (event, message) => {
+            if (!message.err) {
+                this.setState({
+                    calendarLoading: false,
+                    calendar: message.data,
+                    calendarError: false,
+                    calendarErrorMessage: "",
+                });
+            }
+            else {
+                warningMessage(message.errMessage);
+                this.setState({
+                    calendarLoading: false,
+                    calendar: {},
+                    calendarError: true,
+                    calendarErrorMessage: message.errMessage,
+                });
+            }
+        });
+
+
         /// jQuery plugin - scroll 
         this.$el = $(this.el)
         this.$el.scrollbar({
@@ -115,17 +154,24 @@ export default class CMain extends React.Component {
         this.$el3.scrollbar({
             ignoreOverlay: false
         });
+        this.$el4 = $(this.el4)
+        this.$el4.scrollbar({
+            ignoreOverlay: false
+        });
     }
 
     componentWillUnmount() {
+        ipcRenderer.removeAllListeners("semesterListRes");
         ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("weatherRes");
         ipcRenderer.removeAllListeners("noticeListRes");
+        ipcRenderer.removeAllListeners("todayCalendarRes");
 
         /// jQuery plugin - scroll 
         this.$el.scrollbar('destroy');
         this.$el2.scrollbar('destroy');
         this.$el3.scrollbar('destroy');
+        this.$el4.scrollbar('destroy');
     }
 
     classListReload = () => {
@@ -161,6 +207,16 @@ export default class CMain extends React.Component {
             type: 2,
             offset: 0
         });
+    }
+
+    calendarReload = () => {
+        this.setState({
+            calendarLoading: true,
+            calendar: {},
+            calendarError: false,
+            calendarErrorMessage: ""
+        });
+        ipcRenderer.send("todayCalendarReq", true);
     }
 
     icampusRender = () => {
@@ -395,7 +451,42 @@ export default class CMain extends React.Component {
         }
     }
 
+    calendarRender = () => {
+        if (this.state.calendarLoading) {
+            return (
+                <div className="row no-gutters align-items-center justify-content-center" style={{ width: "100%", height: "200px" }}>
+                    <div className="col-8" style={{ textAlign: "center" }}>
+                        <div className="progress-circle-indeterminate"></div>
+                    </div>
+                </div>
+            );
+        }
+        else {
+            let rows = [];
+            this.state.calendar.list.forEach((calendar, index) => {
+                rows.push(
+                    <div className="row no-gutters m-t-10" key={index}>
+                        <div className="col b-b b-t b-grey" style={{ textAlign: "center" }}>
+                            <h5 className="no-margin">{calendar.title}</h5>
+                            <p className="no-margin">{calendar.startDate} ~ {calendar.endDate}</p>
+                        </div>
+                    </div>
+                );
+            });
+            return (
+                <React.Fragment>
+                    {rows}
+                </React.Fragment>
+            )
+        }
+    }
+
     render() {
+        const today = new Date();
+        let calToday = today.getFullYear() + "-" + (today.getMonth()+1) + "-" + today.getDate();
+        if (this.state.calendar.today) {
+            calToday = this.state.calendar.today;
+        }
         return (
             <div className="full-height">
                 <div ref={el3 => this.el3 = el3}>
@@ -446,7 +537,7 @@ export default class CMain extends React.Component {
                                 <div className="col-6 p-r-20">
                                     <div className="card card-default card-condensed" style={{ height: "300px" }}>
                                         <div className="card-header">
-                                            <div className="card-title">학사 공지</div>
+                                            <div className="card-title"><i className="fas fa-bell"></i> 학사 공지</div>
 
                                             <div className="card-controls">
                                                 <ul><li>
@@ -460,6 +551,23 @@ export default class CMain extends React.Component {
                                             <div>
                                                 {this.noticeListRender()}
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-6">
+                                    <div className="card card-default card-condensed" style={{ height: "300px" }}>
+                                        <div className="card-header">
+                                            <div className="card-title"><i className="pg-calender"></i> {calToday} 학사일정</div>
+                                            <div className="card-controls">
+                                                <ul><li>
+                                                    <a href="#" onClick={this.calendarReload}>
+                                                        <i className="card-icon card-icon-refresh"></i>
+                                                    </a>
+                                                </li></ul>
+                                            </div>
+                                        </div>
+                                        <div className="card-body" ref={el4 => this.el4 = el4}>
+                                            {this.calendarRender()}
                                         </div>
                                     </div>
                                 </div>

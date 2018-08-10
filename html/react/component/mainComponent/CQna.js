@@ -45,7 +45,7 @@ export default class CQna extends React.Component {
                     <ul className="main-menu">
                         <li className={this.state.menuIndex === 0 ? "active" : ""}>
                             <a href="#" onClick={() => { this.menuSelect(0) }}>
-                                <span className="title"><i className="pg-inbox"></i> 킹고봇</span>
+                                <span className="title"><i className="fas fa-robot"></i> 킹고봇</span>
                             </a>
                         </li>
                     </ul>

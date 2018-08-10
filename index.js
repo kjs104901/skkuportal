@@ -1004,6 +1004,20 @@ ipcMain.on("calendarReq", (event, message) => {
     });
 })
 
+ipcMain.on("todayCalendarReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "todayCalendarRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    todayCalendarRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("todayCalendarRes", result);
+        }
+    });
+})
+
 //// ------------ IPC backend functions ------------ ////
 ////// for action
 const loginReqest = (userId, userPass, callback) => {
@@ -1614,4 +1628,12 @@ const calendarRequest = (calendarIndex, year, month, callback) => {
             });
         });
     }
+}
+
+const todayCalendarRequest = (callback) => {
+    calendar.getTodayCalendar((result) => {
+        callback({
+            data: result
+        });
+    });
 }

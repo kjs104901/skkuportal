@@ -168,7 +168,7 @@ export default class CMeal extends React.Component {
                     list.push(
                         <li className={this.state.menuIndex === restIndex ? "active" : ""} key={restIndex}>
                             <a href="#" onClick={() => { this.menuSelect(restIndex) }}>
-                                <span className="title"><i className="fas fa-book"></i> {rest.name}</span>
+                                <span className="title"><i className="fas fa-utensils"></i> {rest.name}</span>
                             </a>
                         </li>
                     )

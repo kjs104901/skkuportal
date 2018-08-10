@@ -29,7 +29,7 @@ export default class CIcampus extends React.Component {
         messageError: false,
         messageErrorMessage: "",
 
-        classListLoading: true,
+        classListLoading: false,
         classList: [],
         classListError: false,
         classListErrorMessage: "",
@@ -51,19 +51,26 @@ export default class CIcampus extends React.Component {
         ipcRenderer.send("semesterListReq", true);
         ipcRenderer.on("semesterListRes", (event, message) => {
             if (!message.err) {
-                this.setState({
-                    semesterList: message.data,
-                });
+                if (0 < message.data.length) {
+                    this.setState({
+                        semesterList: message.data,
+                        targetYear: message.data[0].year,
+                        targetSemester: message.data[0].semester,
+
+                        classListLoading: true,
+                    });
+                    
+                    ipcRenderer.send("classListReq", {
+                        year: message.data[0].year,
+                        semester: message.data[0].semester
+                    });
+                }
             }
             else {
                 warningMessage(message.errMessage);
             }
         })
 
-        ipcRenderer.send("classListReq", {
-            year: this.state.targetYear,
-            semester: this.state.targetSemester
-        });
         ipcRenderer.on("classListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
@@ -180,6 +187,7 @@ export default class CIcampus extends React.Component {
     }
 
     componentWillUnmount() {
+        ipcRenderer.removeAllListeners("semesterListRes");
         ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("messageListRes");
         ipcRenderer.removeAllListeners("postListRes");
