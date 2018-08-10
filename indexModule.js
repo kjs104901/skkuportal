@@ -2,15 +2,22 @@ const notice = require("./node_my_modules/notice");
 const library = require("./node_my_modules/library");
 const meal = require("./node_my_modules/meal");
 const transportation = require("./node_my_modules/transportation")
+const calendar = require("./node_my_modules/calendar")
 
 const request = require('request');
 
+calendar.getCalendar(2018, 8, (result) => {
+    //console.log(result);
+});
+calendar.getDomCalendar(2018, 8, (result) => {
+    console.log(result);
+});
+
+/*
 transportation.getSuttle(2002, (result)=>{
     console.log(result);
 })
 
-/*
-/*
 notice.getDomNoticeList(0, 0, (result) => {
     console.log(result.list[2].url);
 

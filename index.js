@@ -696,13 +696,27 @@ ipcMain.on("studentInfoReq", (event, message) => {
     });
 });
 
+ipcMain.on("semesterListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "semesterListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    semesterListRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("semesterListRes", result);
+        }
+    });
+});
+
 ipcMain.on("classListReq", (event, message) => {
     let timeoutSent = false;
     const timeout = reserveTimeoutSend(event.sender, "classListRes", 10, () => {
         timeoutSent = true;
     });
 
-    classListRequest((result) => {
+    classListRequest(message.year, message.semester, (result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("classListRes", result);
@@ -1140,10 +1154,23 @@ const openLibraryRequest = (callback) => {
 
 ////// for information
 // icampus
-const classListRequest = (callback) => {
+const semesterListRequest = (callback) => {
     checkLoginElseTryIcampus((result) => {
         if (result) {
-            icampus.getClassList(2018, 10, (result) => {
+            callback({
+                data: icampus.getSemesterList()
+            });
+        }
+        else {
+            reLoginFailed();
+        }
+    });
+}
+
+const classListRequest = (year, semester, callback) => {
+    checkLoginElseTryIcampus((result) => {
+        if (result) {
+            icampus.getClassList(year, semester, (result) => {
                 callback({
                     data: result
                 });

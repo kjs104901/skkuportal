@@ -158,9 +158,14 @@ exports.loginDirect = (userId, userPwd, callback) => {
                         while (-1 < crawler.getTargetStr().indexOf("<option value=\"")) {
                             const semesterStr = crawler.getBetweenMoveTarget("<option value=\"", "\"");
                             const semesterInfo = semesterStr.split("|");
+                            let name = crawler.getBetween(">","<");
+                            name = name.replace(/\t/g, "");
+                            name = name.replace(/\r/g, "");
+                            name = name.replace(/\n/g, "");
                             semesterList.push({
                                 year: semesterInfo[0] * 1,
-                                semester: semesterInfo[1] * 1
+                                semester: semesterInfo[1] * 1,
+                                name: name
                             });
                         }
                         callback(true);
@@ -316,6 +321,24 @@ exports.loginGate = (gate, callback) => {
             const encodedBody = iconv.decode(body, encodingType);
 
             if (-1 < encodedBody.indexOf("로그아웃")) {
+                
+                semesterList = [];
+                crawler.setTargetStr(encodedBody);
+                const listStr = crawler.getBetween("<select name=\"selYear\"", "</select>");
+                crawler.setTargetStr(listStr);
+                while (-1 < crawler.getTargetStr().indexOf("<option value=\"")) {
+                    const semesterStr = crawler.getBetweenMoveTarget("<option value=\"", "\"");
+                    const semesterInfo = semesterStr.split("|");
+                    let name = crawler.getBetween(">","<");
+                    name = name.replace(/\t/g, "");
+                    name = name.replace(/\r/g, "");
+                    name = name.replace(/\n/g, "");
+                    semesterList.push({
+                        year: semesterInfo[0] * 1,
+                        semester: semesterInfo[1] * 1,
+                        name: name
+                    });
+                }
                 callback(true);
             }
             else {
@@ -668,7 +691,6 @@ exports.getPostList = (identity, code, callback) => {
         }
     );
 }
-
 
 exports.getPost = (url, code, callback) => {
     if (code === 2) {

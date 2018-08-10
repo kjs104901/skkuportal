@@ -30,9 +30,12 @@ export default class CMain extends React.Component {
 
     componentDidMount() {
         const warningMessage = this.props.warningMessage;
-        
+
         /// icampus
-        ipcRenderer.send("classListReq", true);
+        ipcRenderer.send("classListReq", {
+            year: -1,
+            semester: -1
+        });
         ipcRenderer.on("classListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
@@ -209,6 +212,16 @@ export default class CMain extends React.Component {
                         </div>
                     );
                 });
+                if (rows.length === 0) {
+                    rows.push(
+                        <div className="row no-gutters m-t-10" key={0}>
+                            <div className="col-12 m-t-20" style={{ textAlign: "center" }}>
+                                표시할 내용이 없습니다
+                            </div>
+                        </div>
+                    )
+                }
+
                 return (
                     <React.Fragment>
                         <div className="row no-gutters">
@@ -366,7 +379,7 @@ export default class CMain extends React.Component {
                     rows.push(
                         <div className="row no-gutters m-t-10" key={index}>
                             <div className="col b-b b-t b-grey" style={{ textAlign: "center" }}>
-                                <a href="#" onClick={()=>{menuGoto(3)}}>
+                                <a href="#" onClick={() => { menuGoto(3) }}>
                                     {noticeElement.title.substr(0, 25)}
                                 </a>
                             </div>

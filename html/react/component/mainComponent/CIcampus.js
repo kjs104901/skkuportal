@@ -14,6 +14,11 @@ export default class CIcampus extends React.Component {
 
         messageUnchecked: 0,
 
+        targetYear: -1,
+        targetSemester: -1,
+
+        semesterList: [],
+
         messageListLoading: true,
         messageList: [],
         messageListError: false,
@@ -29,7 +34,7 @@ export default class CIcampus extends React.Component {
         classListError: false,
         classListErrorMessage: "",
 
-        postListLoading: true,
+        postListLoading: false,
         postList: [],
         postListError: false,
         postListErrorMessage: "",
@@ -43,7 +48,23 @@ export default class CIcampus extends React.Component {
     componentDidMount() {
         const warningMessage = this.props.warningMessage;
 
-        ipcRenderer.send("classListReq", true);
+        ipcRenderer.send("semesterListReq", true);
+        ipcRenderer.on("semesterListRes", (event, message) => {
+            if (!message.err) {
+                console.log(message.data)
+                this.setState({
+                    semesterList: message.data,
+                });
+            }
+            else {
+                warningMessage(message.errMessage);
+            }
+        })
+
+        ipcRenderer.send("classListReq", {
+            year: this.state.targetYear,
+            semester: this.state.targetSemester
+        });
         ipcRenderer.on("classListRes", (event, message) => {
             if (!message.err) {
                 this.setState({
@@ -158,7 +179,7 @@ export default class CIcampus extends React.Component {
             ignoreOverlay: false
         });
     }
-    
+
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("classListRes");
         ipcRenderer.removeAllListeners("messageListRes");
@@ -239,6 +260,31 @@ export default class CIcampus extends React.Component {
         })
     }
 
+    semesterChange = (semesterIndex) => {
+        const year = this.state.semesterList[semesterIndex].year;
+        const semester = this.state.semesterList[semesterIndex].semester;
+
+        this.setState({
+            targetYear: year,
+            targetSemester: semester,
+            
+            classListLoading: true,
+            classList: [],
+            classListError: false,
+            classListErrorMessage: "",
+            
+            postListLoading: false,
+            postList: [],
+            postListError: false,
+            postListErrorMessage: "",
+        })
+
+        ipcRenderer.send("classListReq", {
+            year: year,
+            semester: semester
+        });
+    }
+
     classListRender = () => {
         let rows = [];
         this.state.classList.forEach((classElement, index) => {
@@ -259,7 +305,7 @@ export default class CIcampus extends React.Component {
             if (this.state.classListLoading) {
                 rows.push(
                     <li key={0}>
-                        <div className="progress-circle-indeterminate m-t-50"></div> 
+                        <div className="progress-circle-indeterminate m-t-50"></div>
                     </li>
                 )
             }
@@ -333,11 +379,13 @@ export default class CIcampus extends React.Component {
                         footer.push(
                             <React.Fragment key={index}>
                                 <a href="#"
-                                    onClick={()=>{this.fileDownloadRequest(
-                                    attachment.pathInfo, 
-                                    attachment.atchFileNm,
-                                    attachment.atchFileSaveNm)}}>
-                                    
+                                    onClick={() => {
+                                        this.fileDownloadRequest(
+                                            attachment.pathInfo,
+                                            attachment.atchFileNm,
+                                            attachment.atchFileSaveNm)
+                                    }}>
+
                                     <i className="fas fa-file-download large-text" style={{ margin: "5px" }}></i>
                                 </a>
                             </React.Fragment>
@@ -428,17 +476,19 @@ export default class CIcampus extends React.Component {
             (this.state.post.attachments).forEach((attachment, index) => {
                 attachments.push(
                     <React.Fragment key={index}>
-                    <a href="#"
-                        onClick={()=>{this.fileDownloadRequest(
-                            attachment.pathInfo, 
-                            attachment.atchFileNm,
-                            attachment.atchFileSaveNm)}}
-                        style={{marginRight: "10px"}}>
+                        <a href="#"
+                            onClick={() => {
+                                this.fileDownloadRequest(
+                                    attachment.pathInfo,
+                                    attachment.atchFileNm,
+                                    attachment.atchFileSaveNm)
+                            }}
+                            style={{ marginRight: "10px" }}>
 
-                        <i className="fas fa-file-download large-text" style={{ margin: "5px" }}></i>
-                        <p className="large-text" style={{display: "inline"}}>{attachment.atchFileNm}</p>
-                    </a>
-                     </React.Fragment>
+                            <i className="fas fa-file-download large-text" style={{ margin: "5px" }}></i>
+                            <p className="large-text" style={{ display: "inline" }}>{attachment.atchFileNm}</p>
+                        </a>
+                    </React.Fragment>
                 );
             });
         }
@@ -446,7 +496,7 @@ export default class CIcampus extends React.Component {
         return (
             <React.Fragment>
                 <div className="row align-items-center no-gutters b-b" style={{ width: "100%", height: "40px" }}>
-                    <div className="col-10" style={{overflow: "auto", height:"40px"}}>
+                    <div className="col-10" style={{ overflow: "auto", height: "40px" }}>
                         {attachments}
                     </div>
                     <div className="col-2" style={{ textAlign: "center" }}>
@@ -462,6 +512,20 @@ export default class CIcampus extends React.Component {
                 </div>
             </React.Fragment>
         );
+    }
+
+    semesterListRender = () => {
+        let rows = [];
+        this.state.semesterList.forEach((semester, index) => {
+            rows.push(
+                <option key={index} value={index}>{semester.name}</option>
+            )
+        });
+        return (
+            <React.Fragment>
+                {rows}
+            </React.Fragment>
+        )
     }
 
     contentLoadingRender = () => {
@@ -506,7 +570,7 @@ export default class CIcampus extends React.Component {
                     </React.Fragment>
                 );
             }
-            else if (-1 < this.state.menuClass && this.state.postListLoading === false) {
+            else if (-1 < this.state.menuClass && (this.state.postListLoading === false && this.state.classListLoading === false)) {
                 return (
                     <React.Fragment>
                         {this.contentPostListRender()}
@@ -540,6 +604,14 @@ export default class CIcampus extends React.Component {
                         </li>
                     </ul>
                     <p className="menu-title" style={{ marginBottom: "0px", marginTop: "10px" }}>과목</p>
+                    <div className="form-group">
+                        <select value={this.state.value}
+                            onChange={(i) => { this.semesterChange(i.target.value) }}
+                            className="form-control"
+                            style={{width: "90%", marginLeft: "5%"}}>
+                            {this.semesterListRender()}
+                        </select>
+                    </div>
                     <ul className="main-menu">
                         {this.classListRender()}
                     </ul>
