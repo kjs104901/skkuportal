@@ -7,15 +7,6 @@ import { Line } from 'rc-progress';
 
 const { ipcRenderer } = require('electron');
 
-const warningMessage = (errMessage) => {
-    $('body').pgNotification({
-        style: "circle",
-        timeout: 2000,
-        message: errMessage,
-        type: "danger"
-    }).show();
-};
-
 export default class CLibrary extends React.Component {
     state = {
         menuIndex: 0,
@@ -34,6 +25,8 @@ export default class CLibrary extends React.Component {
     }
 
     componentDidMount() {
+        const warningMessage = this.props.warningMessage;
+
         ipcRenderer.send("libraryListReq", true);
         ipcRenderer.on("libraryListRes", (event, message) => {
             if (!message.err) {

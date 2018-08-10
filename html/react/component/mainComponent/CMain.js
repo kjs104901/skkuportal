@@ -29,6 +29,8 @@ export default class CMain extends React.Component {
     }
 
     componentDidMount() {
+        const warningMessage = this.props.warningMessage;
+        
         /// icampus
         ipcRenderer.send("classListReq", true);
         ipcRenderer.on("classListRes", (event, message) => {

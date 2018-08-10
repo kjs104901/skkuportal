@@ -3,15 +3,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 
 const { ipcRenderer } = require('electron');
 
-const warningMessage = (errMessage) => {
-    $('body').pgNotification({
-        style: "circle",
-        timeout: 2000,
-        message: errMessage,
-        type: "danger"
-    }).show();
-};
-
 export default class CGLS extends React.Component {
     state = {
         menuIndex: 0,
@@ -29,6 +20,7 @@ export default class CGLS extends React.Component {
     }
 
     componentDidMount() {
+        const warningMessage = this.props.warningMessage;
         ipcRenderer.send("scoreListReq", true);
         ipcRenderer.on("scoreListRes", (event, message) => {
             if (!message.err) {

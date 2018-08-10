@@ -87,16 +87,13 @@ export default class QuickView extends React.Component {
     }
 
     openUpdater() {
+        const warningMessage = this.props.warningMessage;
+
         if (this.state.updateAvailable) {
             ipcRenderer.send("openUpdaterReq", true);
         }
         else {
-            $('body').pgNotification({
-                style: "circle",
-                timeout: 2000,
-                message: "업데이트 할 수 없습니다",
-                type: "danger"
-            }).show();
+            warningMessage("업데이트 할 수 없습니다");
         }
     }
 

@@ -5,15 +5,6 @@ import '../js/jquery.scrollbar.js';
 
 const { ipcRenderer } = require('electron');
 
-const warningMessage = (errMessage) => {
-    $('body').pgNotification({
-        style: "circle",
-        timeout: 2000,
-        message: errMessage,
-        type: "danger"
-    }).show();
-};
-
 export default class CMeal extends React.Component {
     state = {
         menuIndex: 0,
@@ -33,6 +24,8 @@ export default class CMeal extends React.Component {
     }
 
     componentDidMount() {
+        const warningMessage = this.props.warningMessage;
+        
         ipcRenderer.send("resturantReq", true);
         ipcRenderer.on("resturantRes", (event, message) => {
             if (!message.err) {
@@ -65,7 +58,6 @@ export default class CMeal extends React.Component {
 
         ipcRenderer.on("mealListRes", (event, message) => {
             if (!message.err) {
-                console.log(message.data);
                 this.setState({
                     mealListLoading: false,
                     mealList: message.data,

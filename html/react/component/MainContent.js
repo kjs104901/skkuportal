@@ -8,6 +8,18 @@ import CMail from './mainComponent/CMail'
 import CLibrary from './mainComponent/CLibrary'
 import CMeal from './mainComponent/CMeal'
 import CFuture from './mainComponent/CFuture'
+import CTransportation from './mainComponent/CTransportation'
+import CQna from './mainComponent/CQna'
+import CCommunity from './mainComponent/CCommunity'
+
+const warningMessage = (errMessage) => {
+    $('body').pgNotification({
+        style: "circle",
+        timeout: 2000,
+        message: errMessage,
+        type: "danger"
+    }).show();
+};
 
 export default class MainContent extends React.Component {
     componentWillMount() {
@@ -32,29 +44,29 @@ export default class MainContent extends React.Component {
 const dialog = (menuIndex, menuGoto) => {
     switch (menuIndex) {
         case 0:
-            return <CMain menuGoto={menuGoto} />;
+            return <CMain menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 1:
-            return <CIcampus menuGoto={menuGoto} />;
+            return <CIcampus menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 2:
-            return <CGLS menuGoto={menuGoto} />;
+            return <CGLS menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 3:
-            return <CNotice menuGoto={menuGoto} />;
+            return <CNotice menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 4:
             return "일정 컴포넌트: " + menuIndex;
         case 5:
-            return <CMail menuGoto={menuGoto} />;
+            return <CMail menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 6:
-            return <CFuture menuGoto={menuGoto} />; // 구글 드라이브
+            return <CFuture menuGoto={menuGoto} warningMessage={warningMessage} />; // 구글 드라이브
         case 7:
-            return <CFuture menuGoto={menuGoto} />; // QnA
+            return <CQna menuGoto={menuGoto} warningMessage={warningMessage}/>;
         case 8:
-            return <CLibrary menuGoto={menuGoto} />;
+            return <CLibrary menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 9:
-            return <CMeal menuGoto={menuGoto} />;
+            return <CMeal menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 10:
-            return "교통 컴포넌트: " + menuIndex;
+            return <CTransportation menuGoto={menuGoto} warningMessage={warningMessage} />;
         case 11:
-            return "커뮤니티 컴포넌트: " + menuIndex;
+            return <CCommunity menuGoto={menuGoto} warningMessage={warningMessage} />;
         default:
             return "오류 컴포넌트: " + menuIndex;
     }

@@ -86,7 +86,7 @@ exports.getSubway = (campusType, direction, callback) => {
 
                         const expressStr = crawler.getBetweenMoveTarget("data-statnTcd=\"", "\"");
                         let isExpress = false;
-                        if (expressStr.indexOf("_E")) {
+                        if (-1 < expressStr.indexOf("_E")) {
                             isExpress = true;
                         }
 
@@ -112,21 +112,23 @@ exports.getSubway = (campusType, direction, callback) => {
 
                         if (directionCheck) {
                             referenceArray.forEach((item, index) => {
-                                if (-1 < item.indexOf(gotTrain.station)) {
+                                if (item === gotTrain.station) {
                                     let trainIndex = -1
                                     if (gotTrain.doing === "진입" || gotTrain.doing === "이동") {
-                                        trainIndex = index - 1;
+                                        trainIndex = index + 1;
                                     }
                                     else if (gotTrain.doing === "도착") {
                                         trainIndex = index;
                                     }
                                     else if (gotTrain.doing === "출발") {
-                                        trainIndex = index + 1;
+                                        trainIndex = index - 1;
                                     }
 
                                     if (-1 < trainIndex) {
-                                        trainArray[trainIndex].push(gotTrain);
-                                        resultNumber += 1;
+                                        if (trainArray[trainIndex]) {
+                                            trainArray[trainIndex].push(gotTrain);
+                                            resultNumber += 1;
+                                        }
                                     }
                                 }
                             });
@@ -160,14 +162,16 @@ exports.getBus = (busType, callback) => {
         resultNumber: 0,
         resultArray: [
             {
-                location: 0,
-                predictTime: 0,
-                remainSeats: 0
+                location: -1,
+                predictTime: -1,
+                remainSeats: -1,
+                plate: ""
             },
             {
-                location: 0,
-                predictTime: 0,
-                remainSeats: 0
+                location: -1,
+                predictTime: -1,
+                remainSeats: -1,
+                plate: ""
             }
         ]
     };
@@ -259,9 +263,11 @@ exports.getBus = (busType, callback) => {
                             busInfo.resultArray[0].location = infoObj.locationNo1 * 1;
                             busInfo.resultArray[0].predictTime = infoObj.predictTime1 * 1;
                             busInfo.resultArray[0].remainSeats = infoObj.remainSeatCnt1 * 1;
+                            busInfo.resultArray[0].plate = infoObj.plateNo1;
                             busInfo.resultArray[1].location = infoObj.locationNo2 * 1;
                             busInfo.resultArray[1].predictTime = infoObj.predictTime2 * 1;
                             busInfo.resultArray[1].remainSeats = infoObj.remainSeatCnt2 * 1;
+                            busInfo.resultArray[1].plate = infoObj.plateNo2;
                         }
                     });
                 }
@@ -270,3 +276,27 @@ exports.getBus = (busType, callback) => {
         }
     );
 };
+
+//// https://kingom.skku.edu/skkuapp/getBusData.do?route=2009 ////
+//// 2009: 인문캠 2002: 자과-사당 2004: 자과-분당
+exports.getSuttle = (route, callback) => {
+    const suttleURL = "https://kingom.skku.edu/skkuapp/getBusData.do?route="+route;
+    
+    request(
+        {
+            url: suttleURL,
+            headers: crawler.getNormalHeader(),
+            method: "GET"
+        }, (error, response, body) => {
+            if (error) {
+                callback({});
+            }
+            else if (response.statusCode !== 200) {
+                callback({});
+            }
+            else {
+                callback(JSON.parse(body).items);
+            }
+        }
+    );
+}

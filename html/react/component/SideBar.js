@@ -65,10 +65,10 @@ export default class SideBar extends React.Component {
                         </li>
                         <li className="">
                             <a href="#" onClick={ ()=>{menuGoto(7)} }>
-                                <span className= {(menuIndex === 7)?"title title-selected":"title" } style={{color:"grey"}}>Q&A</span>
+                                <span className= {(menuIndex === 7)?"title title-selected":"title" }>Q&A</span>
                             </a>
                             <span className= {(menuIndex === 7)?"icon-thumbnail bg-success":"icon-thumbnail" }>
-                                <i className="fas fa-question-circle"  style={{color:"grey"}}></i>
+                                <i className="fas fa-question-circle"></i>
                             </span>
                         </li>
                         <li className="">

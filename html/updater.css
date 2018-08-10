@@ -38,3 +38,7 @@ body {
     background-color: #767676;
     cursor: pointer;
 }
+
+#releaseNote {
+    -webkit-app-region: no-drag;
+}

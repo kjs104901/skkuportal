@@ -2,15 +2,6 @@ import React from 'react';
 
 const { ipcRenderer } = require('electron');
 
-const warningMessage = (errMessage) => {
-    $('body').pgNotification({
-        style: "circle",
-        timeout: 2000,
-        message: errMessage,
-        type: "danger"
-    }).show();
-};
-
 export default class CMail extends React.Component {
     state = {
         menuIndex: 0,
@@ -25,6 +16,8 @@ export default class CMail extends React.Component {
     }
 
     componentDidMount() {
+        const warningMessage = this.props.warningMessage;
+
         ipcRenderer.send("mailTotalReq", true);
         ipcRenderer.on("mailTotalRes", (event, message) => {
             if (!message.err) {

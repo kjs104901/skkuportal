@@ -11,6 +11,7 @@ const weather = require("./node_my_modules/weather");
 const mail = require("./node_my_modules/mail");
 const notice = require("./node_my_modules/notice");
 const meal = require("./node_my_modules/meal");
+const transportation = require("./node_my_modules/transportation");
 
 const path = require('path')
 
@@ -57,7 +58,7 @@ const glsInstallWindowSetting = {
 
 let updaterWindow;
 const updaterWindowSetting = {
-    width: 500, height: 250,
+    width: 500, height: 410,
     frame: false,
     show: false,
     resizable: false,
@@ -142,12 +143,15 @@ let updateLoading = true;
 let updateError = false;
 let updateAvailable = false;
 
+let updateReleaseNotes = "";
+
 autoUpdater.on('checking-for-update', () => { });
 
 autoUpdater.on('update-available', (info) => {
     updateLoading = false;
     updateAvailable = true;
     updateVersion = info.version;
+    updateReleaseNotes = info.releaseNotes;
 });
 
 autoUpdater.on('update-not-available', (info) => {
@@ -239,6 +243,7 @@ const updaterWindowOpen = () => {
     updaterWindow.loadFile('./html/updater.html');
 
     updaterWindow.once('ready-to-show', () => {
+
         updaterWindow.show();
     })
 }
@@ -602,6 +607,7 @@ ipcMain.on("updateInfoReq", (event, message) => {
             updateLoading: updateLoading,
             updateError: updateError,
             updateAvailable: updateAvailable,
+            updateReleaseNotes: updateReleaseNotes
         }
     });
 });
@@ -921,6 +927,49 @@ ipcMain.on("mealListReq", (event, message) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("mealListRes", result);
+        }
+    });
+})
+
+// transportation
+ipcMain.on("suttleReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "suttleRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    suttleRequest(message.route, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("suttleRes", result);
+        }
+    });
+})
+
+ipcMain.on("busReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "busRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    busRequest(message.type, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("busRes", result);
+        }
+    });
+})
+
+ipcMain.on("subwayReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "subwayRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    subwayRequest(message.campusType, message.direction, (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("subwayRes", result);
         }
     });
 })
@@ -1371,7 +1420,7 @@ const libraryListRequest = (callback) => {
         }
     })
 
-    let intv = setInterval(()=>{
+    let intv = setInterval(() => {
         intvCount += 1;
         if (3 <= loadCount) {
             clearInterval(intv);
@@ -1400,13 +1449,13 @@ const seatListRequest = (campusType, callback) => {
 
 // meal
 const resturantRequest = (callback) => {
-    const restaurantList =  meal.getRestaurantList();
+    const restaurantList = meal.getRestaurantList();
     const currentCategory = meal.getCurrentCategory();
     let initialResturant = 0
     if (userCampusType === 1) {
         initialResturant = 5
     }
-    
+
     callback({
         data: {
             initialResturant: initialResturant,
@@ -1418,6 +1467,81 @@ const resturantRequest = (callback) => {
 
 const mealListRequest = (resturant, category, year, month, day, callback) => {
     meal.getMealList(resturant, category, year, month, day, (result) => {
+        callback({
+            data: result
+        })
+    })
+}
+
+// transportation
+const suttleRequest = (route, callback) => {
+    transportation.getSuttle(route, (result) => {
+        callback({
+            data: result
+        });
+    })
+}
+
+const busRequest = (type, callback) => {
+    let busList = [];
+    let loadCount = 0;
+    let loadCountMax = 1;
+    let intvCount = 0;
+
+    if (type === 1 || type === 2) {
+        loadCountMax = 2;
+    }
+
+    if (type === 1) {
+        transportation.getBus(2, (result) => {
+            loadCount += 1;
+            busList.push(result)
+        })
+        transportation.getBus(4, (result) => {
+            loadCount += 1;
+            busList.push(result)
+        })
+    }
+    if (type === 2) {
+        transportation.getBus(1, (result) => {
+            loadCount += 1;
+            busList.push(result)
+        })
+        transportation.getBus(3, (result) => {
+            loadCount += 1;
+            busList.push(result)
+        })
+    }
+    if (type === 3) {
+        transportation.getBus(6, (result) => {
+            loadCount += 1;
+            busList.push(result)
+        })
+    }
+    if (type === 4) {
+        transportation.getBus(5, (result) => {
+            loadCount += 1;
+            busList.push(result)
+        })
+    }
+
+    let intv = setInterval(() => {
+        intvCount += 1;
+        if (loadCountMax <= loadCount) {
+            clearInterval(intv);
+
+            callback({
+                data: busList
+            });
+        }
+        if (10 < intvCount) {
+            clearInterval(intv);
+        }
+    }, 1000)
+}
+
+const subwayRequest = (campusType, direction, callback) => {
+    transportation.getSubway(campusType, direction, (result) => {
         callback({
             data: result
         })

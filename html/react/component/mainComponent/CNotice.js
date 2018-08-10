@@ -5,15 +5,6 @@ import '../js/jquery.scrollbar.js';
 
 const { ipcRenderer } = require('electron');
 
-const warningMessage = (errMessage) => {
-    $('body').pgNotification({
-        style: "circle",
-        timeout: 2000,
-        message: errMessage,
-        type: "danger"
-    }).show();
-};
-
 export default class CNotice extends React.Component {
     state = {
         menuIndex: 0,
@@ -34,6 +25,8 @@ export default class CNotice extends React.Component {
     }
 
     componentDidMount() {
+        const warningMessage = this.props.warningMessage;
+        
         ipcRenderer.send("noticeListReq", {
             type: 1,
             offset: 0

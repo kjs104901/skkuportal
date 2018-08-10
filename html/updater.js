@@ -60,3 +60,9 @@ ipcRenderer.on("updaterFinished", (event, savepath) => {
     startButton.innerText = "설치";
     downloading = false;
 });
+
+const releaseNote =  document.querySelector("#releaseNote");
+ipcRenderer.send("updateInfoReq", true);
+ipcRenderer.on("updateInfoRes", (event, message) => {
+    releaseNote.innerHTML = message.data.updateReleaseNotes;
+})
