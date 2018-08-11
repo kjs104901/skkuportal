@@ -3,13 +3,28 @@ const library = require("./node_my_modules/library");
 const meal = require("./node_my_modules/meal");
 const transportation = require("./node_my_modules/transportation")
 const calendar = require("./node_my_modules/calendar")
+const smartgls = require("./node_my_modules/smartgls")
 
 const request = require('request');
 
+
+smartgls.login("kjs104901", "wlstn104901*", (result) => {
+    console.log(result);
+    if (result) {
+        //smartgls.getSemesterList((result) => {
+        //    console.log(result);
+        //})
+
+        smartgls.searchClass(2, 2, "컴퓨터", 2018, 20, (result) => {
+            console.log(result);
+        })
+    }
+})
+
+/*
 transportation.getSuttleInfo((result) => {
     console.log(result);
 });
-/*
 calendar.getCalendar(2018, 8, (result) => {
     //console.log(result);
 });

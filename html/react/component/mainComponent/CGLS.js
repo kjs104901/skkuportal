@@ -17,10 +17,39 @@ export default class CGLS extends React.Component {
         score: [],
         scoreError: false,
         scoreErrorMessage: "",
+
+        semesterListLoading: true,
+        semesterList: [],
+
+        //search
+        targetSemesterIndex: 0,
+        searchStr: "",
+
+        campusType: 1,
+        searchType: 2,
+
+        searchClassLoading: false,
+        searchClass: [],
+        searchClassError: false,
+        searchClassErrorMessage: ""
     }
 
     componentDidMount() {
         const warningMessage = this.props.warningMessage;
+
+        ipcRenderer.send("semesterListGLSReq", true);
+        ipcRenderer.on("semesterListGLSRes", (event, message) => {
+            if (!message.err) {
+                this.setState({
+                    semesterListLoading: false,
+                    semesterList: message.data,
+                });
+            }
+            else {
+                warningMessage(message.errMessage);
+            }
+        })
+
         ipcRenderer.send("scoreListReq", true);
         ipcRenderer.on("scoreListRes", (event, message) => {
             if (!message.err) {
@@ -65,12 +94,34 @@ export default class CGLS extends React.Component {
                 return;
             }
         });
+
+        ipcRenderer.on("searchClassRes", (event, message) => {
+            if (!message.err) {
+                this.setState({
+                    searchClassLoading: false,
+                    searchClass: message.data,
+                    searchClassError: false,
+                    searchClassErrorMessage: false,
+                });
+            }
+            else {
+                warningMessage(message.errMessage);
+                this.setState({
+                    searchClassLoading: false,
+                    searchClass: [],
+                    searchClassError: true,
+                    searchClassErrorMessage: message.errMessage
+                });
+            }
+        })
     }
 
     componentWillUnmount() {
         ipcRenderer.removeAllListeners("scoreListRes");
         ipcRenderer.removeAllListeners("scoreRes");
         ipcRenderer.removeAllListeners("openGLSRes");
+        ipcRenderer.removeAllListeners("semesterListGLSRes");
+        ipcRenderer.removeAllListeners("searchClassRes");
     }
 
     openGLSRequest = () => {
@@ -98,6 +149,56 @@ export default class CGLS extends React.Component {
                 scoreError: false,
                 scoreErrorMessage: "",
             });
+        }
+    }
+
+    semesterChange = (value) => {
+        this.setState({
+            targetSemesterIndex: value
+        })
+    }
+
+    campusTypeChange = (changeEvent) => {
+        this.setState({
+            campusType: changeEvent.target.value
+        });
+    }
+
+    searchTypeChange = (changeEvent) => {
+        this.setState({
+            searchType: changeEvent.target.value
+        });
+    }
+
+    stringChange = (event) => {
+        this.setState({
+            searchStr: event.target.value
+        });
+    }
+
+    searchClass = () => {
+        const targetSemester = this.state.semesterList[this.state.targetSemesterIndex];
+        if (targetSemester) {
+            if (0 < this.state.searchStr.length) {
+                ipcRenderer.send("searchClassReq", {
+                    campusType: this.state.campusType,
+                    searchType: this.state.searchType,
+                    searchStr: this.state.searchStr,
+                    year: targetSemester.year,
+                    semester: targetSemester.semester
+                });
+
+                this.setState({
+                    searchClassLoading: true,
+                    searchClass: [],
+                    searchClassError: false,
+                    searchClassErrorMessage: ""
+                })
+            }
+            else {
+                const warningMessage = this.props.warningMessage;
+                warningMessage("검색 문자열이 비었습니다");
+            }
         }
     }
 
@@ -148,6 +249,22 @@ export default class CGLS extends React.Component {
                 return (
                     <React.Fragment>
                         {this.contentScoreChartRender()}
+                    </React.Fragment>
+                )
+            }
+        }
+        else if (this.state.menuIndex == 3) {
+            if (this.state.semesterListLoading) {
+                return (
+                    <React.Fragment>
+                        {this.contentLoadingRender()}
+                    </React.Fragment>
+                )
+            }
+            else {
+                return (
+                    <React.Fragment>
+                        {this.contentSearchRender()}
                     </React.Fragment>
                 )
             }
@@ -210,7 +327,7 @@ export default class CGLS extends React.Component {
                         <p className="col-2 large-text no-margin text-center">{semesterStr}</p>
                         <p className="col-2 large-text no-margin text-center">{score.hours} 학점</p>
                         <p className="col-2 large-text no-margin text-center">{score.average} 점</p>
-                        <p className="col-2 large-text no-margin text-center">{0 < score.percent? score.percent: "-"} %</p>
+                        <p className="col-2 large-text no-margin text-center">{0 < score.percent ? score.percent : "-"} %</p>
                         <p className="col-1 large-text no-margin text-center">{cancleStr}</p>
                         <p className="col-1 large-text no-margin text-center">{warningStr}</p>
                     </div>
@@ -323,6 +440,143 @@ export default class CGLS extends React.Component {
                 <Line yAxisId="2" type="monotone" dataKey="percent" stroke="#82ca9d" connectNulls={true} />
             </LineChart>
         );
+    }
+
+    contentSearchRender = () => {
+        return (
+            <React.Fragment>
+                <div className="row align-items-center justify-content-center no-gutters" style={{ height: "40px", backgroundColor: "white" }}>
+                    <div className="col-4">
+                        <select
+                            onChange={(i) => { this.semesterChange(i.target.value) }}>
+                            {this.semesterListRender()}
+                        </select>
+                    </div>
+                    <div className="col-7">
+                        <form>
+                            <div className="radio radio-warning no-margin">
+                                <input type="radio" value={1}
+                                    checked={this.state.searchType == 1 ? "checked" : ""}
+                                    onChange={this.searchTypeChange}
+                                    id="searchType1" />
+                                <label htmlFor="searchType1">학수번호</label>
+
+                                <input type="radio" value={2}
+                                    checked={this.state.searchType == 2 ? "checked" : ""}
+                                    onChange={this.searchTypeChange}
+                                    id="searchType2" />
+                                <label htmlFor="searchType2">교과목명</label>
+
+                                <input type="radio" value={3}
+                                    checked={this.state.searchType == 3 ? "checked" : ""}
+                                    onChange={this.searchTypeChange}
+                                    id="searchType3" />
+                                <label htmlFor="searchType3">교강사명</label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div className="row align-items-center justify-content-center no-gutters" style={{ height: "40px", backgroundColor: "white" }}>
+                    <div className="col-5">
+                        <form>
+                            <div className="radio radio-warning no-margin">
+                                <input type="radio" value={1}
+                                    checked={this.state.campusType == 1 ? "checked" : ""}
+                                    onChange={this.campusTypeChange}
+                                    id="campusM" />
+                                <label htmlFor="campusM">명륜</label>
+
+                                <input type="radio" value={2}
+                                    checked={this.state.campusType == 2 ? "checked" : ""}
+                                    onChange={this.campusTypeChange}
+                                    id="campusY" />
+                                <label htmlFor="campusY">율전</label>
+
+                                <input type="radio" value={3}
+                                    checked={this.state.campusType == 3 ? "checked" : ""}
+                                    onChange={this.campusTypeChange}
+                                    id="campusI" />
+                                <label htmlFor="campusI">아이캠</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div className="col-4">
+                        <input type="text" onChange={this.stringChange}></input>
+                    </div>
+                    <div className="col-2">
+                        <div className="btn btn-block" onClick={this.searchClass}>검색</div>
+                    </div>
+                </div>
+                <div style={{ height: "510px", overflow: "auto" }}>
+                    {this.searchResultRender()}
+                </div>
+            </React.Fragment>
+        )
+    }
+
+    semesterListRender = () => {
+        let rows = [];
+        this.state.semesterList.forEach((semester, index) => {
+            rows.push(
+                <option key={index} value={index}>{semester.name}</option>
+            )
+        });
+        return (
+            <React.Fragment>
+                {rows}
+            </React.Fragment>
+        )
+    }
+
+    searchResultRender = () => {
+        if (this.state.searchClassLoading) {
+            return (
+                <div className="row justify-content-center align-items-center no-gutters" style={{ width: "100%", height: "400px" }}>
+                    <div className="col-4" style={{ textAlign: "center" }}>
+                        <div className="progress-circle-indeterminate"></div>
+                    </div>
+                </div>
+            )
+        }
+        else {
+            let rows = [];
+            this.state.searchClass.forEach((classElement, index) => {
+                rows.push(
+                    <React.Fragment key={index}>
+                        <div className="row justify-content-center align-items-center no-gutters b-t"
+                            style={{textAlign: "center"}}>
+                            <div className="col-2">{classElement.id}</div>
+                            <div className="col-5">{classElement.name}</div>
+                            <div className="col-1">{classElement.score}</div>
+                            <div className="col-2">{classElement.professor}</div>
+                        </div>
+                        <div className="row justify-content-center align-items-center no-gutters"
+                            style={{textAlign: "center"}}>
+                            <div className="col-4">{classElement.kind}</div>
+                            <div className="col-7">{classElement.time}</div>
+                        </div>
+                        <div className="row justify-content-center align-items-center no-gutters m-b-20"
+                            style={{textAlign: "center"}}>
+                            <div className="col-10">{classElement.target}</div>
+                        </div>
+                    </React.Fragment>
+                )
+            })
+            if (rows.length === 0) {
+                rows.push(
+                    <div className="row justify-content-center align-items-center no-gutters" key={0} style={{ width: "100%", height: "400px" }}>
+                        <div className="col-6" style={{ textAlign: "center" }}>
+                            표시할 내용이 없습니다
+                        </div>
+                    </div>
+                )
+            }
+            return (
+                <React.Fragment>
+                    {rows}
+                </React.Fragment>
+            )
+        }
     }
 
     render() {

@@ -697,19 +697,19 @@ ipcMain.on("studentInfoReq", (event, message) => {
     });
 });
 
-ipcMain.on("semesterListReq", (event, message) => {
+ipcMain.on("semesterListGLSReq", (event, message) => {
     let timeoutSent = false;
-    const timeout = reserveTimeoutSend(event.sender, "semesterListRes", 10, () => {
+    const timeout = reserveTimeoutSend(event.sender, "semesterListGLSRes", 10, () => {
         timeoutSent = true;
     });
 
-    semesterListRequest((result) => {
+    semesterListGLSRequest((result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
-            event.sender.send("semesterListRes", result);
+            event.sender.send("semesterListGLSRes", result);
         }
     });
-});
+})
 
 ipcMain.on("classListReq", (event, message) => {
     let timeoutSent = false;
@@ -808,6 +808,40 @@ ipcMain.on("scoreReq", (event, message) => {
             event.sender.send("scoreRes", result);
         }
     })
+});
+
+ipcMain.on("semesterListReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "semesterListRes", 10, () => {
+        timeoutSent = true;
+    });
+
+    semesterListRequest((result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("semesterListRes", result);
+        }
+    });
+});
+
+ipcMain.on("searchClassReq", (event, message) => {
+    let timeoutSent = false;
+    const timeout = reserveTimeoutSend(event.sender, "searchClassRes", 20, () => {
+        timeoutSent = true;
+    });
+
+    searchClassRequest(
+        message.campusType,
+        message.searchType,
+        message.searchStr,
+        message.year,
+        message.semester,
+         (result) => {
+        clearTimeout(timeout);
+        if (timeoutSent === false) {
+            event.sender.send("searchClassRes", result);
+        }
+    });
 });
 
 // weather
@@ -1367,6 +1401,36 @@ const scoreRequest = (year, semester, callback) => {
                     data: result
                 });
             })
+        }
+        else {
+            reLoginFailed();
+        }
+    })
+}
+
+const semesterListGLSRequest = (callback) => {
+    checkLoginElseTrySmart((result) => {
+        if (result) {
+            smartgls.getSemesterList((result) => {
+                callback({
+                    data: result
+                });
+            });
+        }
+        else {
+            reLoginFailed();
+        }
+    })
+}
+
+const searchClassRequest = (campusType, searchType, searchStr, year, semester, callback) => {
+    checkLoginElseTrySmart((result) => {
+        if (result) {
+            smartgls.searchClass(campusType, searchType, searchStr, year, semester, (result) => {
+                callback({
+                    data: result
+                });
+            });
         }
         else {
             reLoginFailed();

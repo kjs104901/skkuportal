@@ -61,6 +61,9 @@ exports.loginCheck = (callback) => {
             if (-1 < body.indexOf("자동로그인")) {
                 callback(false);
             }
+            else if (-1 < body.indexOf("중복로그인")) {
+                callback(false);
+            }
             else {
                 callback(true);
             }
@@ -227,4 +230,105 @@ exports.getWeekTable = (callback) => {
     // https://smart.skku.edu/skku/gls/lctr/weeksTableEnq/list?p_year=2018&p_term=10&p_gv_lang_cd=KO
     // 여기서 주간 테이블 구한다.
     // 학기 중에 구현
+}
+
+exports.getSemesterList = (callback) => {
+    const semesterListURL = "https://smart.skku.edu/skku/gls/lctr/timeTblEnq/";
+    let semesterList = [];
+
+    request(
+        {
+            url: semesterListURL,
+            headers: crawler.getMobileHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar()
+        }, (error, response, body) => {
+            if (error) {
+                callback(semesterList);
+            }
+            else if (response.statusCode !== 200) {
+                callback(semesterList);
+            }
+            else {
+                crawler.setTargetStr(body);
+                let listStr = crawler.getBetween('<td class="fst">', "</td>");
+                crawler.setTargetStr(listStr);
+                while(-1 < crawler.getTargetStr().indexOf("<option value='")) {
+                    const value = crawler.getBetweenMoveTarget("<option value='", "'");
+                    const year = value.substr(0,4) * 1;
+                    const semester = value.substr(4,2) * 1;
+                    const name = crawler.getBetweenMoveTarget(">", "<");
+
+                    semesterList.push({
+                        year: year,
+                        semester: semester,
+                        name: name
+                    })
+                }
+                callback(semesterList);
+            }
+        }
+    )
+}
+
+exports.searchClass = (campusType, searchType, searchStr, year, semester, callback) => {
+    /// campusType 1:인문 2:자과 3:아이캠
+    /// searchType 1:학수번호 2:교과목명 3:교강사명
+    let searchResult = [];
+
+    const searchClassURL = "https://smart.skku.edu/skku/gls/lctr/timeTblEnq/getTimeTblEnqGrid";
+    const searchForm = {
+        gridId: "classGrid",
+        detailViewType: "DEFAULT",
+        p_gaesul_campus_gb:	campusType,
+        p_search_gb: searchType,
+        p_search_key: searchStr,
+        p_year: year,
+        p_term: semester,
+        printType: "LIST"
+    }
+
+    request(
+        {
+            url: searchClassURL,
+            headers: crawler.getMobileHeader(),
+            method: "POST",
+            form: searchForm,
+            jar: crawler.getCookieJar()
+        }, (error, response, body) => {
+            if (error) {
+                callback(searchResult);
+            }
+            else if (response.statusCode !== 200) {
+                callback(searchResult);
+            }
+            else {
+                crawler.setTargetStr(body);
+                while (-1 < crawler.getTargetStr().indexOf('<tr id="classGrid_')) {
+                    crawler.moveTargetAfter('<tr id="classGrid_');
+
+                    const name = crawler.getBetween('class="gwamok_name" currentValue="', '"');
+                    const professor = crawler.getBetween('class="per_name" currentValue="', '"');
+                    const id = crawler.getBetween('class="haksu_no" currentValue="', '"');
+                    const score = crawler.getBetween('class="hakjum" currentValue="', '"');
+                    const kind = crawler.getBetween('class="hyungtae" currentValue="', '"');
+                    const target = crawler.getBetween('class="hakbu_name" currentValue="', '"');
+                    const time = crawler.getBetween('class="gyosi_name" currentValue="', '"');
+
+                    if (0 < id.length) {
+                        searchResult.push({
+                            name: name,
+                            professor: professor,
+                            id: id,
+                            score: score,
+                            kind: kind,
+                            target: target,
+                            time: time
+                        })
+                    }
+                }
+                callback(searchResult);
+            }
+        }
+    );
 }
