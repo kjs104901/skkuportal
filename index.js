@@ -539,7 +539,7 @@ ipcMain.on("loginReq", (event, message) => {
         timeoutSent = true;
     })
 
-    loginReqest(userId, userPass, (result) => {
+    loginRequest(userId, userPass, (result) => {
         clearTimeout(timeout);
         if (timeoutSent === false) {
             event.sender.send("loginRes", result);
@@ -1084,7 +1084,7 @@ ipcMain.on("todayCalendarReq", (event, message) => {
 
 //// ------------ IPC backend functions ------------ ////
 ////// for action
-const loginReqest = (userId, userPass, callback) => {
+const loginRequest = (userId, userPass, callback) => {
     portal.login(userId, userPass, (result) => {
         if (result) {
             userName = portal.getName();
