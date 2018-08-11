@@ -40,7 +40,6 @@ export default class CTransportation extends React.Component {
 
         ipcRenderer.on("suttleRes", (event, message) => {
             if (!message.err) {
-                console.log("suttleRes", message.data);
                 this.setState({
                     suttleLoading: false,
                     suttle: message.data,
@@ -79,7 +78,6 @@ export default class CTransportation extends React.Component {
         });
         ipcRenderer.on("busRes", (event, message) => {
             if (!message.err) {
-                console.log("busRes", message.data);
                 this.setState({
                     busLoading: false,
                     bus: message.data,
@@ -99,7 +97,6 @@ export default class CTransportation extends React.Component {
         });
         ipcRenderer.on("subwayRes", (event, message) => {
             if (!message.err) {
-                console.log("subwayRes", message.data);
                 this.setState({
                     subwayLoading: false,
                     subway: message.data,
@@ -245,6 +242,7 @@ export default class CTransportation extends React.Component {
         else {
 
             let infoURL = "";
+            let colWidth = "col-6"
             if (this.state.menuIndex === 0) {
                 infoURL = this.state.suttleInfo.url0;
             }
@@ -253,17 +251,64 @@ export default class CTransportation extends React.Component {
             }
             else if (this.state.menuIndex === 11) {
                 infoURL = this.state.suttleInfo.url01;
+                colWidth = "col-12"
             }
 
             rows.push(
-                <div className="col-6" key={0} style={{ height: "590px" }}>
-                    <iframe src={infoURL} style={{height: "580px"}}></iframe>
+                <div className={colWidth} key={0} style={{ height: "590px" }}>
+                    <iframe src={infoURL} style={{ height: "580px", width:"100%" }}></iframe>
                 </div>
             )
+
+            if (this.state.menuIndex === 0 || this.state.menuIndex === 1 || this.state.menuIndex === 2) {
+                let suttleList = [];
+                let reversedSuttle = this.state.suttle.reverse();
+
+                reversedSuttle.forEach((suttle, index) => {
+                    let suttleCar = (
+                        <React.Fragment>
+                            <img src="./assets/img/linetrain.png" /> {suttle.carNumber}
+                        </React.Fragment>
+                    );
+                    
+                    suttleList.push(
+                        <React.Fragment key={index}>
+                            <div className="row no-gutters" style={{ height: "30px" }}>
+                                <div className="col-5" style={{ textAlign: "right" }}>
+                                    
+                                </div>
+                                <div className="col-1" style={{ textAlign: "center" }}>
+                                    <img src="./assets/img/lineline.png" />
+                                </div>
+                                <div className="col-6" style={{ textAlign: "center" }}>
+                                    {suttle.kind==3? suttleCar: ""}
+                                </div>
+                            </div>
+                            <div className="row no-gutters" style={{ height: "30px" }}>
+                                <div className="col-5" style={{ textAlign: "right" }}>
+                                    {suttle.stationName}
+                                </div>
+                                <div className="col-1" style={{ textAlign: "center" }}>
+                                    <img src="./assets/img/linestation.png" />
+                                </div>
+                                <div className="col-6" style={{ textAlign: "center" }}>
+                                    {suttle.kind==2 || suttle.kind==1 ? suttleCar: ""}
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    )
+                });
+
+                rows.push(
+                    <div className="col-6" key={1} style={{ height: "590px", overflow:"auto"}}>
+                        {suttleList}
+                    </div>
+                )
+            }
         }
 
         return (
-            <div className="row no-gutter" style={{ width: "100%", height: "590px" }}>
+            <div className="row no-gutters" style={{ width: "100%", height: "590px" }}>
                 {rows}
             </div>
         )
@@ -355,7 +400,7 @@ export default class CTransportation extends React.Component {
 
             rows.push(
                 <div className="row no-gutters align-items-center" key={index} style={{ height: "30px" }}>
-                    <div className="col-2" style={{ textAlign: "right" }}>
+                    <div className="col-3" style={{ textAlign: "right" }}>
                         {referenceElement}
                     </div>
                     <div className="col-1" style={{ textAlign: "center" }}>
