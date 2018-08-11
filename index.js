@@ -23,11 +23,14 @@ const colorSkkuBackgroundDoom = "#3D7178";
 const colorSkkuBackgroundDeep = "#1C414A";
 const colorSkkuLogo = "#FFD661";
 
+//// ------------ Development ------------ ////
+
+const isDevelopment = false;
+
 //// ------------ Windows ------------ ////
 let loginWindow;
-const loginWindowSetting = {
-    //width: 500, height: 600,
-    width: 1200, height: 600,
+let loginWindowSetting = {
+    width: 500, height: 600,
     frame: false,
     show: false,
     resizable: false,
@@ -36,19 +39,17 @@ const loginWindowSetting = {
 };
 
 let mainWindow;
-const mainWindowSetting = {
-    //width: 790, height: 650,
-    width: 1600, height: 630,
+let mainWindowSetting = {
+    width: 840, height: 630,
     frame: false,
     show: false,
-    //resizable: false,
-    //minWidth: 600, minHeight: 400,
+    resizable: false,
     backgroundColor: "#F0F0F0",
     icon: "./html/icon.ico"
 };
 
 let glsInstallWindow;
-const glsInstallWindowSetting = {
+let glsInstallWindowSetting = {
     width: 500, height: 250,
     frame: false,
     show: false,
@@ -58,7 +59,7 @@ const glsInstallWindowSetting = {
 };
 
 let updaterWindow;
-const updaterWindowSetting = {
+let updaterWindowSetting = {
     width: 500, height: 410,
     frame: false,
     show: false,
@@ -190,12 +191,19 @@ const loginWindowOpen = () => {
             loginWindow.close();
         }
     }
+    if (isDevelopment) {
+        loginWindowSetting.width = 1200;
+        loginWindowSetting.height = 600;
+    }
+
     loginWindow = new BrowserWindow(loginWindowSetting);
     loginWindow.loadFile('./html/login.html');
 
     loginWindow.once('ready-to-show', () => {
         loginWindow.show();
-        loginWindow.webContents.openDevTools();
+        if (isDevelopment) {
+            loginWindow.webContents.openDevTools();
+        }
 
         if (mainWindow) {
             if (!mainWindow.isDestroyed()) {
@@ -216,6 +224,10 @@ const mainWindowOpen = () => {
             mainWindow.close();
         }
     }
+    if (isDevelopment) {
+        mainWindowSetting.width = 1600;
+        mainWindowSetting.height = 630;
+    }
     mainWindow = new BrowserWindow(mainWindowSetting);
     mainWindow.loadFile('./html/main.html');
 
@@ -224,7 +236,11 @@ const mainWindowOpen = () => {
             mainWindow.show();
         }, 500);
 
-        mainWindow.webContents.openDevTools();
+        if (isDevelopment) {
+            loginWindowSetting.width = 1200;
+            loginWindowSetting.height = 600;
+            mainWindow.webContents.openDevTools();
+        }
 
         if (loginWindow) {
             if (!loginWindow.isDestroyed()) {

@@ -5,7 +5,7 @@ const { ipcRenderer } = require('electron');
 const { shell } = require('electron');
 
 let openHompage = () => {
-    shell.openExternal("http://lemon-puppy.com");
+    shell.openExternal("http://skkuportal.com/");
 }
 
 let openSkkuHomepage = () => {
