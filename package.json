@@ -24,13 +24,11 @@
           ]
         }
       ],
-      "icon": "./dist/icon.ico",
       "asar": "false"
     },
     "nsis": {
       "oneClick": true,
-      "createDesktopShortcut": "always",
-      "installerHeaderIcon": "./dist/icon.ico"
+      "createDesktopShortcut": "always"
     }
   },
   "keywords": [],
@@ -51,7 +49,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "electron": "^2.0.5",
-    "electron-builder": "^20.26.0",
+    "electron-builder": "^20.27.1",
     "webpack": "^4.16.1",
     "webpack-cli": "^3.1.0"
   },
@@ -74,7 +72,7 @@
     "react-switchery": "^1.2.3",
     "recharts": "^1.1.0",
     "regedit": "^3.0.0",
-    "request": "^2.87.0",
+    "request": "^2.88.0",
     "xml2js": "^0.4.19"
   }
 }
