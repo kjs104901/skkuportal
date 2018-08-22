@@ -383,19 +383,6 @@ exports.loginCheck = (callback) => {
 /// gate
 const gatePath = __dirname + "/gate/icampus.html";
 exports.setGate = (gate) => {
-    let gateStr = fs.readFileSync(gatePath, {encoding : "utf8"}).split("// data //");
-    gateStr[1] = '\n';
-    gateStr[1] += 'D0: "'+gate.D0+'",\n';
-    gateStr[1] += 'D1: "'+gate.D1+'",\n';
-    gateStr[1] += 'D2: "'+gate.D2+'",\n';
-    gateStr[1] += 'D3: "'+gate.D3+'",\n';
-    gateStr[1] += 'userid: "'+gate.userid+'",\n';
-    gateStr[1] += 'roundkey: "'+gate.roundkey+'",\n';
-    gateStr[1] += 'color_style: "'+gate.color_style+'",\n';
-    gateStr[1] += '\n';
-
-    const newGateStr = gateStr.join("// data //");
-    fs.writeFileSync(gatePath, newGateStr);
 };
 
 exports.getGatePath = () => {
@@ -409,6 +396,30 @@ exports.clearGatePath = () => {
     const newGateStr = gateStr.join("// data //");
     fs.writeFileSync(gatePath, newGateStr);
 }
+/// new gate
+const newGatePath = __dirname + "/gateNew/icampus.html"
+exports.setNewGate = (pToken) => {
+    let gateStr = fs.readFileSync(newGatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+    gateStr[1] += 'icamToken: "'+pToken+'",\n';
+    gateStr[1] += '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(newGatePath, newGateStr);
+}
+
+exports.getNewGatePath = () => {
+    return newGatePath;
+}
+
+exports.clearNewGatePath = () => {
+    let gateStr = fs.readFileSync(newGatePath, {encoding : "utf8"}).split("// data //");
+    gateStr[1] = '\n';
+
+    const newGateStr = gateStr.join("// data //");
+    fs.writeFileSync(newGatePath, newGateStr);
+}
+///
 
 exports.getSemesterList = () => {
     return semesterList;

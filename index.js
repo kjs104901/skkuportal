@@ -474,12 +474,12 @@ const checkLoginElseTryIcampus = (callback) => {
 }
 
 const checkLoginElseTryPortal = (callback) => {
-    portal.loginCheck((result) => {
+    portal.newLoginCheck((result) => {
         if (result == true) {
             callback(true);
         }
         else {
-            portal.login(userId, userPass, (result) => {
+            portal.newLogin(userId, userPass, (result) => {
                 if (result) {
                     callback(true);
                 }
@@ -665,6 +665,8 @@ ipcMain.on("clearCacheReq", (event, message) => {
     icampus.clearGatePath();
     mail.clearGatePath();
     library.clearGatePath();
+
+    icampus.clearNewGatePath();
 
     mail.clearMailbox();
     saveSetting("campus_type", null);
@@ -1085,7 +1087,7 @@ ipcMain.on("todayCalendarReq", (event, message) => {
 //// ------------ IPC backend functions ------------ ////
 ////// for action
 const loginRequest = (userId, userPass, callback) => {
-    portal.login(userId, userPass, (result) => {
+    portal.newLogin(userId, userPass, (result) => {
         if (result) {
             userName = portal.getName();
             userDepartment = portal.getDepartment();
@@ -1130,7 +1132,7 @@ const openGLSRequest = (callback) => {
     if (isInstalled) {
         checkLoginElseTryPortal((result) => {
             if (result) {
-                portal.getGlobalVal((globalVal) => {
+                portal.newGetGlobalVal((globalVal) => {
                     if (0 < globalVal.length) {
                         gls.setGlobalVal(globalVal, (result) => {
                             if (result == true) {
@@ -1176,10 +1178,10 @@ const openGLSRequest = (callback) => {
 const openIcampusGate = (callback) => {
     checkLoginElseTryPortal((result) => {
         if (result) {
-            portal.getGate((result) => {
-                if (result) {
-                    icampus.setGate(result);
-                    shell.openExternal(icampus.getGatePath(), {}, (error) => {
+            portal.newGetpToken((result) => {
+                if (0 < result.length) {
+                    icampus.setNewGate(result);
+                    shell.openExternal(icampus.getNewGatePath(), {}, (error) => {
                         if (error) {
                             callback({
                                 err: "openGateFailed",
@@ -1203,45 +1205,42 @@ const openIcampusGate = (callback) => {
 }
 
 const openWebMailRequest = (callback) => {
-    portal.getGate((result) => {
-        if (result) {
-            mail.setGate(result);
-            shell.openExternal(mail.getGatePath(), {}, (error) => {
-                if (error) {
-                    callback({
-                        err: "openGateFailed",
-                        errMessage: "Gate 실행 실패"
-                    });
-                }
-            });
-        }
-        else {
+    shell.openExternal("http://mail3.skku.edu/", {}, (error) => {
+        if (error) {
             callback({
-                err: "gateFailed",
-                errMessage: "통합 로그인 실패"
+                err: "openFailed",
+                errMessage: "실행 실패"
             });
         }
     });
 }
 
 const openLibraryRequest = (callback) => {
-    portal.getGate((result) => {
+    checkLoginElseTryPortal((result) => {
         if (result) {
-            library.setGate(result);
-            shell.openExternal(library.getGatePath(), {}, (error) => {
-                if (error) {
+            portal.newGetpToken((result) => {
+                if (0 < result.length) {
+                    let libURL = "https://lib.skku.edu/pyxis-api/new-sso-login?ssoToken=";
+                    libURL += result;
+                    shell.openExternal(libURL, {}, (error) => {
+                        if (error) {
+                            callback({
+                                err: "openFailed",
+                                errMessage: "실행 실패"
+                            });
+                        }
+                    });
+                }
+                else {
                     callback({
-                        err: "openGateFailed",
-                        errMessage: "Gate 실행 실패"
+                        err: "gateFailed",
+                        errMessage: "통합 로그인 실패"
                     });
                 }
             });
         }
         else {
-            callback({
-                err: "gateFailed",
-                errMessage: "통합 로그인 실패"
-            });
+            reLoginFailed();
         }
     });
 }

@@ -375,7 +375,7 @@ export default class CTransportation extends React.Component {
                 trainList.push(
                     <div className="col-3" key={index}>
                         <img src={trainSrc} />
-                        {train.destination + (train.isExpress ? "(급}" : "")}
+                        {train.destination + (train.isExpress ? "(급)" : "")}
                     </div>
                 )
             });

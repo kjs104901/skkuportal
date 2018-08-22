@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script language="javascript">
+        function init() {
+            var data = {
+// data //
+// data //
+            }
+
+	        document.submitForm.icamToken.value = data.icamToken;
+            document.submitForm.submit();
+        }
+    </script>
+</head>
+
+<body onLoad="javascript:init();">
+    <form name="submitForm" method="post" action="http://www.icampus.ac.kr/icamgate1.jsp">
+        <input type="hidden" name="icamToken" value="">
+    </form>
+</body>
+
+</html>

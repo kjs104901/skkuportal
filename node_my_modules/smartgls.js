@@ -22,7 +22,7 @@ exports.login = (userId, userPwd, callback) => {
     );
 
     function loginCallback(error, response, body) {
-        if(error){
+        if (error) {
             callback(false)
         }
         else if (response.statusCode === 200) {
@@ -84,7 +84,7 @@ exports.getScores = (callback) => {
         printType: "LIST",
         userstatus: "Y"
     }
-    
+
     request(
         {
             url: getScoresURL,
@@ -98,31 +98,31 @@ exports.getScores = (callback) => {
     );
 
     function getScoresCallback(error, response, body) {
-        if (error){
+        if (error) {
             callback(scores);
         }
         else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
-            while(-1 < crawler.getTargetStr().indexOf('<tr id="scoreGrid')) {
+            while (-1 < crawler.getTargetStr().indexOf('<tr id="scoreGrid')) {
                 crawler.moveTargetAfter('<tr id="scoreGrid');
 
                 crawler.moveTargetAfter('<td class="suup_year"');
-                const year = crawler.getBetweenMoveTarget('currentValue="', '"')*1;
+                const year = crawler.getBetweenMoveTarget('currentValue="', '"') * 1;
 
                 crawler.moveTargetAfter('<td class="chuideuk_hakjum"');
-                const hours = crawler.getBetweenMoveTarget('currentValue="', '"')*1;
+                const hours = crawler.getBetweenMoveTarget('currentValue="', '"') * 1;
 
                 crawler.moveTargetAfter('<td class="avg_pyungjum"');
-                const average = crawler.getBetweenMoveTarget('currentValue="', '"')*1;
+                const average = crawler.getBetweenMoveTarget('currentValue="', '"') * 1;
 
                 crawler.moveTargetAfter('<td class="sukcha"');
                 const percentArr = crawler.getBetweenMoveTarget('>', '<').split('/');
                 let percent = 0;
-                if ((percentArr[1]*1) === 0) {
+                if ((percentArr[1] * 1) === 0) {
                     percent = 0;
                 }
                 else {
-                    percent = Math.floor((percentArr[0]*1) / (percentArr[1]*1) *100);
+                    percent = Math.floor((percentArr[0] * 1) / (percentArr[1] * 1) * 100);
                 }
 
                 crawler.moveTargetAfter('<td class="haksa_kyunggo_yn"');
@@ -138,7 +138,7 @@ exports.getScores = (callback) => {
                 }
 
                 crawler.moveTargetAfter('<td class="suup_term"');
-                const semester = crawler.getBetweenMoveTarget('currentValue="', '"')*1;
+                const semester = crawler.getBetweenMoveTarget('currentValue="', '"') * 1;
 
                 const score = {
                     year: year,
@@ -191,7 +191,7 @@ exports.getScoreDetail = (year, semester, callback) => {
         }
         else if (response.statusCode === 200) {
             crawler.setTargetStr(body);
-            while(-1 < crawler.getTargetStr().indexOf('<tr id="classGrid')) {
+            while (-1 < crawler.getTargetStr().indexOf('<tr id="classGrid')) {
                 crawler.moveTargetAfter('<tr id="classGrid');
 
                 crawler.moveTargetAfter('class="haksu_name"');
@@ -199,7 +199,7 @@ exports.getScoreDetail = (year, semester, callback) => {
 
                 crawler.moveTargetAfter('class="deungkub"');
                 const tier = crawler.getBetweenMoveTarget('currentValue="', '"');
-                
+
                 crawler.moveTargetAfter('class="hakjum"');
                 const hours = crawler.getBetweenMoveTarget('currentValue="', '"');
 
@@ -230,6 +230,54 @@ exports.getWeekTable = (callback) => {
     // https://smart.skku.edu/skku/gls/lctr/weeksTableEnq/list?p_year=2018&p_term=10&p_gv_lang_cd=KO
     // 여기서 주간 테이블 구한다.
     // 학기 중에 구현
+
+    const weekTableURL = "https://smart.skku.edu/skku/gls/lctr/weeksTableEnq/";
+
+    request(
+        {
+            url: weekTableURL,
+            headers: crawler.getMobileHeader(),
+            method: "GET",
+            jar: crawler.getCookieJar()
+        },
+        weekTableCallback
+    );
+
+    function weekTableCallback(error, response, body) {
+        if (error) {
+        }
+        else if (response.statusCode !== 200) {
+        }
+        else {
+            crawler.setTargetStr(body);
+            crawler.moveTargetAfter('id="getYearTerm"');
+            const yearTerm = crawler.getBetween('<option value="', '"');
+            const p_year = yearTerm.substring(0, 4);
+            const p_term = yearTerm.substring(4, 6);
+            let weekClassURL = "https://smart.skku.edu/skku/gls/lctr/weeksTableEnq/list?p_gubun=1&p_gv_lang_cd=KO&";
+            weekClassURL += "p_year="+p_year+"&p_term="+p_term;
+
+            request(
+                {
+                    url: weekClassURL,
+                    headers: crawler.getMobileHeader(),
+                    method: "GET",
+                    jar: crawler.getCookieJar()
+                },
+                weekClassCallback
+            )
+        }
+    }
+    
+    function weekClassCallback(error, response, body) {
+        if (error) {
+        }
+        else if (response.statusCode !== 200) {
+        }
+        else {
+            console.log(body);
+        }
+    }
 }
 
 exports.getSemesterList = (callback) => {
@@ -253,10 +301,10 @@ exports.getSemesterList = (callback) => {
                 crawler.setTargetStr(body);
                 let listStr = crawler.getBetween('<td class="fst">', "</td>");
                 crawler.setTargetStr(listStr);
-                while(-1 < crawler.getTargetStr().indexOf("<option value='")) {
+                while (-1 < crawler.getTargetStr().indexOf("<option value='")) {
                     const value = crawler.getBetweenMoveTarget("<option value='", "'");
-                    const year = value.substr(0,4) * 1;
-                    const semester = value.substr(4,2) * 1;
+                    const year = value.substr(0, 4) * 1;
+                    const semester = value.substr(4, 2) * 1;
                     const name = crawler.getBetweenMoveTarget(">", "<");
 
                     semesterList.push({
@@ -280,7 +328,7 @@ exports.searchClass = (campusType, searchType, searchStr, year, semester, callba
     const searchForm = {
         gridId: "classGrid",
         detailViewType: "DEFAULT",
-        p_gaesul_campus_gb:	campusType,
+        p_gaesul_campus_gb: campusType,
         p_search_gb: searchType,
         p_search_key: searchStr,
         p_year: year,

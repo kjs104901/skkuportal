@@ -4,10 +4,25 @@ const meal = require("./node_my_modules/meal");
 const transportation = require("./node_my_modules/transportation")
 const calendar = require("./node_my_modules/calendar")
 const smartgls = require("./node_my_modules/smartgls")
-
+const mail = require("./node_my_modules/mail")
 const request = require('request');
+const portal = require("./node_my_modules/portal");
+const icampus = require('./node_my_modules/icampus')
 
 
+portal.newLogin("kjs104901", "wlstn104901*", (result) => {
+    console.log(result);
+    portal.newLoginCheck((result) => {
+        console.log(result);
+        
+        portal.newGetpToken((result) => {
+            console.log(result);
+            icampus.setNewGate(result);
+        })
+    })
+})
+
+/*
 smartgls.login("kjs104901", "wlstn104901*", (result) => {
     console.log(result);
     if (result) {
@@ -15,7 +30,7 @@ smartgls.login("kjs104901", "wlstn104901*", (result) => {
         //    console.log(result);
         //})
 
-        smartgls.searchClass(2, 2, "컴퓨터", 2018, 20, (result) => {
+        smartgls.getWeekTable((result) => {
             console.log(result);
         })
     }
