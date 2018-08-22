@@ -531,6 +531,9 @@ exports.newLogin = (userId, userPwd, callback) => {
             if (-1 < body.indexOf("user_kor_name")) {
                 callback(true);
             }
+            else if (-1 < body.indexOf('location.href = "https://eportal.skku.edu/wps/portal"')) {
+                callback(true);
+            }
             else {
                 callback(false);
             }

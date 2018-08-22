@@ -590,27 +590,27 @@ const getSkyString = (time, sky, prec, wind) => {
     let skyString = "CLEAR_DAY";
     if (dayNight) {
         skyString = "CLEAR_DAY";
-        if (sky === 2) {
+        if (sky == "2") {
             skyString = "PARTLY_CLOUDY_DAY";
         }
     }
     else {
         skyString = "CLEAR_NIGHT";
-        if (sky === 2) {
+        if (sky == "2") {
             skyString = "PARTLY_CLOUDY_NIGHT";
         }
     }
-    if (sky === 3 || sky === 4) {
+    if (sky == "3" || sky == "4") {
         skyString = "CLOUDY";
     }
-    if (14 <= wind) {
+    if (14 <= (wind*1)) {
         skyString = "WIND";
     }
 
-    if (prec === 1 || prec === 2) {
+    if (prec == "1" || prec == "2") {
         skyString = "RAIN";
     }
-    else if (prec === 3 || prec === 4) {
+    else if (prec == "3" || prec == "4") {
         skyString = "SNOW";
     }
     return skyString;

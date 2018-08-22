@@ -51,7 +51,7 @@ exports.retreiveStart = (userId, userPass, callbackError) => {
     popClient = new poplib(110, "mail.skku.edu", {
         tlserrs: false,
         enabletls: false,
-        debug: false
+        debug: true
     });
 
     popClient.on("error", function (err) {

@@ -8,21 +8,38 @@ const mail = require("./node_my_modules/mail")
 const request = require('request');
 const portal = require("./node_my_modules/portal");
 const icampus = require('./node_my_modules/icampus')
+const weather = require('./node_my_modules/weather');
 
+notice.getNoticeList(2, 10, (result) => {
+    console.log(result);
+})
 
+/*
+weather.getWeather(0, (result) => {
+    console.log(result);
+})
+
+    portal.newLoginCheck((result) => {
+        console.log(result);
+    })
 portal.newLogin("kjs104901", "wlstn104901*", (result) => {
     console.log(result);
     portal.newLoginCheck((result) => {
         console.log(result);
-        
-        portal.newGetpToken((result) => {
+                
+        portal.newLogin("kjs104901", "wlstn104901*", (result) => {
             console.log(result);
-            icampus.setNewGate(result);
-        })
+        });
+    })
+})
+mail.retreiveStart("kjs104901", "wlstn104901*", (result) => {
+    callback({
+        err: result,
+        errMessage: "메일 서버 통신 실패" + result
     })
 })
 
-/*
+
 smartgls.login("kjs104901", "wlstn104901*", (result) => {
     console.log(result);
     if (result) {
